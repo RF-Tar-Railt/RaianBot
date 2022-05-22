@@ -14,7 +14,7 @@ master_name: "admin"
 ## 命令前缀; At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)
 prefix:
   - "莱安"
-  - "At:3542928737"
+  - "At:123456789"
 api:
   ## 请自行前往 https://saucenao.com 中获取
   saucenao: 'xxxxxxxxxxxxxxxxxxxxxx'
