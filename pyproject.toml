@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "RaianBot"
+version = "0.1.0"
+description = "simple qq bot bases on Araidne and Alconna"
+authors = ["RF-Tar-Railt <rf_tar_railt@qq.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+aiohttp = "^3.8.1"
+pillow = "^8.0.1"
+loguru = "^0.6.0"
+playwright = "^1.14.1"
+graia-saya = "^0.0.15"
+PyYAML = "^6.0"
+pyquery = "^1.4.3"
+pydantic = "^1.9.0"
+picimagesearch = "^3.3.2"
+graia-ariadne = "^0.6.11"
+graia-broadcast = "^0.16.1"
+graia-scheduler = "^0.0.7"
+arclet-alconna = "^0.9.3.1"
+arclet-alconna-graia = "^0.0.12"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "setuptools>=58.3.0", "wheel>=0.37.0"]
+build-backend = "poetry.core.masonry.api"

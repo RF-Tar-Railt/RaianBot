@@ -1,0 +1,12 @@
+arclet-alconna>=0.9.3.2
+graia-ariadne>=0.6.16
+graia-broadcast>=0.16.1
+Pillow~=8.0.1
+aiohttp~=3.8.1
+pyquery~=1.4.3
+pydantic~=1.9.0
+picimagesearch~=3.3.2
+playwright~=1.14.1
+PyYAML~=6.0
+setuptools~=58.3.0
+loguru~=0.6.0
