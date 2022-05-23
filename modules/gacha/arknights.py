@@ -108,7 +108,8 @@ class GArknights:
     def create_image(
             self,
             operators: List[List[ArknightsOperator]],
-            count: int = 1
+            count: int = 1,
+            relief: bool = False
     ) -> bytes:
         tile = 20
         width_base = 720
@@ -130,38 +131,46 @@ class GArknights:
             pool,
             fill='lightgrey', font=font_base
         )
-        xi = 2 * tile
-        yi = 2 * tile + 4
-        xj = width_base - (2 * tile)
-        yj = tile * (int(math.ceil(count / 10)) + 4)
-        for i in range(3, 0, -1):
-            d = int(color_base * 0.2) // 4
-            r = int(color_base * 0.8) + i * d
-            draw.rounded_rectangle(
-                (xi - i, yi - i, xi + i, yj + i),
-                radius=16,
-                fill=(r, r, r)
-            )
-            draw.rounded_rectangle(
-                (xj - i, yi - i, xj + i, yj + i),
-                radius=16,
-                fill=(r, r, r)
-            )
-        for i in range(4, 0, -1):
-            r = ((color_base // 4) * i)
-            draw.rounded_rectangle(
-                (xi - i, yi - i, xj + i, yi + i),
-                radius=16,
-                fill=(r, r, r, int(256 * 0.6))
-            )
-            r = ((0xff - color_base) // 4) * (5 - i)
-            draw.rounded_rectangle(
-                (xi - i, yj - i, xj + i, yj + i),
-                radius=16,
-                fill=(r, r, r, int(256 * 0.8))
-            )
+        if relief:
+            xi = 2 * tile
+            yi = 2 * tile + 4
+            xj = width_base - (2 * tile)
+            yj = tile * (int(math.ceil(count / 10)) + 4)
+            for i in range(3, 0, -1):
+                d = int(color_base * 0.2) // 4
+                r = int(color_base * 0.8) + i * d
+                draw.rounded_rectangle(
+                    (xi - i, yi - i, xi + i, yj + i),
+                    radius=16,
+                    fill=(r, r, r)
+                )
+                draw.rounded_rectangle(
+                    (xj - i, yi - i, xj + i, yj + i),
+                    radius=16,
+                    fill=(r, r, r)
+                )
+            for i in range(4, 0, -1):
+                r = ((color_base // 4) * i)
+                draw.rounded_rectangle(
+                    (xi - i, yi - i, xj + i, yi + i),
+                    radius=20,
+                    fill=(r, r, r, int(256 * 0.6))
+                )
+                d = (0xff - color_base) // 4
+                r = 0xff - i * d
+                draw.rounded_rectangle(
+                    (xi - i, yj - i, xj + i, yj + i),
+                    radius=20,
+                    fill=(r, r, r, int(256 * 0.8))
+                )
         for i, ots in enumerate(operators):
             base = tile * 3
+            if relief:
+                draw.rounded_rectangle(
+                    (base, tile * (i + 3) + 4, base + tile * 3 * len(ots) - 2, tile * (i + 4) + 3),
+                    radius=2,
+                    fill=(color_base // 2, color_base // 2, color_base // 2)
+                )
             for operator in ots:
                 width = tile * 3
                 length = len(operator['name'])
@@ -171,16 +180,17 @@ class GArknights:
                 font = font_base.font_variant(size=font_size)
                 width_offset = (width - font.getsize(operator['name'])[0]) // 2
                 height_offset = 1 + (tile - font.getsize(operator['name'])[1]) // 2
+
                 draw.rounded_rectangle(
                     (base, tile * (i + 3) + 2, base + width - 2, tile * (i + 4)),
-                    radius=7,
+                    radius=2,
                     fill=self.color[operator['rarity']]
                 )
                 draw.text(
                     (base + width_offset, tile * (i + 3) + height_offset),
                     operator['name'],
-                    fill='white',
-                    stroke_width=1, stroke_fill='#404040',
+                    fill='#efefef',
+                    stroke_width=1, stroke_fill=tuple(int(i * 0.5) for i in self.color[operator['rarity']]),
                     font=font
                 )
                 base += width
@@ -200,12 +210,12 @@ class GArknights:
         )
         return imageio.getvalue()
 
-    def gacha(self, count: int = 1):
-        return self.create_image((self.generate_rank(count)), count)
+    def gacha(self, count: int = 1, relief: bool = True):
+        return self.create_image((self.generate_rank(count)), count, relief)
 
 
 if __name__ == '__main__':
     gacha = GArknights()
-    data = gacha.gacha(300)
+    data = gacha.gacha(30)
     io = BytesIO(data)
     Image.open(io, "r").show("test")
