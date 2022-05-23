@@ -6,7 +6,7 @@ from arclet.alconna.graia.saya import AlconnaSchema
 from graia.saya.channel import Channel
 from graia.saya.builtins.broadcast import ListenerSchema
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Forward, ForwardNode, Source
+from graia.ariadne.message.element import Forward, ForwardNode, Source, Image
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
@@ -30,9 +30,11 @@ async def fetch(app: Ariadne, sender: Union[Group, Friend], source: Source, resu
     target = result.source.sender
     arp = result.result
     if dynamic := await api.get_dynamic(arp.header['target'], arp.index):
+        url = MessageChain.create(dynamic[2])
+        text = MessageChain.create(dynamic[0], *(Image(url=i) for i in dynamic[1]))
         return await app.sendMessage(sender, MessageChain.create(
             Forward(
-                ForwardNode(target=target, time=source.time, message=dynamic[0]),
-                ForwardNode(target=target, time=source.time, message=dynamic[1])
+                ForwardNode(target=target, time=source.time, message=text),
+                ForwardNode(target=target, time=source.time, message=url)
             )
         ))

@@ -85,17 +85,19 @@ async def generate_random_operator(this_str: str) -> bytes:
         f"【攻击速度】{attack_speed}",
         f"【特性】{talent}",
         f"【标签】{tags}",
+        f"\n",
         f"【种族】{race}",
         f"【身高】{height} cm",
         f"【出生地】{homeland}",
         f"【所属阵营】{organize}",
         f"【战斗经验】{'无' if fight_exp == 0 else str(fight_exp) + '年'}"
+        f"\n",
         f"【矿石病感染情况】{infect}",
         f"【物理强度】{random.choice(random_operator_dict['phy_exam_evaul'])}",
         f"【战场机动】{random.choice(random_operator_dict['phy_exam_evaul'])}",
         f"【生理耐受】{random.choice(random_operator_dict['phy_exam_evaul'])}",
         f"【战术规划】{random.choice(random_operator_dict['phy_exam_evaul'])}",
         f"【战斗技巧】{random.choice(random_operator_dict['phy_exam_evaul'])}",
-        f"【源石技艺适应性】"
+        f"【源石技艺适应性】{random.choice(random_operator_dict['phy_exam_evaul'])}"
     ])
     return await create_image(describe, cut=120)

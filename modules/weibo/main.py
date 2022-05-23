@@ -1,7 +1,5 @@
-from typing import Union, Type, Optional, Dict, Any, Tuple
+from typing import Union, Type, Optional, Dict, Any, Tuple, List
 import aiohttp
-from graia.ariadne.message.element import Image
-from graia.ariadne.message.chain import MessageChain
 from pyquery import PyQuery as Query
 from .storage import DefaultWeiboData, BaseWeiboData
 from .model import WeiboProfile
@@ -85,7 +83,7 @@ class WeiboAPI:
             self,
             name: str,
             index: int = -1
-    ) -> Optional[Tuple[MessageChain, MessageChain]]:
+    ) -> Optional[Tuple[str, List[str], str]]:
         profile = await self.get_profile(name)
         if not (d_data := await self.get_info(profile.id, int(profile.contain_id))):
             return
@@ -96,22 +94,18 @@ class WeiboAPI:
             index = 0 if may_top_id > may_last_id else 1
         url: str = d_data['data']['cards'][index]['scheme']
         mblog: Dict[str, Any] = d_data['data']['cards'][index]['mblog']
-        text = Query(mblog['text']).text()
-        dynamic_list.append(text)
+        text: str = Query(mblog['text']).text(squash_space=False)
         if len(mblog['pic_ids']) > 0:
             pics = mblog['pics']
             for i in range(len(pics)):
-                dynamic_list.append(Image(url=pics[i]['large']['url']))
+                dynamic_list.append(pics[i]['large']['url'])
         page_info = mblog.get('page_info')
         if page_info and page_info['type'] == 'video':
-            dynamic_list.append(Image(url=page_info['page_pic']['url']))
+            dynamic_list.append(page_info['page_pic']['url'])
         self.data.save()
-        return (
-            MessageChain.create(*dynamic_list),
-            MessageChain.create(url)
-        )
+        return text, dynamic_list, url
 
-    async def update(self, name: str) -> Optional[Tuple[MessageChain, MessageChain]]:
+    async def update(self, name: str) -> Optional[Tuple[str, List[str], str]]:
         profile = await self.get_profile(name)
         dynamic_total = profile.total
         if not (d_data := await self.get_info(profile.id, int(profile.contain_id))):

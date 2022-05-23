@@ -1,5 +1,6 @@
 import itertools
 import json
+import math
 import random
 from io import BytesIO
 
@@ -34,8 +35,8 @@ class GArknights:
     color = {
         6: (0xff, 0x7f, 0x27),  # ff7f27
         5: (0xff, 0xc9, 0x0e),  # ffc90e
-        4: (0xd8, 0xb3, 0xd8),  # d8b3d8
-        3: (0xff, 0xff, 0xff)  # 09b3f7
+        4: (0x93, 0x19, 0x93),  # d8b3d8
+        3: (0x09, 0xb3, 0xf7)  # 09b3f7
     }
 
     def __init__(
@@ -94,13 +95,11 @@ class GArknights:
             up_res = random.choice(self.data['up_six_list'])
             if random.randint(1, 100) > six_percent:
                 res = up_res
-            # res = "【" + res + "】"
             return {"name": res, "rarity": 6}
         if rank == '五':
             up_res = random.choice(self.data['up_five_list'])
             if random.randint(1, 100) > five_percent:
                 res = up_res
-            # res = "〖" + res + "〗"
             return {"name": res, "rarity": 5}
         if rank == '四':
             return {"name": res, "rarity": 4}
@@ -111,33 +110,85 @@ class GArknights:
             operators: List[List[ArknightsOperator]],
             count: int = 1
     ) -> bytes:
-        height = 20 * (count // 10 + 1) + 130
-        img = Image.new("RGBA", (720, height), 'white')
+        tile = 20
+        width_base = 720
+        color_base = 0x40
+        color_bases = (color_base, color_base, color_base)
+        height = tile * int(math.ceil(count / 10) + 1) + 130
+        img = Image.new("RGB", (width_base, height), color_bases)
         # 绘画对象
         draw = ImageDraw.Draw(img)
-        new_font = ImageFont.truetype('simkai.ttf', 20)
+        font_base = ImageFont.truetype('simhei.ttf', 16)
         draw.text(
-            (20, 20),
-            f"博士小心地拉开了包的拉链...会是什么呢？       "
-            f"当前卡池:【{self.data['name']}】",
-            fill='black', font=new_font
+            (tile, tile),
+            f"博士小心地拉开了包的拉链...会是什么呢？",
+            fill='lightgrey', font=font_base
         )
-        for i, ots in enumerate(operators):
-            base = 20
-            for operator in ots:
-                draw.text(
-                    (base, 20 * (i + 3)),
-                    operator['name'],
-                    fill='black',
-                    stroke_width=1, stroke_fill=self.color[operator['rarity']],
-                    font=new_font
-                )
-                base += 20 * (len(operator['name']) + 0.5)
+        pool = f"当前卡池:【{self.data['name']}】"
         draw.text(
-            (20, height - 50),
+            (width_base - font_base.getsize(pool)[0] - tile, tile),
+            pool,
+            fill='lightgrey', font=font_base
+        )
+        xi = 2 * tile
+        yi = 2 * tile + 4
+        xj = width_base - (2 * tile)
+        yj = tile * (int(math.ceil(count / 10)) + 4)
+        for i in range(3, 0, -1):
+            d = int(color_base * 0.2) // 4
+            r = int(color_base * 0.8) + i * d
+            draw.rounded_rectangle(
+                (xi - i, yi - i, xi + i, yj + i),
+                radius=16,
+                fill=(r, r, r)
+            )
+            draw.rounded_rectangle(
+                (xj - i, yi - i, xj + i, yj + i),
+                radius=16,
+                fill=(r, r, r)
+            )
+        for i in range(4, 0, -1):
+            r = ((color_base // 4) * i)
+            draw.rounded_rectangle(
+                (xi - i, yi - i, xj + i, yi + i),
+                radius=16,
+                fill=(r, r, r, int(256 * 0.6))
+            )
+            r = ((0xff - color_base) // 4) * (5 - i)
+            draw.rounded_rectangle(
+                (xi - i, yj - i, xj + i, yj + i),
+                radius=16,
+                fill=(r, r, r, int(256 * 0.8))
+            )
+        for i, ots in enumerate(operators):
+            base = tile * 3
+            for operator in ots:
+                width = tile * 3
+                length = len(operator['name'])
+                if length < 3:
+                    length = 3
+                font_size = int(3 * font_base.size / length)
+                font = font_base.font_variant(size=font_size)
+                width_offset = (width - font.getsize(operator['name'])[0]) // 2
+                height_offset = 1 + (tile - font.getsize(operator['name'])[1]) // 2
+                draw.rounded_rectangle(
+                    (base, tile * (i + 3) + 2, base + width - 2, tile * (i + 4)),
+                    radius=7,
+                    fill=self.color[operator['rarity']]
+                )
+                draw.text(
+                    (base + width_offset, tile * (i + 3) + height_offset),
+                    operator['name'],
+                    fill='white',
+                    stroke_width=1, stroke_fill='#404040',
+                    font=font
+                )
+                base += width
+        draw.text(
+            (tile, height - 3 * tile + 10),
             f"博士已经抽取了{self.six_statis}次没有6星了"
             f"\n当前出6星的机率为 {self.six_per}%",
-            fill='black', font=new_font
+            fill='lightgrey', font=font_base
         )
         imageio = BytesIO()
         img.save(
@@ -155,6 +206,6 @@ class GArknights:
 
 if __name__ == '__main__':
     gacha = GArknights()
-    data = gacha.gacha(30)
+    data = gacha.gacha(300)
     io = BytesIO(data)
     Image.open(io, "r").show("test")

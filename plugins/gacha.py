@@ -23,8 +23,6 @@ draw = Alconna(
     help_text=f"模拟方舟寻访 Example: {bot_config.command_prefix[0]}抽卡 300;",
 )
 
-file = "data/static/gacha_arknights.json"
-
 
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=draw, help_flag="reply")))
 @channel.use(ListenerSchema([GroupMessage, FriendMessage]))
@@ -34,7 +32,12 @@ async def draw(
         target: Union[Friend, Member],
         result: AlconnaProperty
 ):
-    arp = result.result
+    file = bot_config.plugin['gacha']
+    count = result.result.count
+    if count < 1:
+        count = 1
+    if count > 300:
+        count = 300
     if bot_data.exist(target.id):
         user = bot_data.get_user(target.id)
         if not user.additional.get('gacha_proba'):
@@ -43,10 +46,10 @@ async def draw(
             user.additional['gacha_proba']['arknights'] = [0, 2]
         six_statis, six_per = user.additional['gacha_proba']['arknights']
         gacha = GArknights(file=file, six_per=six_per, six_statis=six_statis)
-        data = gacha.gacha(arp.count)
+        data = gacha.gacha(count)
         user.additional['gacha_proba']['arknights'] = [gacha.six_statis, gacha.six_per]
         bot_data.update_user(user)
     else:
         gacha = GArknights(file=file)
-        data = gacha.gacha(arp.count)
+        data = gacha.gacha(count)
     return await app.sendMessage(sender, MessageChain.create(Image(data_bytes=data)))

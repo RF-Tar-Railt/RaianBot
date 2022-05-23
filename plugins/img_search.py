@@ -78,7 +78,7 @@ async def saucenao(app: Ariadne, group: Group, member: Member, source: Source, r
     running.set()
     async with Network() as client:
         # '580212823a8fa2aeb0a809da18f21618d73190e6'
-        sauce = SauceNAO(client=client, api_key=bot_config.api['saucenao'])
+        sauce = SauceNAO(client=client, api_key=bot_config.plugin['saucenao'])
         ascii2 = Ascii2D(client=client)
         iqdb = Iqdb(client=client)
 

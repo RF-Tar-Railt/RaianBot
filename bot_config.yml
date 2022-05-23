@@ -15,9 +15,12 @@ master_name: "admin"
 prefix:
   - "莱安"
   - "At:123456789"
-api:
+## 插件需要的数据
+plugin:
   ## 请自行前往 https://saucenao.com 中获取
   saucenao: 'xxxxxxxxxxxxxxxxxxxxxx'
+  ## 卡池的文件路径
+  gacha: "data/static/gacha_arknights.json"
 ## 插件的父级路径
 plugin_path: plugins
 ## 禁用的功能列表
