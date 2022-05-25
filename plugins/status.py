@@ -14,10 +14,11 @@ from graia.ariadne.model import Group, Friend
 from graia.saya import Channel
 from graia.saya.builtins.broadcast import ListenerSchema
 
-from config import bot_config
-from utils.simple_permission import require_admin
+from app import RaianMain
+from utils.control import require_admin
 from utils.generate_img import create_image
 
+bot = RaianMain.current()
 channel = Channel.current()
 
 python_version = platform.python_version()
@@ -30,14 +31,14 @@ pid = os.getpid()
 
 status = Alconna(
     "(状态|设备信息)",
-    headers=bot_config.command_prefix,
+    headers=bot.config.command_prefix,
     help_text="显示机器人运行设备的状态信息",
 )
 
 
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=status, help_flag="reply")))
 @channel.use(
-    ListenerSchema([GroupMessage, FriendMessage], decorators=[require_admin(bot_config.master_id)])
+    ListenerSchema([GroupMessage, FriendMessage], decorators=[require_admin(bot.config.master_id)])
 )
 async def main(app: Ariadne, sender: Union[Group, Friend]):
     p = psutil.Process(pid)

@@ -11,16 +11,16 @@ from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.model import Group, Friend, Member
 from graia.ariadne.app import Ariadne
 
-from config import bot_config
-from data import bot_data
+
+from app import RaianMain
 from modules.gacha.arknights import GArknights
 
 channel = Channel.current()
-
+bot = RaianMain.current()
 draw = Alconna(
     "(抽卡|寻访)", Args["count":int:1],
-    headers=bot_config.command_prefix,
-    help_text=f"模拟方舟寻访 Example: {bot_config.command_prefix[0]}抽卡 300;",
+    headers=bot.config.command_prefix,
+    help_text=f"模拟方舟寻访 Example: {bot.config.command_prefix[0]}抽卡 300;",
 )
 
 
@@ -32,14 +32,14 @@ async def draw(
         target: Union[Friend, Member],
         result: AlconnaProperty
 ):
-    file = bot_config.plugin['gacha']
+    file = bot.config.plugin['gacha']
     count = result.result.count
     if count < 1:
         count = 1
     if count > 300:
         count = 300
-    if bot_data.exist(target.id):
-        user = bot_data.get_user(target.id)
+    if bot.data.exist(target.id):
+        user = bot.data.get_user(target.id)
         if not user.additional.get('gacha_proba'):
             user.additional['gacha_proba'] = {'arknights': [0, 2]}
         elif not user.additional['gacha_proba'].get('arknights'):
@@ -48,7 +48,7 @@ async def draw(
         gacha = GArknights(file=file, six_per=six_per, six_statis=six_statis)
         data = gacha.gacha(count)
         user.additional['gacha_proba']['arknights'] = [gacha.six_statis, gacha.six_per]
-        bot_data.update_user(user)
+        bot.ata.update_user(user)
     else:
         gacha = GArknights(file=file)
         data = gacha.gacha(count)

@@ -4,12 +4,8 @@ from typing import Dict
 from weakref import finalize
 from arclet.alconna.util import Singleton
 
-from config import bot_config
+from .config import BotConfig
 from .model import UserProfile, GroupProfile
-
-group_path = Path(__file__).parent / "groups_data.json"
-user_path = Path(__file__).parent / "users_data.json"
-cache_path = Path(__file__).parent / "cache_data.json"
 
 
 class BotDataManager(metaclass=Singleton):
@@ -17,32 +13,40 @@ class BotDataManager(metaclass=Singleton):
     __user_profiles: Dict[str, UserProfile]
     __cache_data: dict
 
-    def __init__(self):
-        if group_path.exists():
-            with group_path.open('r+', encoding='UTF-8') as f_obj:
+    def __init__(self, config: BotConfig):
+        self.config = config
+
+        dir_path = Path(config.cache_dir)
+        dir_path.mkdir(exist_ok=True)
+        self.group_path = dir_path / "groups_data.json"
+        self.user_path = dir_path / "users_data.json"
+        self.cache_path = dir_path / "basic_data.json"
+
+        if self.group_path.exists():
+            with self.group_path.open('r+', encoding='UTF-8') as f_obj:
                 _info = json.load(f_obj)
                 self.__group_profiles = {k: GroupProfile.parse_obj(v) for k, v in _info.items()}
         else:
             self.__group_profiles = {}
-            with group_path.open('w+', encoding='UTF-8') as f_obj:
+            with self.group_path.open('w+', encoding='UTF-8') as f_obj:
                 json.dump({}, f_obj, ensure_ascii=False)
 
-        if user_path.exists():
-            with user_path.open('r+', encoding='UTF-8') as f_obj:
+        if self.user_path.exists():
+            with self.user_path.open('r+', encoding='UTF-8') as f_obj:
                 _info = json.load(f_obj)
                 self.__user_profiles = {k: UserProfile.parse_obj(v) for k, v in _info.items()}
         else:
             self.__user_profiles = {}
-            with user_path.open('w+', encoding='UTF-8') as f_obj:
+            with self.user_path.open('w+', encoding='UTF-8') as f_obj:
                 json.dump({}, f_obj, ensure_ascii=False)
 
-        if cache_path.exists():
-            with cache_path.open('r+', encoding='UTF-8') as f_obj:
+        if self.cache_path.exists():
+            with self.cache_path.open('r+', encoding='UTF-8') as f_obj:
                 self.__cache_data = json.load(f_obj)
         else:
-            self.__cache_data = {}
-            with user_path.open('w+', encoding='UTF-8') as f_obj:
-                json.dump({}, f_obj, ensure_ascii=False)
+            self.__cache_data = {"all_joined_group": [], "blacklist": []}
+            with self.user_path.open('w+', encoding='UTF-8') as f_obj:
+                json.dump(self.__cache_data, f_obj, ensure_ascii=False)
 
         def _s(mgr: "BotDataManager"):
             mgr.save()
@@ -55,13 +59,15 @@ class BotDataManager(metaclass=Singleton):
 
     def add_group(self, gid: int, **kwargs):
         for k, v in kwargs.items():
-            if k not in bot_config.group_meta:
+            if k not in self.config.group_meta:
                 raise ValueError
-        self.__group_profiles[str(gid)] = GroupProfile(id=gid, additional=kwargs)
+        self.__group_profiles[str(gid)] = GroupProfile(
+            id=gid, additional=kwargs, in_blacklist=(gid in self.__cache_data['blacklist'])
+        )
 
     def add_user(self, uid: int, **kwargs):
         for k, v in kwargs.items():
-            if k not in bot_config.user_meta:
+            if k not in self.config.user_meta:
                 raise ValueError
         self.__user_profiles[str(uid)] = UserProfile(id=uid, additional=kwargs)
 
@@ -74,12 +80,18 @@ class BotDataManager(metaclass=Singleton):
     def get_user(self, uid: int):
         return self.__user_profiles.get(str(uid), None)
 
+    def remove_user(self, id_: int):
+        return self.__user_profiles.pop(str(id_))
+
+    def remove_group(self, id_: int):
+        return self.__group_profiles.pop(str(id_))
+
     def update_group(
             self,
             group: GroupProfile
     ):
         for k, v in group.additional.items():
-            if k not in bot_config.group_meta:
+            if k not in self.config.group_meta:
                 raise ValueError
         self.__group_profiles[str(group.id)] = group
 
@@ -88,7 +100,7 @@ class BotDataManager(metaclass=Singleton):
             user: UserProfile
     ):
         for k, v in user.additional.items():
-            if k not in bot_config.user_meta:
+            if k not in self.config.user_meta:
                 raise ValueError
         self.__user_profiles[str(user.id)] = user
 
@@ -105,20 +117,18 @@ class BotDataManager(metaclass=Singleton):
         return self.__cache_data
 
     def save(self):
-        with user_path.open('w+', encoding='UTF-8') as fo:
+        with self.user_path.open('w+', encoding='UTF-8') as fo:
             json.dump(
                 {k: v.dict() for k, v in self.__user_profiles.items()},
                 fo, ensure_ascii=False, indent=2
             )
-        with group_path.open('w+', encoding='UTF-8') as fo:
+        with self.group_path.open('w+', encoding='UTF-8') as fo:
             json.dump(
                 {k: v.dict() for k, v in self.__group_profiles.items()},
                 fo, ensure_ascii=False, indent=2
             )
-        with cache_path.open('w+', encoding='UTF-8') as fo:
+        with self.cache_path.open('w+', encoding='UTF-8') as fo:
             json.dump(self.__cache_data, fo, ensure_ascii=False, indent=2)
 
 
-bot_data = BotDataManager()
-
-__all__ = ["bot_data"]
+__all__ = ["BotDataManager"]

@@ -12,24 +12,24 @@ from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.model import Group, Member, Friend
 from graia.ariadne.app import Ariadne
 
-from config import bot_config
-from data import bot_data
+from app import RaianMain
 from modules.rand import random_pick_small
 
+bot = RaianMain.current()
 channel = Channel.current()
-json_filename = "data/static/draw_poetry.json"
+json_filename = "assets/data/draw_poetry.json"
 with open(json_filename, 'r', encoding='UTF-8') as f_obj:
     draw_poetry = json.load(f_obj)['data']
 
 draw = Alconna(
     "抽签",
-    headers=bot_config.command_prefix,
+    headers=bot.config.command_prefix,
     help_text="进行一次抽签, 可以解除",
 )
 
 undraw = Alconna(
     "解签",
-    headers=bot_config.command_prefix,
+    headers=bot.config.command_prefix,
     help_text="解除上一次的抽签",
 )
 
@@ -43,9 +43,9 @@ async def draw(
         source: Source
 ):
     today = datetime.now().day
-    if not bot_data.exist(target.id):
+    if not bot.data.exist(target.id):
         return await app.sendMessage(sender, MessageChain.create("您还未找我签到~"), quote=source.id)
-    user = bot_data.get_user(target.id)
+    user = bot.data.get_user(target.id)
     if not user.additional.get('draw_info'):
         user.additional['draw_info'] = [-1, "无"]
     local_day, draw_ans = user.additional['draw_info']
@@ -57,12 +57,12 @@ async def draw(
         draw_ans = poetry_data['type']
         text = poetry_data['poetry'][random.randint(1, poetry_data['count']) - 1]
         user.additional['draw_info'] = [today, draw_ans]
-        bot_data.update_user(user)
+        bot.data.update_user(user)
         return await app.sendMessage(
             sender, MessageChain(f"您今日的运势抽签为：{draw_ans}\n{text}"),
             quote=source.id
         )
-    bot_data.update_user(user)
+    bot.data.update_user(user)
     return await app.sendMessage(
         sender, MessageChain(f"您今天已经抽过签了哦,运势为{draw_ans}"),
         quote=source.id
@@ -77,9 +77,9 @@ async def draw(
         target: Union[Member, Friend],
         source: Source
 ):
-    if not bot_data.exist(target.id):
+    if not bot.data.exist(target.id):
         return await app.sendMessage(sender, MessageChain.create("您还未找我签到~"), quote=source.id)
-    user = bot_data.get_user(target.id)
+    user = bot.data.get_user(target.id)
     if not (info := user.additional.get('draw_info')) or info[0] == -1:
         return await app.sendMessage(sender, MessageChain.create("您今日还未抽签~"), quote=source.id)
     info[0] = -1

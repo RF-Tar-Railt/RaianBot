@@ -11,18 +11,19 @@ from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
-from config import bot_config
+from app import RaianMain
 from utils.generate_img import create_image
 
+bot = RaianMain.current()
 channel = Channel.current()
 
 helping = Alconna(
     "帮助", Args["id":int:Empty],
-    headers=bot_config.command_prefix,
+    headers=bot.config.command_prefix,
     options=[
         Option("page|-p", Args["page":int], help_text="指定页数", dest="index")
     ],
-    help_text=f"查看帮助 Example: {bot_config.command_prefix[0]}帮助 page 1;",
+    help_text=f"查看帮助 Example: {bot.config.command_prefix[0]}帮助 page 1;",
 )
 
 

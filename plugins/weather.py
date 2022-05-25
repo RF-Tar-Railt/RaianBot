@@ -11,15 +11,16 @@ from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
-from config import bot_config
+from app import RaianMain
 
+bot = RaianMain.current()
 channel = Channel.current()
 
 weather = Alconna(
     "{city}天气",
     Args["time":["今天", "明天", "后天", "大后天"]:"今天"],
-    headers=bot_config.command_prefix,
-    help_text=f"查询某个城市的天气 Usage: 提供四个可查询的时间段; Example: {bot_config.command_prefix[0]}北京天气 明天;",
+    headers=bot.config.command_prefix,
+    help_text=f"查询某个城市的天气 Usage: 提供四个可查询的时间段; Example: {bot.config.command_prefix[0]}北京天气 明天;",
 )
 
 

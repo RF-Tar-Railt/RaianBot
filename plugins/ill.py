@@ -13,17 +13,18 @@ from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
-from config import bot_config
+from app import RaianMain
 
+bot = RaianMain.current()
 channel = Channel.current()
 
-json_filename = "data/static/ill_templates.json"
+json_filename = "assets/data/ill_templates.json"
 with open(json_filename, 'r', encoding='UTF-8') as f_obj:
     ill_templates = json.load(f_obj)['templates']
 
 ill = Alconna(
     "发病", Args["name":[str, At]:Empty],
-    headers=bot_config.command_prefix,
+    headers=bot.config.command_prefix,
     options=[
         Option("模板", Args["template":list(ill_templates.keys())], help_text="指定发病模板")
     ],

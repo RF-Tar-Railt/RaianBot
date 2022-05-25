@@ -14,18 +14,19 @@ from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
-from config import bot_config
+from app import RaianMain
 from utils.generate_img import create_image
 
+bot = RaianMain.current()
 channel = Channel.current()
 
 random_ope = Alconna(
     "测试干员", Args["name":[str, At]:Empty],
-    headers=bot_config.command_prefix,
+    headers=bot.config.command_prefix,
     help_text="依据名字测试你会是什么干员 Example: .测试干员 海猫;",
 )
 
-json_filename = "data/static/random_operator_infomation.json"
+json_filename = "assets/data/random_operator_infomation.json"
 with open(json_filename, 'r', encoding='UTF-8') as f_obj:
     random_operator_dict = json.load(f_obj)
 

@@ -12,13 +12,14 @@ from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
-from config import bot_config
+from app import RaianMain
 
+bot = RaianMain.current()
 channel = Channel.current()
 
 random_ope = Alconna(
     "公招", Args["tags;S":str:...],
-    headers=bot_config.command_prefix,
+    headers=bot.config.command_prefix,
     help_text="自助访问 prts 的公招计算器并截图 Usage: 标签之间用空格分隔; Example: .公招 高资 生存;",
 )
 

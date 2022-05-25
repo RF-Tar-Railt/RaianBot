@@ -5,8 +5,6 @@ from arclet.alconna import Args
 from arclet.alconna.graia.saya import AlconnaSchema
 from arclet.alconna.graia import Alconna, AlconnaDispatcher
 from arclet.alconna.graia.dispatcher import AlconnaProperty
-
-from graia.saya import Saya
 from graia.saya.channel import Channel
 from graia.saya.builtins.broadcast import ListenerSchema
 from graia.ariadne.message.chain import MessageChain
@@ -16,18 +14,16 @@ from graia.ariadne.model import Group, Member
 from graia.ariadne.app import Ariadne
 from graia.broadcast.interrupt import InterruptControl, Waiter
 
-from config import bot_config
+from app import RaianMain
 
-
-saya = Saya.current()
+bot = RaianMain.current()
 channel = Channel.current()
-bcc = saya.broadcast
-inc = InterruptControl(bcc)
+inc = InterruptControl(bot.broadcast)
 running = asyncio.Event()
 
 search = Alconna(
     "搜图", Args["img;O":[Image, 'url']],
-    headers=bot_config.command_prefix,
+    headers=bot.config.command_prefix,
     help_text="以图搜图，搜图结果会自动发送给你。Usage: 该功能会尝试在三类搜索网站中搜索相似图片 ; Example: .搜图 [图片];"
 )
 
@@ -78,7 +74,7 @@ async def saucenao(app: Ariadne, group: Group, member: Member, source: Source, r
     running.set()
     async with Network() as client:
         # '580212823a8fa2aeb0a809da18f21618d73190e6'
-        sauce = SauceNAO(client=client, api_key=bot_config.plugin['saucenao'])
+        sauce = SauceNAO(client=client, api_key=bot.config.plugin['saucenao'])
         ascii2 = Ascii2D(client=client)
         iqdb = Iqdb(client=client)
 
@@ -183,6 +179,6 @@ async def saucenao(app: Ariadne, group: Group, member: Member, source: Source, r
                 quote=source.id,
             )
         except Exception as e:
-            await app.sendFriendMessage(bot_config.master_id, MessageChain.create(str(e)))
+            await app.sendFriendMessage(bot.config.master_id, MessageChain.create(str(e)))
         finally:
             running.clear()
