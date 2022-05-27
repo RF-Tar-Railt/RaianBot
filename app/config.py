@@ -42,8 +42,8 @@ class BotConfig(BaseModel):
         return res
 
 
-path = Path(os.getcwd()) / "my_config.yml"
-# path = Path(os.getcwd()) / "bot_config.yml"
+# path = Path(os.getcwd()) / "my_config.yml"
+path = Path(os.getcwd()) / "bot_config.yml"
 if path.exists():
     with path.open('r+', encoding='UTF-8') as f_obj:
         _config_data = yaml.safe_load(f_obj.read())
