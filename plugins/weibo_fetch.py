@@ -22,7 +22,7 @@ weibo_fetch = Alconna(
     headers=bot.config.command_prefix,
     help_text="从微博获取指定用户的动态 Usage: index 表示从最前动态排起的第几个动态; Example: .育碧动态;",
 )
-api = WeiboAPI("cache/plugins/weibo_data.json")
+api = WeiboAPI(f"{bot.config.cache_dir}/plugins/weibo_data.json")
 
 
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=weibo_fetch, help_flag="reply")))

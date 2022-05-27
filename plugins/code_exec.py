@@ -34,6 +34,7 @@ shell = Alconna(
     "shell", Args["code":AllParam],
     headers=bot.config.command_prefix,
     help_text="执行命令行语句 Example: 莱安执行 echo hello;",
+    is_fuzzy_match=True
 )
 
 

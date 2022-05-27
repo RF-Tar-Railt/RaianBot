@@ -16,6 +16,7 @@ class BotConfig(BaseModel):
     verify_key: str
     master_id: int
     master_name: str
+    bot_name: str
     prefix: List[str]
     plugin: Dict[str, Union[str, Any]]
     plugin_path: str

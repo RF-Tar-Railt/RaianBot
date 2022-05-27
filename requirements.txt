@@ -1,5 +1,5 @@
-arclet-alconna>=0.9.3.3
-arclet-alconna-graia>=0.0.12
+arclet-alconna>=0.9.3.4
+arclet-alconna-graia>=0.0.13.1
 graia-ariadne>=0.6.16
 graia-broadcast>=0.16.1
 Pillow>=9.0.1
@@ -12,3 +12,4 @@ PyYAML~=6.0
 setuptools~=58.3.0
 loguru~=0.6.0
 psutil~=5.9.0
+tencentcloud-sdk-python==3.0.495

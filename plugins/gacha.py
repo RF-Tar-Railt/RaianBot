@@ -32,7 +32,7 @@ async def draw(
         target: Union[Friend, Member],
         result: AlconnaProperty
 ):
-    file = bot.config.plugin['gacha']
+    file = bot.config.plugin.get('gache', 'assets/data/gacha_arknights.json')
     count = result.result.count
     if count < 1:
         count = 1
@@ -48,7 +48,7 @@ async def draw(
         gacha = GArknights(file=file, six_per=six_per, six_statis=six_statis)
         data = gacha.gacha(count)
         user.additional['gacha_proba']['arknights'] = [gacha.six_statis, gacha.six_per]
-        bot.ata.update_user(user)
+        bot.data.update_user(user)
     else:
         gacha = GArknights(file=file)
         data = gacha.gacha(count)

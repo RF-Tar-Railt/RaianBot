@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "RaianBot"
-version = "0.1.0"
+version = "0.4.0"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = ["RF-Tar-Railt <rf_tar_railt@qq.com>"]
 readme = "README.md"
@@ -20,8 +20,8 @@ picimagesearch = "^3.3.2"
 graia-ariadne = "^0.6.11"
 graia-broadcast = "^0.16.1"
 graia-scheduler = "^0.0.7"
-arclet-alconna = "^0.9.3.3"
-arclet-alconna-graia = "^0.0.12"
+arclet-alconna = "^0.9.3.4"
+arclet-alconna-graia = "^0.0.13.1"
 
 
 [build-system]

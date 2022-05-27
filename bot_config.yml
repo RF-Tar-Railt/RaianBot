@@ -11,6 +11,8 @@ verify_key: "INITKEYWylsVdbr"
 master_id: 987654321
 ## bot 的控制者的名字
 master_name: "admin"
+## 机器人名字, 用于对话; 请尽量不要与 prefix 重合
+bot_name: "Raian"
 ## 命令前缀; At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)
 prefix:
   - "莱安"

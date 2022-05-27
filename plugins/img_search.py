@@ -73,7 +73,6 @@ async def saucenao(app: Ariadne, group: Group, member: Member, source: Source, r
     )
     running.set()
     async with Network() as client:
-        # '580212823a8fa2aeb0a809da18f21618d73190e6'
         sauce = SauceNAO(client=client, api_key=bot.config.plugin['saucenao'])
         ascii2 = Ascii2D(client=client)
         iqdb = Iqdb(client=client)
@@ -98,7 +97,7 @@ async def saucenao(app: Ariadne, group: Group, member: Member, source: Source, r
         results = []
         if sauce_result:
             sauce_list = []
-            for result in sauce_result.raw:
+            for result in sauce_result.raw[:2]:
                 sauce_list.append(
                     ForwardNode(
                         target=member,
@@ -122,7 +121,7 @@ async def saucenao(app: Ariadne, group: Group, member: Member, source: Source, r
 
         if ascii2_result:
             ascii2_list = []
-            for result in ascii2_result.raw:
+            for result in ascii2_result.raw[:2]:
                 ascii2_list.append(
                     ForwardNode(
                         target=member,
@@ -144,7 +143,7 @@ async def saucenao(app: Ariadne, group: Group, member: Member, source: Source, r
             )
         if iqdb_result:
             iqdb_list = []
-            for result in iqdb_result.raw:
+            for result in iqdb_result.raw[:2]:
                 iqdb_list.append(
                     ForwardNode(
                         target=member,
@@ -178,7 +177,5 @@ async def saucenao(app: Ariadne, group: Group, member: Member, source: Source, r
                 ),
                 quote=source.id,
             )
-        except Exception as e:
-            await app.sendFriendMessage(bot.config.master_id, MessageChain.create(str(e)))
         finally:
             running.clear()

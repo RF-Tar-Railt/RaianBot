@@ -6,6 +6,7 @@ from typing import Optional, List
 from loguru import logger
 from pathlib import Path
 from contextlib import ExitStack
+from datetime import datetime
 
 from graia.ariadne.event.mirai import (
     MemberLeaveEventQuit, MemberJoinEvent,
@@ -32,7 +33,6 @@ from utils.generate_img import create_image
 from .data import BotDataManager
 from .config import BotConfig
 from .logger import set_output
-
 
 BotInstance: Ctx['RaianMain'] = Ctx("raian_bot")
 
@@ -122,6 +122,7 @@ class RaianMain:
 
     def init_announcement(self, title: Optional[str] = None):
         """配置公告功能"""
+
         @self.broadcast.receiver(FriendMessage)
         async def announcement(app: Ariadne, friend: Friend, message: MessageChain):
             msg = message.asSendable()
@@ -142,6 +143,7 @@ class RaianMain:
 
     def init_group_report(self):
         """配置群组相关功能"""
+
         @self.broadcast.receiver(GroupMessage, priority=7)  # 防止可能的入群事件异常
         async def _init_g(app: Ariadne, group: Group):
             if not self.data.exist(group.id):
@@ -165,6 +167,7 @@ class RaianMain:
 
     def init_start_report(self, init_for_new_group: bool = True):
         """配置机器人启动事件"""
+
         @self.broadcast.receiver(ApplicationLaunched)
         async def _report(app: Ariadne):
             group_list: List[Group] = await app.getGroupList()
@@ -189,12 +192,14 @@ class RaianMain:
 
     def init_stop_report(self):
         """配置机器人关闭事件"""
+
         @self.broadcast.receiver(ApplicationShutdowned)
         async def _report(app: Ariadne):
             await app.sendFriendMessage(self.config.master_id, MessageChain.create("机器人关闭中。。。"))
 
     def init_exception_report(self, level: int = 3):
         """配置运行时异常报告功能"""
+
         @self.broadcast.receiver(ExceptionThrowed)
         async def _report(app: Ariadne, event: ExceptionThrowed):
             exc = event.exception
@@ -219,6 +224,7 @@ class RaianMain:
 
     def init_mute_change_report(self):
         """配置禁言相关事件"""
+
         @self.broadcast.receiver("MemberMuteEvent")
         async def member_mute_tell(
                 app: Ariadne,
@@ -244,6 +250,7 @@ class RaianMain:
 
     def init_request_report(self):
         """配置好友或群组申请响应"""
+
         @self.broadcast.receiver(NewFriendRequestEvent)
         async def get_friend_accept(app: Ariadne, event: NewFriendRequestEvent):
             """
@@ -302,6 +309,39 @@ class RaianMain:
                 f"如果有需要可以联系主人QQ ”{self.config.master_id}“，\n",
                 f"尝试发送 {self.config.command_prefix[0]}帮助 以查看功能列表"
             ))
+
+    def init_greet(self):
+        @self.broadcast.receiver(GroupMessage, priority=7)  # 防止可能的入群事件异常
+        async def _init_g(app: Ariadne, group: Group, message: MessageChain, member: Member):
+            msg = message.asDisplay()
+            now = datetime.now()
+            if (
+                msg.startswith("早上好") or msg.startswith("早安") or msg.startswith("中午好") or msg.startswith("下午好")
+                or msg.startswith("晚上好")
+            ):
+                if 6 <= now.hour < 11:
+                    reply = "\t早上好~"
+                elif 11 <= now.hour < 13:
+                    reply = "\t中午好~"
+                elif 13 <= now.hour < 18:
+                    reply = "\t下午好~"
+                elif 18 <= now.hour < 24:
+                    reply = "\t晚上好~"
+                else:
+                    reply = "\t时候不早了，睡觉吧"
+                await app.sendGroupMessage(group, MessageChain.create(At(member.id), reply))
+
+            if msg.startswith("晚安"):
+                # if str(member.id) in sign_info:
+                #     sign_info[str(member.id)]['trust'] += 1 if sign_info[str(member.id)]['trust'] < 200 else 0
+                #     sign_info[str(member.id)]['interactive'] += 1
+                if 0 <= now.hour < 6:
+                    reply = "\t时候不早了，睡觉吧~(￣o￣) . z Z"
+                elif 20 < now.hour < 24:
+                    reply = "\t快睡觉~(￣▽￣)"
+                else:
+                    reply = "\t喂，现在可不是休息的时候╰（‵□′）╯"
+                await app.sendGroupMessage(group, MessageChain.create(At(member.id), reply))
 
     async def start(self):
         if self.exit.is_set():
