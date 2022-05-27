@@ -80,8 +80,14 @@ async def _(app: Ariadne, sender: Union[Group, Friend], message: MessageChain, r
 )
 async def _(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty):
     try:
-        res = subprocess.run(result.result.main_args['code'], capture_output=True).stdout.decode('gbk')
+        res = subprocess.run(
+            result.result.main_args['code'][0],
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ).stdout.decode('utf-8')
     except UnicodeDecodeError:
-        res = subprocess.run(result.result.main_args['code'], capture_output=True).stdout.decode('utf-8')
+        res = subprocess.run(
+            result.result.main_args['code'][0],
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ).stdout.decode('gbk')
     await asyncio.sleep(0)
     return await app.sendMessage(sender, MessageChain.create(Image(data_bytes=(await create_image(res, cut=120)))))

@@ -2,9 +2,10 @@ from typing import Union
 import json
 import random
 import re
+from pathlib import Path
 from arclet.alconna.analysis.base import analyse_header
 from arclet.alconna.graia import AlconnaDispatcher
-from graia.ariadne.message.element import Plain
+from graia.ariadne.message.element import Plain, Voice
 from graia.saya.channel import Channel
 from graia.saya.builtins.broadcast import ListenerSchema
 from graia.ariadne.message.chain import MessageChain
@@ -65,27 +66,25 @@ async def test2(app: Ariadne, target: Union[Member, Friend], sender: Union[Group
                 if re.match(AlconnaDispatcher.success_hook, content):
                     AlconnaDispatcher.success_hook = 'None'
                     return
-            action = False
-            hate = False
-            hentai = False
-            for key, value in dialog_templates['action'].items():
+            plain = False
+            voice = False
+            plains = dialog_templates['action'].copy()
+            plains.update(dialog_templates['hate'])
+            plains.update(dialog_templates['hentai'])
+            for key, value in plains.items():
                 if re.match(f".*?{key}$", msg):
                     rand_str = random.sample(value, 1)[0]
-                    hate = True
+                    plain = True
                     break
-            if not action:
-                for key, value in dialog_templates['hate'].items():
+            if not plain:
+                for key, value in dialog_templates['voice'].items():
                     if re.match(f".*?{key}$", msg):
                         rand_str = random.sample(value, 1)[0]
-                        hate = True
+                        rand_str = Voice(data_bytes=Path(f"assets/voice/{rand_str}").read_bytes())
+                        voice = True
                         break
-            if not hate:
-                for key, value in dialog_templates['hentai'].items():
-                    if re.match(f".*?{key}$", msg):
-                        rand_str = random.sample(value, 1)[0]
-                        hentai = True
-                        break
-            if not action and not hate and not hentai:  # TODO: 接入AI
+
+            if not plain and not voice:  # TODO: 接入AI
                 rand_str = await aiml.chat(message=msg, session_id=target.id)
         if rand_str:  # noqa
             await app.sendMessage(sender, MessageChain.create(rand_str))  # noqa

@@ -15,6 +15,10 @@
 - 每日抽签
 - 状态获取
 
+## 下载
+
+链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.4/raian-bot-0.4.0.zip)
+
 ## 项目结构
 
 ```

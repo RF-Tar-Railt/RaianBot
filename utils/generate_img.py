@@ -19,6 +19,7 @@ def cut_text(
             target += '\n'
             continue
         j = 0
+        i = i.replace("\t", "  ")
         for ind, elem in enumerate(i):
             if i[j: ind + 1] == i[j:]:
                 target += i[j: ind + 1] + '\n'

@@ -189,7 +189,7 @@ class GArknights:
                 draw.text(
                     (base + width_offset, tile * (i + 3) + height_offset),
                     operator['name'],
-                    fill='#efefef',
+                    fill='#ffffff',
                     stroke_width=1, stroke_fill=tuple(int(i * 0.5) for i in self.color[operator['rarity']]),
                     font=font
                 )

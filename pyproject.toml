@@ -22,6 +22,8 @@ graia-broadcast = "^0.16.1"
 graia-scheduler = "^0.0.7"
 arclet-alconna = "^0.9.3.4"
 arclet-alconna-graia = "^0.0.13.1"
+tencentcloud-sdk-python = "^3.0.495"
+ujson = "^5.1.0"
 
 
 [build-system]

@@ -1,19 +1,20 @@
-import json
+import ujson
 import re
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 from arclet.alconna import Args, Empty, Option, AllParam, ArgParserTextFormatter
 from arclet.alconna.graia import Alconna, AlconnaDispatcher
 from arclet.alconna.graia.dispatcher import AlconnaProperty
 from arclet.alconna.graia.saya import AlconnaSchema
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, At, Source, Plain, Face, ForwardNode, Forward
-from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.model import Group, Member
-from graia.ariadne.app import Ariadne
 from graia.broadcast.exceptions import PropagationCancelled
+from graia.saya.builtins.broadcast import ListenerSchema
+from graia.saya.channel import Channel
 
 from app import RaianMain
 
@@ -52,7 +53,7 @@ async def fetch(
             return await app.sendMessage(sender, MessageChain.create("该群未找到学习记录"))
         _target = arp.query_with(At, "列出.target")
         with this_file.open("r+", encoding='utf-8') as f_obj:
-            _data = json.load(f_obj)
+            _data = ujson.load(f_obj)
         if not _data:
             return await app.sendMessage(sender, MessageChain.create("该群未找到学习记录"))
         keys = list(_data.keys())
@@ -81,14 +82,14 @@ async def fetch(
             return await app.sendMessage(sender, MessageChain.create("该群未找到学习记录"))
         name = arp.query("查找.target")
         with this_file.open("r+", encoding='utf-8') as f_obj:
-            _data = json.load(f_obj)
+            _data = ujson.load(f_obj)
         return await app.sendMessage(sender, MessageChain.create(f"查找{'成功' if name in _data else '失败'}！"))
     if arp.find("删除"):
         if not this_file.exists():
             return await app.sendMessage(sender, MessageChain.create("该群未找到学习记录"))
         name = arp.query("删除.name")
         with this_file.open("r+", encoding='utf-8') as f_obj:
-            _data = json.load(f_obj)
+            _data = ujson.load(f_obj)
         if isinstance(name, At):
             _record = None
             for key, value in _data.items():
@@ -101,7 +102,7 @@ async def fetch(
                 return await app.sendMessage(sender, MessageChain.create("呜, 找不到这条记录"), quote=source.id)
             del _data[name]
         with this_file.open("w+", encoding='utf-8') as f_obj:
-            json.dump(_data, f_obj, ensure_ascii=False, indent=2)
+            ujson.dump(_data, f_obj, ensure_ascii=False, indent=2)
         return await app.sendMessage(sender, MessageChain.create("删除记录成功了！"))
 
     if arp.find("增加"):
@@ -119,13 +120,13 @@ async def fetch(
                 elem.url = None
         if not this_file.exists():
             with this_file.open("w+", encoding='utf-8') as fo:
-                json.dump({}, fo)
+                ujson.dump({}, fo)
         with this_file.open("r+", encoding='utf-8') as f_obj:
-            _data = json.load(f_obj)
+            _data = ujson.load(f_obj)
             f_obj.seek(0)
             # TODO: 放入数据库
             _data[name] = {"id": target.id, "content": _record.asPersistentString()}
-            json.dump(_data, f_obj, ensure_ascii=False, indent=2)
+            ujson.dump(_data, f_obj, ensure_ascii=False, indent=2)
         return await app.sendMessage(sender, MessageChain.create("我学会了！你现在可以来问我了！"), quote=source.id)
 
 
@@ -135,7 +136,7 @@ async def handle(app: Ariadne, sender: Group, message: MessageChain):
     if not this_file.exists():
         return
     with this_file.open("r+", encoding='utf-8') as f_obj:
-        _data = json.load(f_obj)
+        _data = ujson.load(f_obj)
     msg = message.asDisplay()
     for key in _data.keys():
         if re.fullmatch(key, msg):
