@@ -80,7 +80,7 @@ async def add(app: Ariadne, group: Group, source: Source, result: AlconnaPropert
     if not bot.data.exist(group.id):
         return
     profile = bot.data.get_group(group.id)
-    follower = await api.get_profile(result.result.target)
+    follower = await api.get_profile(result.result.target, save=False)
     if not (followers := profile.additional.get("weibo_followers")):
         followers = []
     if int(follower.id) not in followers:
@@ -102,14 +102,14 @@ async def update():
             if uid in dynamics:
                 res = dynamics[uid]
             else:
-                if not (res := await api.update(str(uid))):
+                if not (res := await api.update(uid)):
                     continue
                 dynamics[uid] = res
             now = datetime.now()
-            follower = await api.get_profile(str(uid))
+            follower = await api.get_profile(uid)
             url = MessageChain.create(res[2])
             text = MessageChain.create(res[0], *(Image(url=i) for i in res[1]))
-            await bot.app.sendGroupMessage(f"{follower.name} 有一条新动态！请查收!")
+            await bot.app.sendGroupMessage(profile.id, MessageChain.create(f"{follower.name} 有一条新动态！请查收!"))
             await bot.app.sendGroupMessage(profile.id, MessageChain.create(
                 Forward(
                     ForwardNode(target=bot.config.account, name=bot.config.bot_name, time=now, message=text),

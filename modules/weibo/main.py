@@ -83,16 +83,19 @@ class WeiboAPI:
                 return profile
             self.data.followers[str(target)] = profile
             self.data.mapping[follower_name] = str(target)
+            self.data.save()
         return self.data.followers[str(target)]
 
     async def get_dynamic(
             self,
-            name: str,
+            target: Union[str, WeiboProfile],
             index: int = -1,
             save: bool = False
     ) -> Optional[Tuple[str, List[str], str]]:
-        profile = await self.get_profile(name, save)
-        if not (d_data := await self.get_info(profile.id, int(profile.contain_id))):
+        if isinstance(target, str):
+            if not (target := await self.get_profile(target, save)):
+                return
+        if not (d_data := await self.get_info(target.id, int(target.contain_id))):
             return
         dynamic_list = []
         if index < 0:
@@ -113,11 +116,12 @@ class WeiboAPI:
             self.data.save()
         return text, dynamic_list, url
 
-    async def update(self, name: str) -> Optional[Tuple[str, List[str], str]]:
-        profile = await self.get_profile(name)
+    async def update(self, target: int) -> Optional[Tuple[str, List[str], str]]:
+        if not (profile := await self.get_profile(target)):
+            return
         dynamic_total = profile.total
         if not (d_data := await self.get_info(profile.id, int(profile.contain_id))):
             return
         if d_data['data']['cardlistInfo']['total'] > dynamic_total:
             profile.total = d_data['data']['cardlistInfo']['total']
-            return await self.get_dynamic(name)
+            return await self.get_dynamic(profile, save=True)
