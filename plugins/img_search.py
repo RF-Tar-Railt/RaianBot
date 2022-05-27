@@ -24,7 +24,7 @@ running = asyncio.Event()
 search = Alconna(
     "搜图", Args["img;O":[Image, 'url']],
     headers=bot.config.command_prefix,
-    help_text="以图搜图，搜图结果会自动发送给你。Usage: 该功能会尝试在三类搜索网站中搜索相似图片 ; Example: .搜图 [图片];"
+    help_text=f"以图搜图，搜图结果会自动发送给你。Usage: 该功能会尝试在三类搜索网站中搜索相似图片 ; Example: {bot.config.command_prefix[0]}搜图 [图片];"
 )
 
 

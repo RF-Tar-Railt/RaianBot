@@ -20,7 +20,7 @@ channel = Channel.current()
 random_ope = Alconna(
     "公招", Args["tags;S":str:...],
     headers=bot.config.command_prefix,
-    help_text="自助访问 prts 的公招计算器并截图 Usage: 标签之间用空格分隔; Example: .公招 高资 生存;",
+    help_text=f"自助访问 prts 的公招计算器并截图 Usage: 标签之间用空格分隔; Example: {bot.config.command_prefix[0]}公招 高资 生存;",
 )
 
 

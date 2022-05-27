@@ -23,7 +23,7 @@ channel = Channel.current()
 random_ope = Alconna(
     "测试干员", Args["name":[str, At]:Empty],
     headers=bot.config.command_prefix,
-    help_text="依据名字测试你会是什么干员 Example: .测试干员 海猫;",
+    help_text=f"依据名字测试你会是什么干员 Example: {bot.config.command_prefix[0]}测试干员 海猫;",
 )
 
 json_filename = "assets/data/random_operator_infomation.json"

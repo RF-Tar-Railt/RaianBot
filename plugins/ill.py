@@ -28,7 +28,7 @@ ill = Alconna(
     options=[
         Option("模板", Args["template":list(ill_templates.keys())], help_text="指定发病模板")
     ],
-    help_text="生成一段模板文字 Usage: 若不指定模板则会随机挑选一个; Example: .发病 老公;",
+    help_text=f"生成一段模板文字 Usage: 若不指定模板则会随机挑选一个; Example: {bot.config.command_prefix[0]}发病 老公;",
 )
 
 

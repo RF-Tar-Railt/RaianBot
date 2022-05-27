@@ -49,7 +49,11 @@ class WeiboAPI:
             return
         return d_data
 
-    async def get_profile(self, target: Union[int, str]) -> Optional[WeiboProfile]:
+    async def get_profile(
+            self,
+            target: Union[int, str],
+            save: bool = True
+    ) -> Optional[WeiboProfile]:
         if isinstance(target, str):
             if target not in self.data.mapping:
                 params = {
@@ -75,6 +79,8 @@ class WeiboAPI:
             profile = WeiboProfile.parse_obj(
                 {'name': follower_name, 'id': str(target), 'total': total}
             )
+            if not save:
+                return profile
             self.data.followers[str(target)] = profile
             self.data.mapping[follower_name] = str(target)
         return self.data.followers[str(target)]
@@ -82,9 +88,10 @@ class WeiboAPI:
     async def get_dynamic(
             self,
             name: str,
-            index: int = -1
+            index: int = -1,
+            save: bool = False
     ) -> Optional[Tuple[str, List[str], str]]:
-        profile = await self.get_profile(name)
+        profile = await self.get_profile(name, save)
         if not (d_data := await self.get_info(profile.id, int(profile.contain_id))):
             return
         dynamic_list = []
@@ -102,7 +109,8 @@ class WeiboAPI:
         page_info = mblog.get('page_info')
         if page_info and page_info['type'] == 'video':
             dynamic_list.append(page_info['page_pic']['url'])
-        self.data.save()
+        if save:
+            self.data.save()
         return text, dynamic_list, url
 
     async def update(self, name: str) -> Optional[Tuple[str, List[str], str]]:

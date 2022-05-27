@@ -29,7 +29,7 @@ repeat = Alconna(
         Option("查找", Args["target":str], help_text="查找是否有指定的学习记录"),
         Option("列出", Args["target":At:Empty], help_text="列出该群所有的学习记录, 若at用户则列出该用户的所有学习记录")
     ],
-    help_text="让机器人记录指定内容并尝试回复 Example: 莱安学习回复 增加 abcd xyz;",
+    help_text="让机器人记录指定内容并尝试回复 Example: 学习回复 增加 abcd xyz;",
     formatter=ArgParserTextFormatter()
 )
 

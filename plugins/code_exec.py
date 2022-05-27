@@ -27,13 +27,13 @@ code = Alconna(
     "执行", Args["code;S":str],
     headers=bot.config.command_prefix,
     options=[Option("out", Args["name;O":str:"res"])],
-    help_text="执行简易代码 Example: 莱安执行 print(1+1);",
+    help_text=f"执行简易代码 Example: {bot.config.command_prefix[0]}执行 print(1+1);",
 )
 
 shell = Alconna(
     "shell", Args["code":AllParam],
     headers=bot.config.command_prefix,
-    help_text="执行命令行语句 Example: 莱安执行 echo hello;",
+    help_text=f"执行命令行语句 Example: {bot.config.command_prefix[0]}shell echo hello;",
     is_fuzzy_match=True
 )
 

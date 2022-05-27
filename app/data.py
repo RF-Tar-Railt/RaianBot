@@ -1,4 +1,4 @@
-import json
+import ujson
 from pathlib import Path
 from typing import Dict
 from weakref import finalize
@@ -24,29 +24,29 @@ class BotDataManager(metaclass=Singleton):
 
         if self.group_path.exists():
             with self.group_path.open('r+', encoding='UTF-8') as f_obj:
-                _info = json.load(f_obj)
+                _info = ujson.load(f_obj)
                 self.__group_profiles = {k: GroupProfile.parse_obj(v) for k, v in _info.items()}
         else:
             self.__group_profiles = {}
             with self.group_path.open('w+', encoding='UTF-8') as f_obj:
-                json.dump({}, f_obj, ensure_ascii=False)
+                ujson.dump({}, f_obj, ensure_ascii=False)
 
         if self.user_path.exists():
             with self.user_path.open('r+', encoding='UTF-8') as f_obj:
-                _info = json.load(f_obj)
+                _info = ujson.load(f_obj)
                 self.__user_profiles = {k: UserProfile.parse_obj(v) for k, v in _info.items()}
         else:
             self.__user_profiles = {}
             with self.user_path.open('w+', encoding='UTF-8') as f_obj:
-                json.dump({}, f_obj, ensure_ascii=False)
+                ujson.dump({}, f_obj, ensure_ascii=False)
 
         if self.cache_path.exists():
             with self.cache_path.open('r+', encoding='UTF-8') as f_obj:
-                self.__cache_data = json.load(f_obj)
+                self.__cache_data = ujson.load(f_obj)
         else:
             self.__cache_data = {"all_joined_group": [], "blacklist": []}
             with self.user_path.open('w+', encoding='UTF-8') as f_obj:
-                json.dump(self.__cache_data, f_obj, ensure_ascii=False)
+                ujson.dump(self.__cache_data, f_obj, ensure_ascii=False)
 
         def _s(mgr: "BotDataManager"):
             mgr.save()
@@ -118,17 +118,17 @@ class BotDataManager(metaclass=Singleton):
 
     def save(self):
         with self.user_path.open('w+', encoding='UTF-8') as fo:
-            json.dump(
+            ujson.dump(
                 {k: v.dict() for k, v in self.__user_profiles.items()},
                 fo, ensure_ascii=False, indent=2
             )
         with self.group_path.open('w+', encoding='UTF-8') as fo:
-            json.dump(
+            ujson.dump(
                 {k: v.dict() for k, v in self.__group_profiles.items()},
                 fo, ensure_ascii=False, indent=2
             )
         with self.cache_path.open('w+', encoding='UTF-8') as fo:
-            json.dump(self.__cache_data, fo, ensure_ascii=False, indent=2)
+            ujson.dump(self.__cache_data, fo, ensure_ascii=False, indent=2)
 
 
 __all__ = ["BotDataManager"]

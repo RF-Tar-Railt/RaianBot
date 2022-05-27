@@ -25,6 +25,8 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.broadcast.builtin.event import ExceptionThrowed
 from graia.ariadne.app import Ariadne
+from graia.scheduler.saya import GraiaSchedulerBehaviour
+from graia.scheduler import GraiaScheduler
 from graia.saya import Saya
 from arclet.alconna.graia.saya import AlconnaBehaviour
 from arclet.alconna import command_manager
@@ -79,6 +81,7 @@ class RaianMain:
         self.saya = self.app.create(Saya)
         self.saya.install_behaviours(
             BroadcastBehaviour(broadcast=self.broadcast),
+            GraiaSchedulerBehaviour(GraiaScheduler(loop, self.broadcast)),
             AlconnaBehaviour(broadcast=self.broadcast, manager=command_manager)
         )
         set_output('DEBUG' if debug_log else 'INFO')
@@ -182,12 +185,13 @@ class RaianMain:
             joined_set = {i for i in self.data.cache['all_joined_group']}
             count = 0
             for gp in group_list:
-                if gp.id not in joined_set:
+                if not self.data.exist(gp.id):
                     logger.debug(f"发现新增群组: {gp.name}")
                     self.data.add_group(gp.id)
-                    self.data.cache['all_joined_group'].append(gp.id)
+                    joined_set.add(gp.id)
                     count += 1
                     logger.debug(f"{gp.name} 初始化配置完成")
+            self.data.cache['all_joined_group'] = list(joined_set)
             await app.sendFriendMessage(self.config.master_id, MessageChain.create(f"共完成 {count} 个群组的初始化配置"))
 
     def init_stop_report(self):
