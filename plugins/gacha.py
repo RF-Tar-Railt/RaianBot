@@ -13,12 +13,12 @@ from graia.ariadne.app import Ariadne
 
 
 from app import RaianMain
-from modules.gacha.arknights import GArknights
+from modules.arknights import ArknightsGacha
 
 channel = Channel.current()
 bot = RaianMain.current()
 draw = Alconna(
-    "(抽卡|寻访)", Args["count":int:1],
+    "(抽卡|寻访)", Args["count", int, 1],
     headers=bot.config.command_prefix,
     help_text=f"模拟方舟寻访 Example: {bot.config.command_prefix[0]}抽卡 300;",
 )
@@ -45,11 +45,11 @@ async def draw(
         elif not user.additional['gacha_proba'].get('arknights'):
             user.additional['gacha_proba']['arknights'] = [0, 2]
         six_statis, six_per = user.additional['gacha_proba']['arknights']
-        gacha = GArknights(file=file, six_per=six_per, six_statis=six_statis)
+        gacha = ArknightsGacha(file=file, six_per=six_per, six_statis=six_statis)
         data = gacha.gacha(count)
         user.additional['gacha_proba']['arknights'] = [gacha.six_statis, gacha.six_per]
         bot.data.update_user(user)
     else:
-        gacha = GArknights(file=file)
+        gacha = ArknightsGacha(file=file)
         data = gacha.gacha(count)
-    return await app.sendMessage(sender, MessageChain.create(Image(data_bytes=data)))
+    return await app.send_message(sender, MessageChain(Image(data_bytes=data)))

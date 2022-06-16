@@ -63,4 +63,4 @@ async def main(app: Ariadne, sender: Union[Group, Friend]):
     )
 
     img_bytes = await create_image(msg_send.rstrip())
-    await app.sendMessage(sender, MessageChain.create(Image(data_bytes=img_bytes)))
+    await app.send_message(sender, MessageChain(Image(data_bytes=img_bytes)))

@@ -44,7 +44,7 @@ async def draw(
 ):
     today = datetime.now().day
     if not bot.data.exist(target.id):
-        return await app.sendMessage(sender, MessageChain.create("您还未找我签到~"), quote=source.id)
+        return await app.send_message(sender, MessageChain("您还未找我签到~"), quote=source.id)
     user = bot.data.get_user(target.id)
     if not user.additional.get('draw_info'):
         user.additional['draw_info'] = [-1, "无"]
@@ -58,12 +58,12 @@ async def draw(
         text = poetry_data['poetry'][random.randint(1, poetry_data['count']) - 1]
         user.additional['draw_info'] = [today, draw_ans]
         bot.data.update_user(user)
-        return await app.sendMessage(
+        return await app.send_message(
             sender, MessageChain(f"您今日的运势抽签为：{draw_ans}\n{text}"),
             quote=source.id
         )
     bot.data.update_user(user)
-    return await app.sendMessage(
+    return await app.send_message(
         sender, MessageChain(f"您今天已经抽过签了哦,运势为{draw_ans}"),
         quote=source.id
     )
@@ -78,9 +78,9 @@ async def draw(
         source: Source
 ):
     if not bot.data.exist(target.id):
-        return await app.sendMessage(sender, MessageChain.create("您还未找我签到~"), quote=source.id)
+        return await app.send_message(sender, MessageChain("您还未找我签到~"), quote=source.id)
     user = bot.data.get_user(target.id)
     if not (info := user.additional.get('draw_info')) or info[0] == -1:
-        return await app.sendMessage(sender, MessageChain.create("您今日还未抽签~"), quote=source.id)
+        return await app.send_message(sender, MessageChain("您今日还未抽签~"), quote=source.id)
     info[0] = -1
-    return await app.sendMessage(sender, MessageChain.create("您已成功解签"), quote=source.id)
+    return await app.send_message(sender, MessageChain("您已成功解签"), quote=source.id)

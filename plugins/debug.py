@@ -19,7 +19,7 @@ channel = Channel.current()
 
 debug = Alconna(
     "调试",
-    Args["option":["群组", "用户"]:Empty],
+    Args["option", ["群组", "用户"], Empty],
     headers=bot.config.command_prefix,
     help_text="显示调试信息",
 )
@@ -35,8 +35,8 @@ async def _(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty)
     groups_debug = f"当前共加入群：{len(bot.data.groups)}个"
     users_debug = f"当前共有：{len(bot.data.users)}人参与签到"
     if arp.option is None:
-        return await app.sendMessage(sender, MessageChain.create(f"{mds}\n{groups_debug}\n{users_debug}"))
+        return await app.send_message(sender, MessageChain(f"{mds}\n{groups_debug}\n{users_debug}"))
     elif arp.option == "群组":
-        return await app.sendMessage(sender, MessageChain.create(f"{mds}\n{groups_debug}"))
+        return await app.send_message(sender, MessageChain(f"{mds}\n{groups_debug}"))
     elif arp.option == "用户":
-        return await app.sendMessage(sender, MessageChain.create(f"{mds}\n{users_debug}"))
+        return await app.send_message(sender, MessageChain(f"{mds}\n{users_debug}"))

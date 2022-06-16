@@ -21,7 +21,7 @@ bot = RaianMain.current()
 channel = Channel.current()
 
 random_ope = Alconna(
-    "测试干员", Args["name":[str, At]:Empty],
+    "测试干员", Args["name", [str, At], Empty],
     headers=bot.config.command_prefix,
     help_text=f"依据名字测试你会是什么干员 Example: {bot.config.command_prefix[0]}测试干员 海猫;",
 )
@@ -45,8 +45,8 @@ async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaPrope
             target = arp.name
     else:
         target = event.sender.name
-    return await app.sendMessage(
-        sender, MessageChain.create(Image(data_bytes=(await generate_random_operator(target))))
+    return await app.send_message(
+        sender, MessageChain(Image(data_bytes=(await generate_random_operator(target))))
     )
 
 

@@ -5,7 +5,7 @@ from graia.broadcast.exceptions import ExecutionStop
 from graia.ariadne.model import Friend, Member, Group, MemberPerm
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain
-from graia.ariadne import get_running
+from graia.ariadne.app import Ariadne
 from app import RaianMain
 
 
@@ -18,7 +18,7 @@ def require_admin(*ids_: int, include_ids: bool = False):
         ):
             return True
         text = "权限不足！" if isinstance(sender, Friend) else [At(target.id), Plain("\n权限不足！")]
-        await get_running().sendMessage(sender, MessageChain.create(text))
+        await Ariadne.current().send_message(sender, MessageChain(text))
         raise ExecutionStop
 
     return Depend(__wrapper__)

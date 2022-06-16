@@ -30,12 +30,12 @@ aiml = AIML(
         bot.config.plugin['dialog']['id'],
         bot.config.plugin['dialog']['key']
     ),
-    name=" " + bot.config.bot_name,
+    name=f" {bot.config.bot_name}",
     gender=" girl",
     mother=" Arclet",
     father=" RF-Tar-Railt",
     phylum=" Robot",
-    master=" " + bot.config.master_name,
+    master=f" {bot.config.master_name}",
     botmaster=" Master",
     birth=" 2004-02-02",
     birthplace=" Terra",
@@ -57,15 +57,14 @@ async def test2(app: Ariadne, target: Union[Member, Friend], sender: Union[Group
     if res := analyse_header(bot.config.command_prefix, "{content}?", message, raise_exception=False):
         for elem in bot.config.command_prefix:
             message = message.replace(elem, "")
-        msg = message.include(Plain).asDisplay()
+        msg = message.include(Plain).display
         content = res['content']
         if not content and not msg:
             rand_str = random.sample(dialog_templates['default'], 1)[0]
         else:
-            if content:
-                if re.match(AlconnaDispatcher.success_hook, content):
-                    AlconnaDispatcher.success_hook = 'None'
-                    return
+            if content and re.match(re.sub(r"\{[^{}]*}", ".+?", AlconnaDispatcher.success_hook), content):
+                AlconnaDispatcher.success_hook = 'None'
+                return
             plain = False
             voice = False
             plains = dialog_templates['action'].copy()
@@ -84,9 +83,9 @@ async def test2(app: Ariadne, target: Union[Member, Friend], sender: Union[Group
                         voice = True
                         break
 
-            if not plain and not voice:  # TODO: 接入AI
+            if not voice:  # TODO: 接入AI
                 rand_str = await aiml.chat(message=msg, session_id=target.id)
         if rand_str:  # noqa
-            await app.sendMessage(sender, MessageChain.create(rand_str))  # noqa
+            await app.send_message(sender, MessageChain(rand_str))  # noqa
             raise PropagationCancelled
     return

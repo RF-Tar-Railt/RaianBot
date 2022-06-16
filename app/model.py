@@ -7,7 +7,6 @@ class GroupProfile(BaseModel):
     disabled: List[str] = Field(default_factory=list)
     in_blacklist: bool = Field(default=False)
     additional: Dict[str, Any] = Field(default_factory=dict)
-    # weibo_followers: List[str]
 
 
 class UserProfile(BaseModel):
@@ -15,4 +14,3 @@ class UserProfile(BaseModel):
     trust: int = Field(default=0)
     interact_count: int = Field(default=0)
     additional: Dict[str, Any] = Field(default_factory=dict)
-    # draw_info: List[Union[str, int]]

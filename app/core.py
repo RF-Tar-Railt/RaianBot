@@ -17,7 +17,8 @@ from graia.ariadne.message.element import Image, At
 from graia.ariadne.event.lifecycle import ApplicationLaunched, ApplicationShutdowned
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.model import Group, MiraiSession, Member, Friend, AriadneStatus
+from graia.ariadne.model import Group, Member, Friend
+from graia.ariadne.connection.config import config as conn_cfg, HttpClientConfig, WebsocketClientConfig
 from graia.saya.builtins.broadcast import BroadcastBehaviour
 from graia.broadcast import Broadcast
 from graia.broadcast.utilles import Ctx
@@ -69,13 +70,13 @@ class RaianMain:
         self.config = config
         self.data = BotDataManager(config)
         self.broadcast = Broadcast(loop=loop)
+        Ariadne.config(loop=loop, broadcast=self.broadcast)
         self.app = Ariadne(
-            loop=loop,
-            broadcast=self.broadcast,
-            connect_info=MiraiSession(
-                host=config.url,
-                verify_key=config.verify_key,
-                account=config.account,
+            connection=conn_cfg(
+                config.account,
+                config.verify_key,
+                HttpClientConfig(config.url),
+                WebsocketClientConfig(config.url)
             )
         )
         self.saya = self.app.create(Saya)
@@ -121,28 +122,37 @@ class RaianMain:
                     name = file.name
                 if name.startswith("_"):
                     continue
-                self.saya.require(f"{plugin_path.name}.{name}")
+                try:
+                    self.saya.require(f"{plugin_path.name}.{name}")
+                except BaseException as e:
+                    logger.warning(
+                        f"fail to load {plugin_path.name}.{name}, caused by "
+                        f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
+                    )
+                    self.stop()
+                    exit()
 
     def init_announcement(self, title: Optional[str] = None):
         """配置公告功能"""
+        title = title or "来自管理者的公告"
 
         @self.broadcast.receiver(FriendMessage)
         async def announcement(app: Ariadne, friend: Friend, message: MessageChain):
-            msg = message.asSendable()
+            msg = message.as_sendable()
             if friend.id != self.config.master_id or not msg.startswith('公告:'):
                 return
             ft = time.time()
-            group_list = await app.getGroupList()
+            group_list = await app.get_group_list()
             for group in group_list:
                 try:
-                    await app.sendGroupMessage(group.id, MessageChain.create(title))
-                    await app.sendGroupMessage(group.id, msg)
+                    await app.send_group_message(group.id, MessageChain(title))
+                    await app.send_group_message(group.id, msg)
                 except Exception as err:
-                    await app.sendFriendMessage(friend, MessageChain.create(f"{group.id} 的公告发送失败\n{err}"))
+                    await app.send_friend_message(friend, MessageChain(f"{group.id} 的公告发送失败\n{err}"))
                 await asyncio.sleep(random.uniform(2, 3))
             tt = time.time()
             times = str(tt - ft)
-            await app.sendFriendMessage(friend, MessageChain.create(f"群发已完成，耗时 {times} 秒"))
+            await app.send_friend_message(friend, MessageChain(f"群发已完成，耗时 {times} 秒"))
 
     def init_group_report(self):
         """配置群组相关功能"""
@@ -152,8 +162,8 @@ class RaianMain:
             if not self.data.exist(group.id):
                 self.data.add_group(group.id)
                 self.data.cache['all_joined_group'].append(group.id)
-                return await app.sendFriendMessage(
-                    self.config.master_id, MessageChain.create(f"{group.name} 初始配置化完成")
+                return await app.send_friend_message(
+                    self.config.master_id, MessageChain(f"{group.name} 初始配置化完成")
                 )
 
         @self.broadcast.receiver(BotLeaveEventKick)
@@ -161,7 +171,7 @@ class RaianMain:
             self.data.cache['all_joined_group'].remove(event.group.id)
             self.data.remove_group(event.group.id)
             self.data.cache['blacklist'].append(event.group.id)
-            await app.sendFriendMessage(self.config.master_id, MessageChain.create(
+            await app.send_friend_message(self.config.master_id, MessageChain(
                 "收到被踢出群聊事件",
                 f"\n群号：{event.group.id}",
                 f"\n群名：{event.group.name}",
@@ -173,9 +183,9 @@ class RaianMain:
 
         @self.broadcast.receiver(ApplicationLaunched)
         async def _report(app: Ariadne):
-            group_list: List[Group] = await app.getGroupList()
+            group_list: List[Group] = await app.get_group_list()
             groups = len(group_list)
-            await app.sendFriendMessage(self.config.master_id, MessageChain.create(
+            await app.send_friend_message(self.config.master_id, MessageChain(
                 f"机器人成功启动。\n",
                 f"当前共加入了 {groups} 个群 \n",
                 f"当前共有 {len(self.data.users)} 人参与签到",
@@ -192,14 +202,14 @@ class RaianMain:
                     count += 1
                     logger.debug(f"{gp.name} 初始化配置完成")
             self.data.cache['all_joined_group'] = list(joined_set)
-            await app.sendFriendMessage(self.config.master_id, MessageChain.create(f"共完成 {count} 个群组的初始化配置"))
+            await app.send_friend_message(self.config.master_id, MessageChain(f"共完成 {count} 个群组的初始化配置"))
 
     def init_stop_report(self):
         """配置机器人关闭事件"""
 
         @self.broadcast.receiver(ApplicationShutdowned)
         async def _report(app: Ariadne):
-            await app.sendFriendMessage(self.config.master_id, MessageChain.create("机器人关闭中。。。"))
+            await app.send_friend_message(self.config.master_id, MessageChain("机器人关闭中。。。"))
 
     def init_exception_report(self, level: int = 3):
         """配置运行时异常报告功能"""
@@ -210,21 +220,24 @@ class RaianMain:
             tb = traceback.format_exception(exc.__class__, exc, exc.__traceback__, limit=level)
             tb.insert(0, f"在处理 {event.event} 时出现如下问题:")
             bts = await create_image('\n'.join(tb), cut=120)
-            await app.sendFriendMessage(self.config.master_id, MessageChain.create(Image(data_bytes=bts)))
+            await app.send_friend_message(self.config.master_id, MessageChain(Image(data_bytes=bts)))
 
     def init_member_change_report(self, welcome: Optional[str] = None):
         """配置用户相关事件"""
-        welcome = welcome or "欢迎新人！进群了就别想跑哦~"
+        welcome = welcome or (
+            "欢迎新人！进群了就别想跑哦~\n来个star吧球球惹QAQ\n",
+            "项目地址：https://github.com/RF-Tar-Railt/RaianBot"
+        )
 
         @self.broadcast.receiver(MemberLeaveEventQuit)
         async def member_leave_tell(app: Ariadne, group: Group, member: Member):
-            await app.sendGroupMessage(group, MessageChain.create(
+            await app.send_group_message(group, MessageChain(
                 "可惜了！\n" + member.name + '(' + str(member.id) + ")退群了！"))
 
         @self.broadcast.receiver(MemberJoinEvent)
         async def member_join_tell(app: Ariadne, group: Group, member: Member):
             if group.id not in self.data.cache['blacklist']:
-                await app.sendGroupMessage(group, MessageChain.create(At(member.id), welcome))
+                await app.send_group_message(group, MessageChain(At(member.id), welcome))
 
     def init_mute_change_report(self):
         """配置禁言相关事件"""
@@ -234,8 +247,8 @@ class RaianMain:
                 app: Ariadne,
                 group: Group, target_member: Member = 'target'
         ):
-            await app.sendGroupMessage(
-                group, MessageChain.create("哎呀，", At(target_member.id), " 没法说话了！")
+            await app.send_group_message(
+                group, MessageChain("哎呀，", At(target_member.id), " 没法说话了！")
             )
 
         @self.broadcast.receiver("MemberUnmuteEvent")
@@ -246,8 +259,8 @@ class RaianMain:
                 operator_member: Member = 'operator'
         ):
             if operator_member is not None:
-                await app.sendGroupMessage(
-                    group, MessageChain.create(
+                await app.send_group_message(
+                    group, MessageChain(
                         "太好了!\n", At(target_member.id), " 被", At(operator_member.id), " 解救了！"
                     )
                 )
@@ -262,7 +275,7 @@ class RaianMain:
             """
             if str(event.supplicant) in self.data.users:
                 await event.accept()
-                await app.sendFriendMessage(self.config.master_id, MessageChain.create(
+                await app.send_friend_message(self.config.master_id, MessageChain(
                     "收到添加好友事件",
                     f"\nQQ：{event.supplicant}",
                     f"\n昵称：{event.nickname}",
@@ -270,7 +283,7 @@ class RaianMain:
                 ))
             else:
                 await event.reject("请先签到")
-                await app.sendFriendMessage(self.config.master_id, MessageChain.create(
+                await app.send_friend_message(self.config.master_id, MessageChain(
                     "收到添加好友事件",
                     f"\nQQ：{event.supplicant}",
                     f"\n昵称：{event.nickname}",
@@ -282,9 +295,9 @@ class RaianMain:
             """
             被邀请入群
             """
-            friend_list = await app.getFriendList()
+            friend_list = await app.get_friend_list()
             if event.supplicant in map(lambda x: x.id, friend_list):
-                await app.sendFriendMessage(self.config.master_id, MessageChain.create(
+                await app.send_friend_message(self.config.master_id, MessageChain(
                     "收到邀请入群事件",
                     f"\n邀请者：{event.supplicant} | {event.nickname}",
                     f"\n群号：{event.sourceGroup}",
@@ -300,16 +313,16 @@ class RaianMain:
             """
             收到入群事件
             """
-            member_count = len(await app.getMemberList(group))
-            await app.sendFriendMessage(self.config.master_id, MessageChain.create(
+            member_count = len(await app.get_member_list(group))
+            await app.send_friend_message(self.config.master_id, MessageChain(
                 "收到加入群聊事件",
                 f"\n群号：{group.id}",
                 f"\n群名：{group.name}",
                 f"\n群人数：{member_count}"
             ))
-            await app.sendGroupMessage(group.id, MessageChain.create(
+            await app.send_group_message(group.id, MessageChain(
                 f"我是 {self.config.master_name}",
-                f"的机器人 {(await app.getBotProfile()).nickname}\n",
+                f"的机器人 {(await app.get_bot_profile()).nickname}\n",
                 f"如果有需要可以联系主人QQ ”{self.config.master_id}“，\n",
                 f"尝试发送 {self.config.command_prefix[0]}帮助 以查看功能列表"
             ))
@@ -317,7 +330,7 @@ class RaianMain:
     def init_greet(self):
         @self.broadcast.receiver(GroupMessage, priority=7)  # 防止可能的入群事件异常
         async def _init_g(app: Ariadne, group: Group, message: MessageChain, member: Member):
-            msg = message.asDisplay()
+            msg = message.display
             now = datetime.now()
             if (
                 msg.startswith("早上好") or msg.startswith("早安") or msg.startswith("中午好") or msg.startswith("下午好")
@@ -333,7 +346,7 @@ class RaianMain:
                     reply = "\t晚上好~"
                 else:
                     reply = "\t时候不早了，睡觉吧"
-                await app.sendGroupMessage(group, MessageChain.create(At(member.id), reply))
+                await app.send_group_message(group, MessageChain(At(member.id), reply))
 
             if msg.startswith("晚安"):
                 # if str(member.id) in sign_info:
@@ -345,19 +358,18 @@ class RaianMain:
                     reply = "\t快睡觉~(￣▽￣)"
                 else:
                     reply = "\t喂，现在可不是休息的时候╰（‵□′）╯"
-                await app.sendGroupMessage(group, MessageChain.create(At(member.id), reply))
+                await app.send_group_message(group, MessageChain(At(member.id), reply))
 
-    async def start(self):
+    def start(self):
         if self.exit.is_set():
             logger.warning("机器人已经关闭！")
             return
-        await self.app.lifecycle()
+        self.app.launch_blocking()
 
-    async def stop(self):
+    def stop(self):
         """机器人结束运行方法"""
         if not self.exit.is_set():
-            self.app.status = AriadneStatus.SHUTDOWN
-            await self.app.stop()
+            self.app.stop()
             self.data.save()
             logger.debug("机器人数据保存完毕")
             logger.success("机器人关闭成功. 晚安")
@@ -365,23 +377,16 @@ class RaianMain:
 
     async def running(self):
         """异步启动机器人"""
-        await self.start()
-        await self.stop()
+        self.start()
+        self.stop()
         await self.exit.wait()
-
-    async def restart(self):
-        """该方法功能正常未知"""
-        await self.stop()
-        self.exit.clear()
-        await self.start()
 
     def running_sync(self):
         """同步启动机器人"""
-        loop = self.app.loop
         try:
-            loop.run_until_complete(self.start())
+            self.start()
         finally:
-            loop.run_until_complete(self.stop())
+            self.stop()
 
 
 __all__ = ["RaianMain"]

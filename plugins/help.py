@@ -18,12 +18,9 @@ bot = RaianMain.current()
 channel = Channel.current()
 
 helping = Alconna(
-    "帮助", Args["id":int:Empty],
+    "帮助", Args["id", int, Empty],
     headers=bot.config.command_prefix,
-    options=[
-        Option("page|-p", Args["page":int], help_text="指定页数", dest="index")
-    ],
-    help_text=f"查看帮助 Example: {bot.config.command_prefix[0]}帮助 page 1;",
+    help_text=f"查看帮助",
 )
 
 
@@ -33,11 +30,15 @@ async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaPrope
     arp = result.result
     cmds = command_manager.get_commands()
     if not arp.id:
-        page = arp.query("index.page", 0)
-        text = command_manager.all_command_help(show_index=True, max_length=10, page=page)
-        return await app.sendMessage(sender, MessageChain.create(Image(data_bytes=await create_image(text, cut=120))))
+        text = command_manager.all_command_help(show_index=True) + (
+            "\n========================================================"
+            "\n所有功能均无需 @机器人本身"
+            "\n想给点饭钱的话，这里有赞助链接：https://afdian.net/@rf_tar_railt"
+            "\n更多功能待开发，如有特殊需求可以向 3165388245 询问"
+        )
+        return await app.send_message(sender, MessageChain(Image(data_bytes=await create_image(text, cut=120))))
     try:
         text = command_manager.command_help(cmds[arp.id].path)
-        return await app.sendMessage(sender, MessageChain.create(Image(data_bytes=await create_image(text, cut=120))))
+        return await app.send_message(sender, MessageChain(Image(data_bytes=await create_image(text, cut=120))))
     except IndexError:
-        return await app.sendMessage(sender, MessageChain.create("ID错误！"))
+        return await app.send_message(sender, MessageChain("ID错误！"))

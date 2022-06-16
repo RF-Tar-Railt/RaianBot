@@ -18,7 +18,7 @@ channel = Channel.current()
 
 weather = Alconna(
     "{city}天气",
-    Args["time":["今天", "明天", "后天", "大后天"]:"今天"],
+    Args["time", ["今天", "明天", "后天", "大后天"], "今天"],
     headers=bot.config.command_prefix,
     help_text=f"查询某个城市的天气 Usage: 提供四个可查询的时间段; Example: {bot.config.command_prefix[0]}北京天气 明天;",
 )
@@ -35,7 +35,7 @@ async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaPrope
     async with app.adapter.session.get(url, timeout=2) as response:
         d = json.loads(await response.text())
         if d['status'] != 1000:
-            return await app.sendMessage(sender, MessageChain.create("不对劲。。。"))
+            return await app.send_message(sender, MessageChain("不对劲。。。"))
         res = (
             f"城市：{d['data']['city']}\n"
             f"日期：{d['data']['forecast'][days]['date']}\n"
@@ -43,4 +43,4 @@ async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaPrope
             f"温度：{d['data']['forecast'][days]['high']}, {d['data']['forecast'][days]['low']}\n"
             f"提醒：{d['data']['ganmao']}"
         )
-        return await app.sendMessage(sender, MessageChain.create(res))
+        return await app.send_message(sender, MessageChain(res))

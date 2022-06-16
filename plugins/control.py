@@ -20,7 +20,7 @@ channel = Channel.current()
 
 shutdown = Alconna(
     "关机",
-    Args["time":int:0],
+    Args["time", int, 0],
     headers=bot.config.command_prefix,
     help_text="关闭机器人",
 )
@@ -31,6 +31,7 @@ shutdown = Alconna(
     ListenerSchema([GroupMessage, FriendMessage], decorators=[require_admin(bot.config.master_id, include_ids=True)])
 )
 async def _(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty):
-    await app.sendMessage(sender, MessageChain.create("正在关机。。。"))
+    await app.send_message(sender, MessageChain("正在关机。。。"))
     await asyncio.sleep(result.result.time)
-    await bot.stop()
+    bot.stop()
+    await asyncio.sleep(0.1)

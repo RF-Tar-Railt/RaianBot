@@ -24,7 +24,7 @@ class ArknightsData(TypedDict):
     up_six_list: List[str]
 
 
-class GArknights:
+class ArknightsGacha:
     six_statis: int
     six_per: int
     five_per: int
@@ -49,7 +49,7 @@ class GArknights:
         self.five_per, self.four_per, self.three_per = 8, 50, 40
         self.six_statis = six_statis
         if not file:
-            file = Path(__file__).parent / 'Arknights.json'
+            file = Path(__file__).parent / 'example_gacha.json'
         elif isinstance(file, str):
             file = Path(file)
             if not file.exists():
@@ -215,7 +215,7 @@ class GArknights:
 
 
 if __name__ == '__main__':
-    gacha = GArknights()
+    gacha = ArknightsGacha()
     data = gacha.gacha(30)
     io = BytesIO(data)
     Image.open(io, "r").show("test")

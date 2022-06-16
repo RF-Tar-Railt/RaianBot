@@ -23,10 +23,10 @@ with open(json_filename, 'r', encoding='UTF-8') as f_obj:
     ill_templates = json.load(f_obj)['templates']
 
 ill = Alconna(
-    "发病", Args["name":[str, At]:Empty],
+    "发病", Args["name", [str, At], Empty],
     headers=bot.config.command_prefix,
     options=[
-        Option("模板", Args["template":list(ill_templates.keys())], help_text="指定发病模板")
+        Option("模板", Args["template", list(ill_templates.keys())], help_text="指定发病模板")
     ],
     help_text=f"生成一段模板文字 Usage: 若不指定模板则会随机挑选一个; Example: {bot.config.command_prefix[0]}发病 老公;",
 )
@@ -52,4 +52,4 @@ async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaPrope
         template = ill_templates[arp.query("模板.template")]
     else:
         template = random.choice(list(ill_templates.values()))
-    return await app.sendMessage(sender, MessageChain.create(template.format(target=target)))
+    return await app.send_message(sender, MessageChain(template.format(target=target)))

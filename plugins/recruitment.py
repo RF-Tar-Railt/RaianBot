@@ -18,7 +18,7 @@ bot = RaianMain.current()
 channel = Channel.current()
 
 random_ope = Alconna(
-    "公招", Args["tags;S":str:...],
+    "公招", Args["tags;S", str, ...],
     headers=bot.config.command_prefix,
     help_text=f"自助访问 prts 的公招计算器并截图 Usage: 标签之间用空格分隔; Example: {bot.config.command_prefix[0]}公招 高资 生存;",
 )
@@ -29,7 +29,8 @@ random_ope = Alconna(
 async def recruitment(app: Ariadne, sender: Union[Group, Friend], source: Source, result: AlconnaProperty):
     arp = result.result
     if arp.tags is None:
-        return await app.sendMessage(sender, MessageChain.create('不对劲...'))
+        return await app.send_message(sender, MessageChain('不对劲...'))
+    await app.send_message(sender, MessageChain('正在获取，请稍等。。。'), quote=source.id)
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(headless=False)
         context = await browser.new_context()
@@ -51,6 +52,6 @@ async def recruitment(app: Ariadne, sender: Union[Group, Friend], source: Source
             data = await page.screenshot(full_page=True, omit_background=True)
             await context.close()
             await browser.close()
-            await app.sendMessage(sender, MessageChain.create(Image(data_bytes=data)), quote=source.id)
+            await app.send_message(sender, MessageChain(Image(data_bytes=data)))
         except Exception:
-            await app.sendMessage(sender, MessageChain.create('prts超时，获取失败'), quote=source.id)
+            await app.send_message(sender, MessageChain('prts超时，获取失败'), quote=source.id)
