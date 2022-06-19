@@ -127,11 +127,11 @@ async def update():
             if uid in dynamics:
                 res = dynamics[uid]
             else:
-                if not (res := await api.update(uid)):
+                if not (res := await api.update(int(uid))):
                     continue
                 dynamics[uid] = res
             now = datetime.now()
-            if not (follower := await api.get_profile(uid, save=True)):
+            if not (follower := await api.get_profile(int(uid), save=True)):
                 continue
             await bot.app.send_group_message(profile.id, MessageChain(f"{follower.name} 有一条新动态！请查收!"))
             await bot.app.send_group_message(profile.id, MessageChain(

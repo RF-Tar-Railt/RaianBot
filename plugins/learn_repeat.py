@@ -72,7 +72,7 @@ async def fetch(
                         target=_value['id'],
                         name=(await app.getMember(sender, _value['id'])).name,
                         time=now,
-                        message=MessageChain(f"{key}:\n") + MessageChain.fromPersistentString(_value['content'])
+                        message=MessageChain(f"{key}:\n") + MessageChain.from_persistent_string(_value['content'])
                     )
                 )
             if not forwards:
@@ -131,7 +131,7 @@ async def fetch(
                 ujson.dump({}, fo)
         with this_file.open("r+", encoding='utf-8') as f_obj:
             _data = ujson.load(f_obj)
-        _data[name] = {"id": target.id, "content": _record.asPersistentString()}
+        _data[name] = {"id": target.id, "content": _record.as_persistent_string()}
         with this_file.open("w+", encoding='utf-8') as fo:
             ujson.dump(_data, fo, ensure_ascii=False, indent=2)
         return await app.send_message(sender, MessageChain("我学会了！你现在可以来问我了！"), quote=source.id)
@@ -150,7 +150,7 @@ async def handle(app: Ariadne, sender: Group, message: MessageChain):
     for key in _data.keys():
         if re.fullmatch(key, msg):
             content = _data[key]['content']
-            res: BotMessage = await app.send_message(sender, MessageChain.fromPersistentString(content))
+            res: BotMessage = await app.send_message(sender, MessageChain.from_persistent_string(content))
             if res.messageId < 0:
                 await app.send_message(sender, MessageChain("该条记录存在敏感信息，回复出错"))
             raise PropagationCancelled
