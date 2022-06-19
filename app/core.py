@@ -33,6 +33,7 @@ from arclet.alconna.graia.saya import AlconnaBehaviour
 from arclet.alconna import command_manager
 
 from utils.generate_img import create_image
+from utils.control import require_function
 from .data import BotDataManager
 from .config import BotConfig
 from .logger import set_output
@@ -104,6 +105,10 @@ class RaianMain:
         """获取当前上下文的 Bot"""
         return BotInstance.get()
 
+    @property
+    def context(self):
+        return BotInstance
+
     def load_plugins(self, path: Optional[str] = None):
         """从插件存放的文件夹中统一导入插件"""
         plugin_path = Path(path or self.config.plugin_path)
@@ -141,6 +146,7 @@ class RaianMain:
             msg = message.as_sendable()
             if friend.id != self.config.master_id or not msg.startswith('公告:'):
                 return
+            msg.replace('公告:', '')
             ft = time.time()
             group_list = await app.get_group_list()
             for group in group_list:
@@ -229,40 +235,48 @@ class RaianMain:
             "项目地址：https://github.com/RF-Tar-Railt/RaianBot"
         )
 
-        @self.broadcast.receiver(MemberLeaveEventQuit)
+        @self.data.record("member_leave")
+        @self.broadcast.receiver(MemberLeaveEventQuit, decorators=[require_function("member_leave")])
         async def member_leave_tell(app: Ariadne, group: Group, member: Member):
-            await app.send_group_message(group, MessageChain(
-                "可惜了！\n" + member.name + '(' + str(member.id) + ")退群了！"))
+            """用户离群提醒"""
+            await app.send_group_message(
+                group,
+                MessageChain("可惜了！\n" + member.name + '(' + str(member.id) + ")退群了！")
+            )
 
-        @self.broadcast.receiver(MemberJoinEvent)
+        @self.data.record('member_join')
+        @self.broadcast.receiver(MemberJoinEvent, decorators=[require_function("member_join")])
         async def member_join_tell(app: Ariadne, group: Group, member: Member):
-            if group.id not in self.data.cache['blacklist']:
-                await app.send_group_message(group, MessageChain(At(member.id), welcome))
+            """用户入群提醒"""
+            await app.send_group_message(group, MessageChain(At(member.id), welcome))
 
     def init_mute_change_report(self):
         """配置禁言相关事件"""
 
-        @self.broadcast.receiver("MemberMuteEvent")
+        @self.data.record('member_mute')
+        @self.broadcast.receiver("MemberMuteEvent", decorators=[require_function("member_mute")])
         async def member_mute_tell(
                 app: Ariadne,
-                group: Group, target_member: Member = 'target'
+                group: Group,
+                target: Member
         ):
+            """用户被禁言提醒"""
             await app.send_group_message(
-                group, MessageChain("哎呀，", At(target_member.id), " 没法说话了！")
+                group, MessageChain("哎呀，", At(target.id), " 没法说话了！")
             )
 
-        @self.broadcast.receiver("MemberUnmuteEvent")
+        @self.data.record('member_unmute')
+        @self.broadcast.receiver("MemberUnmuteEvent", decorators=[require_function("member_unmute")])
         async def member_unmute_tell(
                 app: Ariadne,
                 group: Group,
-                target_member: Member = 'target',
-                operator_member: Member = 'operator'
+                target: Member,
+                operator: Member
         ):
-            if operator_member is not None:
+            """用户被解除禁言提醒, 注意是手动解禁"""
+            if operator is not None:
                 await app.send_group_message(
-                    group, MessageChain(
-                        "太好了!\n", At(target_member.id), " 被", At(operator_member.id), " 解救了！"
-                    )
+                    group, MessageChain("太好了!\n", At(target.id), " 被", At(operator.id), " 解救了！")
                 )
 
     def init_request_report(self):
@@ -324,12 +338,15 @@ class RaianMain:
                 f"我是 {self.config.master_name}",
                 f"的机器人 {(await app.get_bot_profile()).nickname}\n",
                 f"如果有需要可以联系主人QQ ”{self.config.master_id}“，\n",
-                f"尝试发送 {self.config.command_prefix[0]}帮助 以查看功能列表"
+                f"尝试发送 {self.config.command_prefix[0]}帮助 以查看功能列表",
+                "项目地址：https://github.com/RF-Tar-Railt/RaianBot"
             ))
 
     def init_greet(self):
-        @self.broadcast.receiver(GroupMessage, priority=7)  # 防止可能的入群事件异常
+        @self.data.record("greet")
+        @self.broadcast.receiver(GroupMessage, priority=7, decorators=[require_function("greet")])
         async def _init_g(app: Ariadne, group: Group, message: MessageChain, member: Member):
+            """简单的问好"""
             msg = message.display
             now = datetime.now()
             if (

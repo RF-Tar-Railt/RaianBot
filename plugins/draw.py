@@ -14,6 +14,7 @@ from graia.ariadne.app import Ariadne
 
 from app import RaianMain
 from modules.rand import random_pick_small
+from utils.control import require_function
 
 bot = RaianMain.current()
 channel = Channel.current()
@@ -34,14 +35,16 @@ undraw = Alconna(
 )
 
 
+@bot.data.record("抽签")
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=draw, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage]))
+@channel.use(ListenerSchema([GroupMessage, FriendMessage], decorators=[require_function("抽签")]))
 async def draw(
         app: Ariadne,
         sender: Union[Group, Friend],
         target: Union[Member, Friend],
         source: Source
 ):
+    """每日运势抽签"""
     today = datetime.now().day
     if not bot.data.exist(target.id):
         return await app.send_message(sender, MessageChain("您还未找我签到~"), quote=source.id)

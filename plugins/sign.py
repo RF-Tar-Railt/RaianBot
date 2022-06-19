@@ -22,9 +22,11 @@ sign = Alconna(
 )
 
 
+@bot.data.record('sign')
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=sign, help_flag="reply")))
 @channel.use(ListenerSchema([GroupMessage], decorators=[require_function('sign')]))
 async def sign_up(app: Ariadne, sender: Group, member: Member, source: Source):
+    """在机器人处登记信息"""
     if bot.data.exist(member.id):
         return await app.send_group_message(
             sender, MessageChain("您已与我签到!\n一人签到一次即可\n之后您不再需要找我签到"),

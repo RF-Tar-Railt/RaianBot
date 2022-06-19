@@ -1,20 +1,26 @@
-from typing import TypedDict, Literal
+from typing import Literal, Optional, List
 from pydantic import BaseModel, Field
 
 
-class WeiboTableCount(TypedDict):
-    profile: int
-    weibo: int
-    video: int
-    album: int
+class WeiboDynamic(BaseModel):
+    bid: str
+    text: str
+    img_urls: List[str] = Field(default_factory=list)
+    video_url: Optional[str] = Field(default=None)
+    retweet: Optional['WeiboDynamic'] = Field(default=None)
+
+    @property
+    def url(self) -> str:
+        return f"https://m.weibo.cn/status/{self.bid}"
 
 
 class WeiboUser(BaseModel):
     id: str
     name: str
-    avatar: str
-    statues: int
-    counts: WeiboTableCount = Field(default_factory=lambda: {"profile": 0, "weibo": 0, "video": 0, "album": 0})
+    avatar: str = Field(default='')
+    statuses: int = Field(default=0)
+    visitable: bool = Field(default=True)
+    total: int = Field(default=0)
 
     __mapping = {
         "profile": 230283,

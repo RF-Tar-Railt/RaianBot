@@ -14,6 +14,7 @@ from graia.ariadne.app import Ariadne
 
 from app import RaianMain
 from modules.arknights import ArknightsGacha
+from utils.control import require_function
 
 channel = Channel.current()
 bot = RaianMain.current()
@@ -24,14 +25,16 @@ draw = Alconna(
 )
 
 
+@bot.data.record("抽卡")
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=draw, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage]))
+@channel.use(ListenerSchema([GroupMessage, FriendMessage], decorators=[require_function("抽卡")]))
 async def draw(
         app: Ariadne,
         sender: Union[Group, Friend],
         target: Union[Friend, Member],
         result: AlconnaProperty
 ):
+    """模拟抽卡"""
     file = bot.config.plugin.get('gache', 'assets/data/gacha_arknights.json')
     count = result.result.count
     if count < 1:

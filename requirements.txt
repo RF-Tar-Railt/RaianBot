@@ -1,6 +1,6 @@
 arclet-alconna>=0.9.4
-arclet-alconna-graia>=0.1.0
-graia-ariadne>=0.7.8
+arclet-alconna-graia>=0.1.1.1
+graia-ariadne>=0.7.12
 graia-broadcast>=0.17.5
 graia-saya>=0.0.15
 graia-scheduler>=0.0.7

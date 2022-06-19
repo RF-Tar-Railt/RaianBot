@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, TYPE_CHECKING
 
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
@@ -6,7 +6,9 @@ from graia.ariadne.model import Friend, Member, Group, MemberPerm
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain
 from graia.ariadne.app import Ariadne
-from app import RaianMain
+
+# if TYPE_CHECKING:
+#     from app import RaianMain
 
 
 def require_admin(*ids_: int, include_ids: bool = False):
@@ -25,10 +27,13 @@ def require_admin(*ids_: int, include_ids: bool = False):
 
 
 def require_function(name: str):
-    data = RaianMain.current().data
+    from app import RaianMain
 
-    def __wrapper__(sender: Union[Friend, Group]):
+    def __wrapper__(bot: RaianMain, sender: Union[Friend, Group]):
+        data = bot.data
         if isinstance(sender, Friend):
+            return True
+        if name not in data.funcs:
             return True
         group_data = data.get_group(sender.id)
         if group_data:
@@ -37,4 +42,5 @@ def require_function(name: str):
             elif group_data.in_blacklist or sender.id in data.cache['blacklist']:
                 raise ExecutionStop
         return True
+
     return Depend(__wrapper__)

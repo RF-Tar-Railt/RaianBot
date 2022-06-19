@@ -14,7 +14,7 @@ class BaseWeiboData(metaclass=ABCMeta):
         self.path = Path(filepath)
 
     @abstractmethod
-    async def load(self):
+    def load(self):
         ...
 
     @abstractmethod
@@ -24,7 +24,7 @@ class BaseWeiboData(metaclass=ABCMeta):
 
 class DefaultWeiboData(BaseWeiboData):
 
-    async def load(self):
+    def load(self):
         if self.path.exists():
             with self.path.open('r+', encoding='UTF-8') as f_obj:
                 _config = ujson.load(f_obj)

@@ -17,6 +17,7 @@ from graia.saya.builtins.broadcast import ListenerSchema
 from graia.saya.channel import Channel
 
 from app import RaianMain
+from utils.control import require_function
 
 bot = RaianMain.current()
 channel = Channel.current()
@@ -44,7 +45,7 @@ async def fetch(
         target: Member,
         sender: Group,
         source: Source,
-        result: AlconnaProperty
+        result: AlconnaProperty,
 ):
     arp = result.result
     this_file = base_path / f"record_{sender.id}.json"
@@ -136,8 +137,10 @@ async def fetch(
         return await app.send_message(sender, MessageChain("我学会了！你现在可以来问我了！"), quote=source.id)
 
 
-@channel.use(ListenerSchema([GroupMessage], priority=10))
+@bot.data.record("repeat")
+@channel.use(ListenerSchema([GroupMessage], priority=10, decorators=[require_function("repeat")]))
 async def handle(app: Ariadne, sender: Group, message: MessageChain):
+    """依据记录回复对应内容"""
     this_file = base_path / f"record_{sender.id}.json"
     if not this_file.exists():
         return

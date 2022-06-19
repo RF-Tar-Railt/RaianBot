@@ -1,6 +1,6 @@
 import ujson
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Callable
 from weakref import finalize
 from arclet.alconna.util import Singleton
 
@@ -9,6 +9,7 @@ from .model import UserProfile, GroupProfile
 
 
 class BotDataManager(metaclass=Singleton):
+    __functions: Dict[str, Callable]
     __group_profiles: Dict[str, GroupProfile]
     __user_profiles: Dict[str, UserProfile]
     __cache_data: dict
@@ -18,6 +19,7 @@ class BotDataManager(metaclass=Singleton):
 
         dir_path = Path(config.cache_dir)
         dir_path.mkdir(exist_ok=True)
+        self.__functions = {}
         self.group_path = dir_path / "groups_data.json"
         self.user_path = dir_path / "users_data.json"
         self.cache_path = dir_path / "basic_data.json"
@@ -53,6 +55,7 @@ class BotDataManager(metaclass=Singleton):
             mgr.__user_profiles.clear()
             mgr.__group_profiles.clear()
             mgr.__cache_data.clear()
+            mgr.__functions.clear()
             Singleton.remove(self.__class__)
 
         finalize(self, _s, self)
@@ -116,6 +119,10 @@ class BotDataManager(metaclass=Singleton):
     def cache(self):
         return self.__cache_data
 
+    @property
+    def funcs(self):
+        return list(self.__functions.keys())
+
     def save(self):
         with self.user_path.open('w+', encoding='UTF-8') as fo:
             ujson.dump(
@@ -129,6 +136,17 @@ class BotDataManager(metaclass=Singleton):
             )
         with self.cache_path.open('w+', encoding='UTF-8') as fo:
             ujson.dump(self.__cache_data, fo, ensure_ascii=False, indent=2)
+
+    def record(self, name: str):
+        def __wrapper__(func):
+            self.__functions[name] = func
+            return func
+        return __wrapper__
+
+    def func_description(self, name: str):
+        if not (func := self.__functions.get(name)):
+            return "Unknown"
+        return func.__doc__
 
 
 __all__ = ["BotDataManager"]

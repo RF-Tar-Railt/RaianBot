@@ -4,7 +4,7 @@ import random
 import re
 from pathlib import Path
 from arclet.alconna.analysis.base import analyse_header
-from arclet.alconna.graia import AlconnaDispatcher
+from arclet.alconna.graia.dispatcher import success_record
 from graia.ariadne.message.element import Plain, Voice
 from graia.saya.channel import Channel
 from graia.saya.builtins.broadcast import ListenerSchema
@@ -16,7 +16,8 @@ from graia.broadcast.exceptions import PropagationCancelled
 
 from app import RaianMain
 from modules.aiml.entry import AIML
-from modules.translate import TencentTrans
+from modules.translate import TencentTrans, YoudaoTrans
+from utils.control import require_function
 
 bot = RaianMain.current()
 channel = Channel.current()
@@ -26,9 +27,12 @@ with open(json_filename, 'r', encoding='UTF-8') as f_obj:
     dialog_templates = json.load(f_obj)['templates']
 
 aiml = AIML(
-    TencentTrans(
-        bot.config.plugin['dialog']['id'],
-        bot.config.plugin['dialog']['key']
+    (
+        TencentTrans(
+            bot.config.plugin['dialog']['id'],
+            bot.config.plugin['dialog']['key']
+        ) if bot.config.plugin['dialog']['tencent'] else
+        YoudaoTrans()
     ),
     name=f" {bot.config.bot_name}",
     gender=" girl",
@@ -52,18 +56,22 @@ aiml_brain = f"{bot.config.cache_dir}/plugins/aiml_brain.brn"
 aiml.load_aiml(aiml_files, aiml_brain)
 
 
-@channel.use(ListenerSchema([GroupMessage, FriendMessage], priority=17))
+@bot.data.record("dialog")
+@channel.use(ListenerSchema([GroupMessage, FriendMessage], priority=17, decorators=[require_function("dialog")]))
 async def test2(app: Ariadne, target: Union[Member, Friend], sender: Union[Group, Friend], message: MessageChain):
+    """依据语料进行匹配回复"""
     if res := analyse_header(bot.config.command_prefix, "{content}?", message, raise_exception=False):
         for elem in bot.config.command_prefix:
             message = message.replace(elem, "")
-        msg = message.include(Plain).display
+        msg = str(message.include(Plain))
         content = res['content']
         if not content and not msg:
             rand_str = random.sample(dialog_templates['default'], 1)[0]
         else:
-            if content and re.match(re.sub(r"\{[^{}]*}", ".+?", AlconnaDispatcher.success_hook), content):
-                AlconnaDispatcher.success_hook = 'None'
+            if content and len(success_record) and re.match(
+                re.sub(r"\{[^{}]*}", "(.*?)", success_record.pop()),
+                content
+            ):
                 return
             plain = False
             voice = False

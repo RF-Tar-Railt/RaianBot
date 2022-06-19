@@ -19,6 +19,46 @@
 
 链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.4/raian-bot-0.4.0.zip)
 
+## 安装
+
+### 配置环境
+解压缩最新的`raian-bot.zip`, 并进入存放有`main.py`的文件夹下
+
+**mirai部分**
+1. 确保安装并配置好了`java`环境, 推荐`java17`或`openj9`
+2. 解压缩`mcl.zip`
+
+**bot部分**
+1. 安装`python`环境，至少要求`python 3.8`及以上版本
+2. 命令行输入如下命令: (确保命令行运行在`main.py`文件夹下)
+
+```bash
+pip install -r requirements.txt
+```
+
+### 配置文件
+
+**mirai部分**
+1. 前往`mcl/config/net.mamoe.mirai-api-http`下, 打开`config.yml`文件
+2. 修改其中的`verifyKey`, 适当修改`adapterSettings`下的`host`与`port`
+3. 前往`mcl/config/Console`下, 打开`AutoLogin.yml`文件
+4. 按提示修改其中的`account`与`password`
+
+**bot部分**
+1. 打开`bot_config.yml`
+2. 按照提示逐个修改. 其中`verify_key`, `host`, `port`应与`config.yml`内的相同
+
+### 运行配置
+
+**mirai部分**
+1. 在`mcl`文件夹下双击运行`mcl.cmd`文件
+2. 若提示弹窗验证, 请按以下方法操作: [链接](https://docs.mirai.mamoe.net/mirai-login-solver-selenium)
+3. 命令框内出现正常对话信息则代表登录成功
+
+**bot部分**
+1. 运行`main.py`, 机器人发送提示信息则代表启动成功
+2. 根据喜好自行配置`main.py`中的各项初始化配置
+
 ## 项目结构
 
 ```

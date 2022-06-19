@@ -44,14 +44,13 @@ shell = Alconna(
     ListenerSchema([GroupMessage, FriendMessage], decorators=[require_admin(bot.config.master_id)])
 )
 async def _(
-        app: Ariadne,
-        sender: Union[Group, Friend],
-        result: AlconnaProperty
+    app: Ariadne,
+    sender: Union[Group, Friend],
+    result: AlconnaProperty
 ):
 
-    arp = result.result
-    codes = str(arp.origin).split("\n")
-    output = arp.query("out.name", "res")
+    codes = str(result.result.origin).split("\n")
+    output = result.result.query("out.name", "res")
     if len(codes) == 1:
         return
     for _code in codes[1:]:
@@ -76,15 +75,26 @@ async def _(
         code_res = data.get(output)
         sys.stdout = _to
         if code_res is not None:
-            return await app.send_message(sender, MessageChain(f"{output}: {code_res}"))
+            return await app.send_message(
+                sender, MessageChain(Image(
+                    data_bytes=(await create_image(f"{output}: {code_res}", cut=120))
+                ))
+            )
         else:
             out = _stdout.getvalue()
-            return await app.send_message(sender, MessageChain(f"output: {out}"))
+            return await app.send_message(
+                sender, MessageChain(Image(
+                    data_bytes=(await create_image(f"output: {out}", cut=120))
+                ))
+            )
     except Exception as e:
         sys.stdout = _to
         return await app.send_message(
-            sender, MessageChain(
-                '\n'.join(traceback.format_exception(e.__class__, e, e.__traceback__, limit=1))
+            sender, MessageChain(Image(
+                data_bytes=(await create_image(
+                    '\n'.join(traceback.format_exception(e.__class__, e, e.__traceback__, limit=1)),
+                    cut=120
+                )))
             )
         )
     finally:

@@ -14,6 +14,7 @@ from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
 from app import RaianMain
+from utils.control import require_function
 
 bot = RaianMain.current()
 channel = Channel.current()
@@ -32,9 +33,11 @@ ill = Alconna(
 )
 
 
+@bot.data.record("发病")
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=ill, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage]))
+@channel.use(ListenerSchema([GroupMessage, FriendMessage], decorators=[require_function("发病")]))
 async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty):
+    """依据模板发病"""
     event = result.source
     arp = result.result
     if arp.name:

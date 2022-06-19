@@ -23,14 +23,16 @@ plugin:
   saucenao: 'xxxxxxxxxxxxxxxxxxxxxx'
   ## 卡池的文件路径
   gacha: "assets/data/gacha_arknights.json"
-  ## ai 对话的腾讯云翻译
+  ## ai 对话
   dialog:
+    ## 是否使用腾讯云翻译, 是则需要填写腾讯云接口的secret-id secret-key
+    tencent: true
     id: "xxxxxxxxxxxxxxxxxxxx"
     key: "xxxxxxxxxxxxxxxxxxx"
 ## 插件的父级路径
 plugin_path: plugins
 ## 禁用的功能列表
-disabled_plugins: []
+disabled_plugins: ['setu']
 
 ## 群组的附加元数据, 为插件提供数据字段
 group_meta:
