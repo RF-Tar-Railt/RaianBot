@@ -4,6 +4,7 @@
 
 ## 已有功能
 
+- 管理
 - 签到
 - 以图搜图
 - 获取微博动态
@@ -14,10 +15,12 @@
 - 方舟模拟抽卡
 - 每日抽签
 - 状态获取
+- 跑团掷骰
+- 随机涩图 (慎用)
 
 ## 下载
 
-链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.4/raian-bot-0.4.0.zip)
+链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.6/raian-bot-0.6.0.zip)
 
 ## 安装
 
