@@ -83,9 +83,15 @@ class RD:
         if _dice[0] == 'F':
             _dice = '4D' + _dice
         _dice = _dice.replace('XX', 'X', 2).replace('//', '/', 2)
-        # -------
-        #  一大堆处理...
-        # -------
+        for i in range(1, len(_dice)):
+            if _dice[i] == 'F' and (
+                _dice[i-1].isdigit() or _dice[i-1] in {"+", "-"}
+            ):
+                t = list(_dice)
+                t.insert(i, 'D')
+                _dice = ''.join(t)
+        _dice = _dice.replace("-a", "-a1").replace("+a", "+a1").replace(
+            "+DF", "+DF4").replace("D+", f"D+{default_dice}").replace("D-", f"D-{default_dice}")
         if _dice.endswith('D'):
             _dice += f'{default_dice}'
         if _dice.endswith('K'):
@@ -115,12 +121,9 @@ class RD:
             self.negative_record.append(False)
         if dice.endswith(('+', '-', 'X', '/')):
             raise Input_Err
-        while (
-                (pos_add := dice.find('+', int_read_dice_loc)) > -1
-                or (pos_sub := dice.find('-', int_read_dice_loc)) > -1
-        ):
-            int_symbol_position = min(pos_add, pos_sub)
-            self._roll_dice(dice[int_read_dice_loc:int_symbol_position - int_read_dice_loc])
+        while dice.find('+', int_read_dice_loc) > -1 or dice.find('-', int_read_dice_loc) > -1:
+            int_symbol_position = max(dice.find('+', int_read_dice_loc), dice.find('-', int_read_dice_loc))
+            self._roll_dice(dice[int_read_dice_loc:int_symbol_position])
             int_read_dice_loc = int_symbol_position + 1
             if dice[int_symbol_position:int_read_dice_loc] == '+':
                 self.negative_record.append(False)
@@ -326,7 +329,7 @@ class RD:
 
 
 if __name__ == '__main__':
-    rd = RD("5d20")
+    rd = RD("1d10+2d6+3")
     print(rd.pattern)
     rd.roll()
     print(rd.total)

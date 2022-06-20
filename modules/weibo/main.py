@@ -39,8 +39,11 @@ class WeiboAPI:
                     if resp.status != 200:
                         return
                     data = await resp.json()
-                    if data.get('ok') == 1:
-                        return data['data']
+                    if data.get('ok') != 1:
+                        return
+                    if data['data'].get('errno'):
+                        return
+                    return data['data']
 
     async def search_user(self, target: str) -> Optional[int]:
         """依据用户名返回用户id(str)"""
@@ -56,10 +59,13 @@ class WeiboAPI:
     async def get_profile(
             self,
             target: Union[str, int],
-            save: bool = False
+            save: bool = False,
+            cache: bool = True,
     ):
         if isinstance(target, str):
             target = await self.search_user(target)
+        if cache and str(target) in self.data.followers:
+            return self.data.followers[str(target)]
         params = {
             'type': 'uid',
             'value': target
@@ -71,7 +77,8 @@ class WeiboAPI:
             name=d_data['userInfo']['screen_name'],
             avatar=d_data['userInfo']['avatar_hd'],
             statuses=d_data['userInfo']['statuses_count'],
-            visitable=(d_data['tabsInfo'] != [])
+            visitable=(d_data['tabsInfo'] != []),
+            description=d_data['userInfo']['description']
         )
         if user.visitable:
             params['containerid'] = user.contain_id('weibo')
@@ -102,10 +109,11 @@ class WeiboAPI:
             target: Union[str, int, WeiboUser],
             keyword: Literal["profile", "weibo", "video", "album"] = 'weibo',
             index: int = -1,
-            save: bool = False
+            save: bool = False,
+            cache: bool = False,
     ) -> Optional[WeiboDynamic]:
         if not isinstance(target, WeiboUser):
-            if not (target := await self.get_profile(target, save)):
+            if not (target := await self.get_profile(target, save, cache)):
                 return
         params = {
             'type': 'uid',
@@ -119,11 +127,16 @@ class WeiboAPI:
         if d_data['cards'][0]['card_type'] != 9:
             return
         if index < 0:
-            may_top_id = int(d_data['cards'][0]['mblog']['id'])
-            may_last_id = int(d_data['cards'][1]['mblog']['id'])
-            index = 0 if may_top_id > may_last_id else 1
+            if len(d_data['cards']) > 1:
+                may_top_id = int(d_data['cards'][0]['mblog']['id'])
+                may_last_id = int(d_data['cards'][1]['mblog']['id'])
+                index = 0 if may_top_id > may_last_id else 1
+            else:
+                index = 0
         res = self._handler_dynamic(d_data['cards'][index]['mblog'])
+        res.user = target
         if save:
+            self.data.followers[str(target.id)] = target
             await self.data.save()
         return res
 

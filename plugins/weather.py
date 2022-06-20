@@ -32,7 +32,7 @@ async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaPrope
     days_list = {'今天': 0, '明天': 1, '后天': 2, '大后天': 3, '老后天': 4}
     url = 'http://wthrcdn.etouch.cn/weather_mini?city=' + city
     days = days_list[arp.time]
-    async with app.adapter.session.get(url, timeout=2) as response:
+    async with app.service.client_session.get(url, timeout=2) as response:
         d = json.loads(await response.text())
         if d['status'] != 1000:
             return await app.send_message(sender, MessageChain("不对劲。。。"))

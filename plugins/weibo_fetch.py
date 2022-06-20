@@ -27,6 +27,12 @@ weibo_fetch = Alconna(
     help_text="从微博获取指定用户的动态 Usage: index 表示从最前动态排起的第几个动态; Example: .育碧动态;",
 )
 
+weibo_profile = Alconna(
+    "{target}微博",
+    headers=bot.config.command_prefix,
+    help_text="获取指定用户的微博资料 Example: .育碧微博;",
+)
+
 add_follower = Alconna(
     "增加微博关注", Args["target", str],
     headers=bot.config.command_prefix,
@@ -79,37 +85,58 @@ async def fetch(
     return await app.send_message(sender, MessageChain("获取失败啦"))
 
 
+@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=weibo_profile, help_flag="reply")))
+@channel.use(ListenerSchema([GroupMessage, FriendMessage]))
+async def profile(
+        app: Ariadne,
+        sender: Union[Group, Friend],
+        result: AlconnaProperty
+):
+    arp = result.result
+    if prof := await api.get_profile(arp.header['target'], save=False):
+        return await app.send_message(
+            sender, MessageChain(
+                Image(url=prof.avatar),
+                f"用户名: {prof.name}\n",
+                f"介绍: {prof.description}\n",
+                f"动态数: {prof.statuses}\n",
+                f"是否可见: {'是' if prof.visitable else '否'}"
+            )
+        )
+    return await app.send_message(sender, MessageChain("获取失败啦"))
+
+
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=add_follower, help_flag="reply")))
 @channel.use(ListenerSchema([GroupMessage]))
 async def add(app: Ariadne, group: Group, source: Source, result: AlconnaProperty):
     if not bot.data.exist(group.id):
         return
-    profile = bot.data.get_group(group.id)
-    follower = await api.get_profile(result.result.target)
-    if not (followers := profile.additional.get("weibo_followers")):
+    prof = bot.data.get_group(group.id)
+    follower = await api.get_profile(result.result.target, save=True)
+    if not (followers := prof.additional.get("weibo_followers")):
         followers = []
     if int(follower.id) in followers:
         return await app.send_group_message(group, MessageChain(f"该群已关注 {follower.name}！请不要重复关注"))
     followers.append(int(follower.id))
-    profile.additional['weibo_followers'] = followers
-    bot.data.update_group(profile)
+    prof.additional['weibo_followers'] = followers
+    bot.data.update_group(prof)
     return await app.send_group_message(group, MessageChain(f"关注 {follower.name} 成功！"), quote=source.id)
 
 
 @channel.use(AlconnaSchema(AlconnaDispatcher(alconna=remove_follower, help_flag="reply")))
 @channel.use(ListenerSchema([GroupMessage]))
-async def add(app: Ariadne, group: Group, source: Source, result: AlconnaProperty):
+async def remove(app: Ariadne, group: Group, source: Source, result: AlconnaProperty):
     if not bot.data.exist(group.id):
         return
-    profile = bot.data.get_group(group.id)
+    prof = bot.data.get_group(group.id)
     follower = await api.get_profile(result.result.target, save=False)
-    if not (followers := profile.additional.get("weibo_followers")):
+    if not (followers := prof.additional.get("weibo_followers")):
         followers = []
     if int(follower.id) not in followers:
         return await app.send_group_message(group, MessageChain(f"该群未关注 {follower.name}！"))
     followers.remove(int(follower.id))
-    profile.additional['weibo_followers'] = followers
-    bot.data.update_group(profile)
+    prof.additional['weibo_followers'] = followers
+    bot.data.update_group(prof)
     return await app.send_group_message(group, MessageChain(f"解除关注 {follower.name} 成功！"), quote=source.id)
 
 
@@ -118,10 +145,10 @@ async def add(app: Ariadne, group: Group, source: Source, result: AlconnaPropert
 async def update():
     dynamics = {}
     for gid in bot.data.groups:
-        profile = bot.data.get_group(int(gid))
-        if "微博动态自动获取" in profile.disabled:
+        prof = bot.data.get_group(int(gid))
+        if "微博动态自动获取" in prof.disabled:
             continue
-        if not (followers := profile.additional.get("weibo_followers")):
+        if not (followers := prof.additional.get("weibo_followers")):
             continue
         for uid in followers:
             if uid in dynamics:
@@ -131,10 +158,8 @@ async def update():
                     continue
                 dynamics[uid] = res
             now = datetime.now()
-            if not (follower := await api.get_profile(int(uid), save=True)):
-                continue
-            await bot.app.send_group_message(profile.id, MessageChain(f"{follower.name} 有一条新动态！请查收!"))
-            await bot.app.send_group_message(profile.id, MessageChain(
+            await bot.app.send_group_message(prof.id, MessageChain(f"{res.user.name} 有一条新动态！请查收!"))
+            await bot.app.send_group_message(prof.id, MessageChain(
                 Forward(*_handle_dynamic(res, now, bot.config.account, bot.config.bot_name))
             ))
     dynamics.clear()

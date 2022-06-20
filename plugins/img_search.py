@@ -1,5 +1,6 @@
 import asyncio
 from typing import Union
+from contextlib import suppress
 from PicImageSearch import Ascii2D, SauceNAO, Network, Iqdb
 from arclet.alconna import Args
 from arclet.alconna.graia.saya import AlconnaSchema
@@ -54,7 +55,7 @@ async def saucenao(
             if waiter1_saying == "取消":
                 return False
             elif waiter1_message.has(Image):
-                return waiter1_message.getFirst(Image).url
+                return waiter1_message.get_first(Image).url
             else:
                 await app1.send_message(sender, MessageChain("请发送图片"))
 
@@ -85,37 +86,37 @@ async def saucenao(
         sender, MessageChain("正在搜索，请稍后"), quote=source.id
     )
     running.set()
-    async with Network() as client:
-        sauce = SauceNAO(
-            client=client,
-            api_key=bot.config.plugin['saucenao'],
-            numres=6,
-            hide=0,
-        )
-        ascii2 = Ascii2D(client=client)
-        iqdb = Iqdb(client=client)
-
-        try:
-            sauce_result = await asyncio.wait_for(sauce.search(image_url), timeout=20)
-        except Exception as e:
-            logger.warning(e)
-            sauce_result = None
-        try:
-            ascii2_result = await asyncio.wait_for(ascii2.search(image_url), timeout=20)
-        except Exception as e:
-            logger.warning(e)
-            ascii2_result = None
-        try:
-            iqdb_result = await asyncio.wait_for(iqdb.search(image_url), timeout=20)
-        except Exception as e:
-            logger.warning(e)
-            iqdb_result = None
-        await client.aclose()
-        if all([not sauce_result, not ascii2_result, not iqdb_result]):
-            running.clear()
-            return await app.send_message(
-                sender, MessageChain(f"搜索失败, 未找到有价值的数据. 请尝试重新搜索"), quote=source.id
+    with suppress(RuntimeError):
+        async with Network() as client:
+            sauce = SauceNAO(
+                client=client,
+                api_key=bot.config.plugin['saucenao'],
+                numres=6,
+                hide=0,
             )
+            ascii2 = Ascii2D(client=client)
+            iqdb = Iqdb(client=client)
+
+            try:
+                sauce_result = await asyncio.wait_for(sauce.search(image_url), timeout=20)
+            except Exception as e:
+                logger.warning(e)
+                sauce_result = None
+            try:
+                ascii2_result = await asyncio.wait_for(ascii2.search(image_url), timeout=20)
+            except Exception as e:
+                logger.warning(e)
+                ascii2_result = None
+            try:
+                iqdb_result = await asyncio.wait_for(iqdb.search(image_url), timeout=20)
+            except Exception as e:
+                logger.warning(e)
+                iqdb_result = None
+    if all([not sauce_result, not ascii2_result, not iqdb_result]):
+        running.clear()
+        return await app.send_message(
+            sender, MessageChain(f"搜索失败, 未找到有价值的数据. 请尝试重新搜索"), quote=source.id
+        )
     results = []
     if sauce_result:
         sauce_list = []
