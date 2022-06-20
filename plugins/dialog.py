@@ -3,9 +3,11 @@ import json
 import random
 import re
 from pathlib import Path
+from io import BytesIO
+from PIL import Image as Img
 from arclet.alconna.analysis.base import analyse_header
 from arclet.alconna.graia.dispatcher import success_record
-from graia.ariadne.message.element import Plain, Voice
+from graia.ariadne.message.element import Plain, Voice, Image
 from graia.saya.channel import Channel
 from graia.saya.builtins.broadcast import ListenerSchema
 from graia.ariadne.message.chain import MessageChain
@@ -75,6 +77,7 @@ async def test2(app: Ariadne, target: Union[Member, Friend], sender: Union[Group
                 return
             plain = False
             voice = False
+            image = False
             plains = dialog_templates['action'].copy()
             plains.update(dialog_templates['hate'])
             plains.update(dialog_templates['hentai'])
@@ -92,6 +95,32 @@ async def test2(app: Ariadne, target: Union[Member, Friend], sender: Union[Group
                         break
 
             if not voice:  # TODO: 接入AI
+                for key, value in dialog_templates['image'].items():
+                    if re.match(f".*?{key}$", msg):
+                        rand_str = random.sample(value, 1)[0]
+                        if rand_str.startswith("^"):
+                            mode, file = rand_str.split("$", 1)
+                            if mode.endswith("cover"):
+                                cover = Img.open(f"assets/image/{file}")
+                                size = cover.size
+                                async with app.service.client_session.get(
+                                        f"https://q1.qlogo.cn/g?b=qq&nk={target.id}&s=640"
+                                ) as resp:
+                                    base = Img.open(BytesIO(await resp.content.read())).resize(
+                                        size, Img.ANTIALIAS
+                                    )
+                                cover.thumbnail(size)
+                                base.paste(cover, (0, 0), cover)
+                                data = BytesIO()
+                                base.save(data, format='JPEG', quality=90, qtables="web_high")
+                                rand_str = Image(data_bytes=data.getvalue())
+                            else:
+                                rand_str = Image(data_bytes=Path(f"assets/image/{file}").read_bytes())
+                        else:
+                            rand_str = Image(data_bytes=Path(f"assets/image/{rand_str}").read_bytes())
+                        image = True
+                        break
+            if not image:
                 rand_str = await aiml.chat(message=msg, session_id=target.id)
         if rand_str:  # noqa
             await app.send_message(sender, MessageChain(rand_str))  # noqa
