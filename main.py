@@ -1,6 +1,6 @@
-from app import RaianMain, bot_config
+from app import RaianMain, load_config
 
-bot = RaianMain(bot_config, debug_log=True)
+bot = RaianMain(load_config('my_config.yml'), debug_log=True)
 
 if __name__ == '__main__':
     bot.load_plugins()

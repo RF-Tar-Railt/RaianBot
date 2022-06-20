@@ -102,7 +102,7 @@ async def _m(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty
             bot.config.disabled_plugins.append(channel_name)
             return await app.send_message(sender, MessageChain(f"卸载 {module_path} 成功"))
     if arp.find("安装"):
-        if channel_name not in bot.config.disabled_plugins:
+        if channel_name in saya.channels and channel_name not in bot.config.disabled_plugins:
             return await app.send_message(sender, MessageChain("该模组已安装"))
         try:
             with bot.context.use(bot):
@@ -112,7 +112,8 @@ async def _m(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty
             await app.send_message(sender, MessageChain(f"安装 {module_path} 失败！"))
             raise e
         else:
-            bot.config.disabled_plugins.remove(channel_name)
+            if channel_name in bot.config.disabled_plugins:
+                bot.config.disabled_plugins.remove(channel_name)
             return await app.send_message(sender, MessageChain(f"安装 {module_path} 成功"))
     if arp.find("重载"):
         if not (_channel := saya.channels.get(module_path)):

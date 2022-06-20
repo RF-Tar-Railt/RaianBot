@@ -42,12 +42,12 @@ class BotConfig(BaseModel):
         return res
 
 
-# path = Path(os.getcwd()) / "my_config.yml"
-path = Path(os.getcwd()) / "bot_config.yml"
-if path.exists():
-    with path.open('r+', encoding='UTF-8') as f_obj:
-        _config_data = yaml.safe_load(f_obj.read())
-        bot_config: BotConfig = BotConfig.parse_obj(_config_data)
-else:
-    logger.critical('没有有效的配置文件！')
-    sys.exit()
+def load_config(name: str = "bot_config.yml") -> BotConfig:
+    path = Path(os.getcwd()) / name
+    if path.exists():
+        with path.open('r+', encoding='UTF-8') as f_obj:
+            _config_data = yaml.safe_load(f_obj.read())
+        return BotConfig.parse_obj(_config_data)
+    else:
+        logger.critical('没有有效的配置文件！')
+        sys.exit()

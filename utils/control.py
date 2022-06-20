@@ -1,4 +1,4 @@
-from typing import Union, TYPE_CHECKING
+from typing import Union
 
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
@@ -6,9 +6,6 @@ from graia.ariadne.model import Friend, Member, Group, MemberPerm
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain
 from graia.ariadne.app import Ariadne
-
-# if TYPE_CHECKING:
-#     from app import RaianMain
 
 
 def require_admin(*ids_: int, include_ids: bool = False):

@@ -27,7 +27,7 @@ debug = Alconna(
 @channel.use(
     ListenerSchema([GroupMessage, FriendMessage], decorators=[require_admin(bot.config.master_id)])
 )
-async def _(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty):
+async def _(app: Ariadne, sender: Union[Group, Friend], ):
     mds = f"当前共加载模块：{len(saya.channels)}个\n已禁用模块: {bot.config.disabled_plugins}"
     groups_debug = f"当前共加入群：{len(bot.data.groups)}个"
     users_debug = f"当前共有：{len(bot.data.users)}人参与签到"

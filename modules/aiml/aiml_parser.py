@@ -8,6 +8,7 @@ import xml.sax.handler
 
 from .lang_support import split_chinese
 
+
 class AimlParserError(Exception):
     pass
 
