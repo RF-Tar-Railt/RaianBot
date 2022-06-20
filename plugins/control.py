@@ -137,13 +137,11 @@ async def _f(app: Ariadne, sender: Group, result: AlconnaProperty):
     group = bot.data.get_group(sender.id)
     if arp.find('列出'):
         res = f"{sender.name} / {sender.id} 统计情况\n"
-        res += "============================\n"
+        res += "====================================\n"
         funcs = [f"{i}: {bot.data.func_description(i)}" for i in bot.data.funcs]
-        l_max = max(len(i) for i in funcs)
-        print(l_max)
         for sign, name in zip(funcs, bot.data.funcs):
-            res += sign.ljust(l_max + 1) + f"{'禁用' if (name in group.disabled or group.in_blacklist) else '启用'}\n"
-        res += "============================"
+            res += f"{'【禁用】' if (name in group.disabled or group.in_blacklist) else '【启用】'} " + sign + "\n"
+        res += "===================================="
         return await app.send_message(
             sender, MessageChain(Image(data_bytes=(await create_image(res))))
         )
