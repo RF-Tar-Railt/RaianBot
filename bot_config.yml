@@ -37,6 +37,7 @@ disabled_plugins: ['setu']
 ## 群组的附加元数据, 为插件提供数据字段
 group_meta:
   - weibo_followers
+  - roles
 ## 用户的附加元数据, 为用户功能提供数据字段
 user_meta:
   - gacha_proba

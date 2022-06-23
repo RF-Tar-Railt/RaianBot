@@ -314,8 +314,8 @@ class RaianMain:
                 await app.send_friend_message(self.config.master_id, MessageChain(
                     "收到邀请入群事件",
                     f"\n邀请者：{event.supplicant} | {event.nickname}",
-                    f"\n群号：{event.sourceGroup}",
-                    f"\n群名：{event.groupName}",
+                    f"\n群号：{event.source_group}",
+                    f"\n群名：{event.group_name}",
                     "\n该群未在黑名单中，已同意加入"
                 ))
                 await event.accept("")

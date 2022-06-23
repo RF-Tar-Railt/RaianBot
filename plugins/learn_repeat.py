@@ -12,6 +12,7 @@ from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, At, Source, Plain, Face, ForwardNode, Forward
 from graia.ariadne.model import Group, Member, BotMessage
+from graia.ariadne.exception import UnknownTarget, UnknownError
 from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya.builtins.broadcast import ListenerSchema
 from graia.saya.channel import Channel
@@ -48,6 +49,8 @@ async def fetch(
         result: AlconnaProperty,
 ):
     arp = result.result
+    if not arp.options:
+        return await app.send_message(sender, MessageChain(repeat.get_help()))
     this_file = base_path / f"record_{sender.id}.json"
     if arp.find("列出"):
         if not this_file.exists():
@@ -67,10 +70,14 @@ async def fetch(
                 _value = _data[key]
                 if _target and _value['id'] != _target.target:
                     continue
+                try:
+                    name = (await app.getMember(sender, _value['id'])).name
+                except (UnknownTarget, UnknownError):
+                    name = str(_value['id'])
                 forwards.append(
                     ForwardNode(
                         target=_value['id'],
-                        name=(await app.getMember(sender, _value['id'])).name,
+                        name=name,
                         time=now,
                         message=MessageChain(f"{key}:\n") + MessageChain.from_persistent_string(_value['content'])
                     )

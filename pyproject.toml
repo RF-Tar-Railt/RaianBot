@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "RaianBot"
-version = "0.6.0"
+version = "0.6.4"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = ["RF-Tar-Railt <rf_tar_railt@qq.com>"]
 readme = "README.md"

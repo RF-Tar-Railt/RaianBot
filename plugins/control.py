@@ -68,14 +68,16 @@ async def _s(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty
 )
 async def _m(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty):
     arp = result.result
+    if not arp.options:
+        return await app.send_message(sender, MessageChain(module_control.get_help()))
     if arp.find("列出"):
         res = "=================================\n"
         enables = [i for i in saya.channels.keys()]
-        e_max = max(len(i) for i in enables)
+        e_max = max(len(i) for i in enables) if saya.channels else 0
         d_max = max(
             (len(i) + len(bot.config.plugin_path) + 1)
             for i in bot.config.disabled_plugins
-        )
+        ) if bot.config.disabled_plugins else 0
         l_max = max(e_max, d_max)
         for name in enables:
             res += name.ljust(l_max + 1) + "已安装\n"
@@ -135,11 +137,13 @@ async def _m(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty
 )
 async def _f(app: Ariadne, sender: Group, result: AlconnaProperty):
     arp = result.result
+    if not arp.options:
+        return await app.send_message(sender, MessageChain(function_control.get_help()))
     group = bot.data.get_group(sender.id)
     if arp.find('列出'):
         res = f"{sender.name} / {sender.id} 统计情况\n"
         res += "====================================\n"
-        funcs = [f"{i}: {bot.data.func_description(i)}" for i in bot.data.funcs]
+        funcs = [f"{i}  备注: {bot.data.func_description(i)}" for i in bot.data.funcs]
         for sign, name in zip(funcs, bot.data.funcs):
             res += f"{'【禁用】' if (name in group.disabled or group.in_blacklist) else '【启用】'} " + sign + "\n"
         res += "===================================="
