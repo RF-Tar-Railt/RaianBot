@@ -17,10 +17,13 @@
 - 状态获取
 - 跑团掷骰
 - 随机涩图 (慎用)
+- 点歌
+- 分组管理
+- rua图
 
 ## 下载
 
-链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.6/raian-bot-0.6.0.zip)
+链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.7/raian-bot-0.7.0.zip)
 
 ## 安装
 
