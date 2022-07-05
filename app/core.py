@@ -19,21 +19,19 @@ from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.model import Group, Member, Friend
 from graia.ariadne.connection.config import config as conn_cfg, HttpClientConfig, WebsocketClientConfig
-from graia.saya.builtins.broadcast import BroadcastBehaviour
 from graia.broadcast import Broadcast
 from graia.broadcast.utilles import Ctx
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.broadcast.builtin.event import ExceptionThrowed
 from graia.ariadne.app import Ariadne
-from graia.scheduler.saya import GraiaSchedulerBehaviour
-from graia.scheduler import GraiaScheduler
 from graia.saya import Saya
-from arclet.alconna.graia.saya import AlconnaBehaviour
-from arclet.alconna import command_manager
+from arclet.alconna import Alconna
+from arclet.alconna.graia import AlconnaBehaviour
 
 from utils.generate_img import create_image
-from utils.control import require_function
+from utils.exception_report import generate_reports
+from app.control import require_function
 from .data import BotDataManager
 from .config import BotConfig
 from .logger import set_output
@@ -55,7 +53,6 @@ class RaianMain:
             self,
             config: BotConfig,
             *,
-            loop: Optional[asyncio.AbstractEventLoop] = None,
             debug_log: bool = True
     ):
         """
@@ -63,30 +60,25 @@ class RaianMain:
 
         Args:
             config: 机器人配置,
-            loop: 事件循环
             debug_log: 是否记录 debug 日志
         """
-        loop = loop or asyncio.get_event_loop()
         self.exit = asyncio.Event()
         self.config = config
         self.data = BotDataManager(config)
-        self.broadcast = Broadcast(loop=loop)
-        Ariadne.config(loop=loop, broadcast=self.broadcast)
+        Alconna.config(headers=self.config.command_prefix)
+        set_output('DEBUG' if debug_log else 'INFO')
         self.app = Ariadne(
             connection=conn_cfg(
                 config.account,
                 config.verify_key,
                 HttpClientConfig(config.url),
                 WebsocketClientConfig(config.url)
-            )
+            ),
+            # log_config=LogConfig('DEBUG' if debug_log else 'INFO')
         )
+        self.broadcast = self.app.broadcast
         self.saya = self.app.create(Saya)
-        self.saya.install_behaviours(
-            BroadcastBehaviour(broadcast=self.broadcast),
-            GraiaSchedulerBehaviour(GraiaScheduler(loop, self.broadcast)),
-            AlconnaBehaviour(broadcast=self.broadcast, manager=command_manager)
-        )
-        set_output('DEBUG' if debug_log else 'INFO')
+        self.app.create(AlconnaBehaviour)
         logger.success("------------------机器人初始化完毕--------------------")
 
         @self.broadcast.finale_dispatchers.append
@@ -198,8 +190,15 @@ class RaianMain:
             ))
             if not init_for_new_group:
                 return
-            joined_set = {i for i in self.data.cache['all_joined_group']}
+            gp_list = {i.id for i in group_list}
+            joined_set = {int(i) for i in self.data.groups}
             count = 0
+            for gp in joined_set.copy():
+                if gp not in gp_list:
+                    logger.debug(f"发现失效群组: {gp}")
+                    joined_set.remove(gp)
+                    if self.data.exist(gp):
+                        self.data.remove_group(gp)
             for gp in group_list:
                 if not self.data.exist(gp.id):
                     logger.debug(f"发现新增群组: {gp.name}")
@@ -222,10 +221,9 @@ class RaianMain:
 
         @self.broadcast.receiver(ExceptionThrowed)
         async def _report(app: Ariadne, event: ExceptionThrowed):
-            exc = event.exception
-            tb = traceback.format_exception(exc.__class__, exc, exc.__traceback__, limit=level)
+            tb = generate_reports(event.exception)[-level:]
             tb.insert(0, f"在处理 {event.event} 时出现如下问题:")
-            bts = await create_image('\n'.join(tb), cut=120)
+            bts = await create_image('\n'.join(tb))
             await app.send_friend_message(self.config.master_id, MessageChain(Image(data_bytes=bts)))
 
     def init_member_change_report(self, welcome: Optional[str] = None):

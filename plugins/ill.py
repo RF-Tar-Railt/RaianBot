@@ -1,23 +1,13 @@
-from typing import Union
 import json
 import random
-from arclet.alconna import Args, Empty, Option
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.dispatcher import AlconnaProperty
-from arclet.alconna.graia.saya import AlconnaSchema
+from arclet.alconna import Args, Empty, Option, Arpamar
+from arclet.alconna.graia import Alconna
 from graia.ariadne.message.element import At
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.model import Group, Friend
+from graia.ariadne.model import Friend
 from graia.ariadne.app import Ariadne
 
-from app import RaianMain
-from utils.control import require_function
-
-bot = RaianMain.current()
-channel = Channel.current()
+from app import command, Sender, Target, record
 
 json_filename = "assets/data/ill_templates.json"
 with open(json_filename, 'r', encoding='UTF-8') as f_obj:
@@ -25,34 +15,28 @@ with open(json_filename, 'r', encoding='UTF-8') as f_obj:
 
 ill = Alconna(
     "发病", Args["name", [str, At], Empty],
-    headers=bot.config.command_prefix,
-    options=[
-        Option("模板", Args["template", list(ill_templates.keys())], help_text="指定发病模板")
-    ],
-    help_text=f"生成一段模板文字 Usage: 若不指定模板则会随机挑选一个; Example: {bot.config.command_prefix[0]}发病 老公;",
+    options=[Option("模板", Args["template", list(ill_templates.keys())], help_text="指定发病模板")],
+    help_text="生成一段模板文字 Usage: 若不指定模板则会随机挑选一个; Example: $发病 老公;",
 )
 
 
-@bot.data.record("发病")
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=ill, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage], decorators=[require_function("发病")]))
-async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty):
+@command(ill)
+@record("发病")
+async def test2(app: Ariadne, sender: Sender, target: Target, result: Arpamar):
     """依据模板发病"""
-    event = result.source
-    arp = result.result
-    if arp.name:
-        if isinstance(arp.name, At):
-            target = arp.name.display
-            if not target:
-                target = (await app.getUserProfile(arp.name.target)).nickname
+    if result.name:
+        if isinstance(result.name, At):
+            name = result.name.display
+            if not name:
+                name = (await app.getUserProfile(result.name.target)).nickname
         else:
-            target = arp.name
-    elif isinstance(event.sender, Friend):
-        target = event.sender.nickname
+            name = result.name
+    elif isinstance(target, Friend):
+        name = target.nickname
     else:
-        target = event.sender.name
-    if arp.find("模板"):
-        template = ill_templates[arp.query("模板.template")]
+        name = target.name
+    if result.find("模板"):
+        template = ill_templates[result.query("模板.template")]
     else:
         template = random.choice(list(ill_templates.values()))
-    return await app.send_message(sender, MessageChain(template.format(target=target)))
+    return await app.send_message(sender, MessageChain(template.format(target=name)))

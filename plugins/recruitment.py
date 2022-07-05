@@ -1,34 +1,21 @@
-from typing import Union
 from playwright.async_api import async_playwright
-from arclet.alconna import Args
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.dispatcher import AlconnaProperty
-from arclet.alconna.graia.saya import AlconnaSchema
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
+from arclet.alconna import Args, Arpamar
+from arclet.alconna.graia import Alconna
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Source
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
-from app import RaianMain
+from app import command, Sender
 
-bot = RaianMain.current()
-channel = Channel.current()
-
-random_ope = Alconna(
+recruit = Alconna(
     "公招", Args["tags;S", str, ...],
-    headers=bot.config.command_prefix,
-    help_text=f"自助访问 prts 的公招计算器并截图 Usage: 标签之间用空格分隔; Example: {bot.config.command_prefix[0]}公招 高资 生存;",
+    help_text=f"自助访问 prts 的公招计算器并截图 Usage: 标签之间用空格分隔; Example: $公招 高资 生存;",
 )
 
 
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=random_ope, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage]))
-async def recruitment(app: Ariadne, sender: Union[Group, Friend], source: Source, result: AlconnaProperty):
-    arp = result.result
-    if arp.tags is None:
+@command(recruit)
+async def recruitment(app: Ariadne, sender: Sender, source: Source, result: Arpamar):
+    if result.tags is None:
         return await app.send_message(sender, MessageChain('不对劲...'))
     await app.send_message(sender, MessageChain('正在获取，请稍等。。。'), quote=source.id)
     async with async_playwright() as playwright:
@@ -44,8 +31,9 @@ async def recruitment(app: Ariadne, sender: Union[Group, Friend], source: Source
             await page.click("text=极简模式")
             # Click text=公开招募计算
             await page.click("text=公开招募计算")
-            for tag in arp.tags:
-                tag = tag.replace("术士", "术师").replace("高资", "高级资深干员")
+            for tag in result.tags:
+                tag = tag.replace("术士", "术师").replace("干员", "").replace(
+                    "资深", "资深干员").replace("高级资深", "高级资深干员").replace("高资", "高级资深干员")
                 if tag != "":
                     await page.click("text=" + tag)
             # ---------------------

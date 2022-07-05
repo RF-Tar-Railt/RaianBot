@@ -1,42 +1,31 @@
-from typing import Union
-from arclet.alconna import Args, Empty, Option
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.dispatcher import AlconnaProperty
-from arclet.alconna.graia.saya import AlconnaSchema
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
+from arclet.alconna import Args, Empty, Option, Arpamar
+from arclet.alconna.graia import Alconna
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
-from app import RaianMain
+from app import command, Sender
 from modules.dice.rd import RD
 
-channel = Channel.current()
-bot = RaianMain.current()
 draw = Alconna(
-    r"r{pattern:[0-z|#\+]*}", Args["expect;O", int]["event", str, Empty],
-    headers=bot.config.command_prefix,
+    r"r( )?{pattern:[0-z|#\+]*}", Args["expect;O", int]["event", str, Empty],
+    headers=['.'],
     options=[Option("max", Args["num", int, 100])],
     help_text=f"模拟coc掷骰功能",
 )
 
 
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=draw, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage]))
-async def test2(
+@command(draw)
+async def dice(
         app: Ariadne,
         target: Source,
-        sender: Union[Group, Friend],
-        result: AlconnaProperty
+        sender: Sender,
+        result: Arpamar
 ):
-    arp = result.result
-    pattern = arp.header['pattern']
-    expect = arp.main_args.get('expect', -1)
-    event = arp.main_args.get('event')
-    max_num = arp.query("max.num", 100)
+    pattern = result.header['pattern']
+    expect = result.main_args.get('expect', -1)
+    event = result.main_args.get('event')
+    max_num = result.query("max.num", 100)
     rd = RD(pattern)
     try:
         rd_num = rd.roll().total

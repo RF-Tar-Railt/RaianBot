@@ -8,11 +8,13 @@ from graia.ariadne.message.element import At, Plain
 from graia.ariadne.app import Ariadne
 
 
-def require_admin(*ids_: int, include_ids: bool = False):
-    async def __wrapper__(sender: Union[Friend, Group], target: Union[Member, Friend]):
-        if target.id in ids_:
+def require_admin(only: bool = False):
+    from .core import RaianMain
+
+    async def __wrapper__(bot: RaianMain, sender: Union[Friend, Group], target: Union[Member, Friend]):
+        if target.id == bot.config.master_id:
             return True
-        if not include_ids and isinstance(target, Member) and target.permission in (
+        if not only and isinstance(target, Member) and target.permission in (
                 MemberPerm.Administrator, MemberPerm.Owner
         ):
             return True
@@ -24,7 +26,7 @@ def require_admin(*ids_: int, include_ids: bool = False):
 
 
 def require_function(name: str):
-    from app import RaianMain
+    from .core import RaianMain
 
     def __wrapper__(bot: RaianMain, sender: Union[Friend, Group]):
         data = bot.data

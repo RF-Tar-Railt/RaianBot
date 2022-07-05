@@ -1,49 +1,22 @@
 import json
 import random
-from typing import Union
 from datetime import datetime
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.saya import AlconnaSchema
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
+from arclet.alconna.graia import Alconna
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.model import Group, Member, Friend
 from graia.ariadne.app import Ariadne
 
-from app import RaianMain
+from app import RaianMain, Sender, Target, command, record
 from modules.rand import random_pick_small
-from utils.control import require_function
 
-bot = RaianMain.current()
-channel = Channel.current()
 json_filename = "assets/data/draw_poetry.json"
 with open(json_filename, 'r', encoding='UTF-8') as f_obj:
     draw_poetry = json.load(f_obj)['data']
 
-draw = Alconna(
-    "抽签",
-    headers=bot.config.command_prefix,
-    help_text="进行一次抽签, 可以解除",
-)
 
-undraw = Alconna(
-    "解签",
-    headers=bot.config.command_prefix,
-    help_text="解除上一次的抽签",
-)
-
-
-@bot.data.record("抽签")
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=draw, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage], decorators=[require_function("抽签")]))
-async def draw(
-        app: Ariadne,
-        sender: Union[Group, Friend],
-        target: Union[Member, Friend],
-        source: Source
-):
+@record("抽签")
+@command(Alconna("抽签", help_text="进行一次抽签, 可以解除"))
+async def draw(app: Ariadne, sender: Sender, target: Target, source: Source, bot: RaianMain):
     """每日运势抽签"""
     today = datetime.now().day
     if not bot.data.exist(target.id):
@@ -72,14 +45,8 @@ async def draw(
     )
 
 
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=undraw, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage]))
-async def draw(
-        app: Ariadne,
-        sender: Union[Group, Friend],
-        target: Union[Member, Friend],
-        source: Source
-):
+@command(Alconna("解签", help_text="解除上一次的抽签"))
+async def draw(app: Ariadne, sender: Sender, target: Target, source: Source, bot: RaianMain):
     if not bot.data.exist(target.id):
         return await app.send_message(sender, MessageChain("您还未找我签到~"), quote=source.id)
     user = bot.data.get_user(target.id)

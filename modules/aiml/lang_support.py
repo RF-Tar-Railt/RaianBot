@@ -2,7 +2,8 @@
 
 def is_chinese(c):
     """中文Unicode码范围参考：https://www.iteye.com/topic/558050     """
-
+# 一，二，三9
+# 123456789
     r = [
         # 标准CJK文字
         (0x3400, 0x4DB5), (0x4E00, 0x9FA5), (0x9FA6, 0x9FBB), (0xF900, 0xFA2D),

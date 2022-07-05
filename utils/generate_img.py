@@ -13,7 +13,7 @@ def cut_text(
     target = ''
     start_symbol = '[{<(【《（〈〖［〔“‘『「〝'
     end_symbol = ',.!?;:]}>)%~…，。！？；：】》）〉〗］〕”’～』」〞'
-    line_width = chars_per_line * font.getlength("一")
+    line_width = chars_per_line * font.getlength("0")
     for i in origin.splitlines(False):
         if i == '':
             target += '\n'

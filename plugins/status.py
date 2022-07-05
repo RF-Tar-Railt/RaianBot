@@ -1,24 +1,17 @@
 import os
 import platform
 import time
-from typing import Union
-
 import psutil
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.saya import AlconnaSchema
+from arclet.alconna.graia import Alconna
 from graia.ariadne.app import Ariadne
-from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.model import Group, Friend
+from graia.ariadne.util.saya import decorate
 from graia.saya import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
 
-from app import RaianMain
-from utils.control import require_admin
+from app import require_admin, command, Sender
 from utils.generate_img import create_image
 
-bot = RaianMain.current()
 channel = Channel.current()
 
 python_version = platform.python_version()
@@ -29,18 +22,10 @@ else:
 total_memory = '%.1f' % (psutil.virtual_memory().total / 1073741824)
 pid = os.getpid()
 
-status = Alconna(
-    "(状态|设备信息)",
-    headers=bot.config.command_prefix,
-    help_text="显示机器人运行设备的状态信息",
-)
 
-
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=status, help_flag="reply")))
-@channel.use(
-    ListenerSchema([GroupMessage, FriendMessage], decorators=[require_admin(bot.config.master_id)])
-)
-async def main(app: Ariadne, sender: Union[Group, Friend]):
+@command(Alconna("(状态|设备信息)", help_text="显示机器人运行设备的状态信息"))
+@decorate(require_admin())
+async def status(app: Ariadne, sender: Sender):
     p = psutil.Process(pid)
     started_time = time.localtime(p.create_time())
     running_time = time.time() - p.create_time()

@@ -1,35 +1,18 @@
-from typing import Union
-from arclet.alconna import Args, Empty, Option, command_manager
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.dispatcher import AlconnaProperty
-from arclet.alconna.graia.saya import AlconnaSchema
+from arclet.alconna import Args, command_manager
+from arclet.alconna.graia import Alconna, Match
 from graia.ariadne.message.element import Image
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
 
-from app import RaianMain
+from app import command, Sender
 from utils.generate_img import create_image
 
-bot = RaianMain.current()
-channel = Channel.current()
 
-helping = Alconna(
-    "帮助", Args["id", int, Empty],
-    headers=bot.config.command_prefix,
-    help_text=f"查看帮助",
-)
+@command(Alconna("帮助", Args["index#选择某条命令的id查看具体帮助", int, -1], help_text="查看帮助"))
+async def test2(app: Ariadne, sender: Sender, index: Match[int]):
 
-
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=helping, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage]))
-async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty):
-    arp = result.result
     cmds = command_manager.get_commands()
-    if not arp.id:
+    if index.result < 0:
         text = command_manager.all_command_help(show_index=True) + (
             "\n========================================================"
             "\n所有功能均无需 @机器人本身"
@@ -38,7 +21,7 @@ async def test2(app: Ariadne, sender: Union[Group, Friend], result: AlconnaPrope
         )
         return await app.send_message(sender, MessageChain(Image(data_bytes=await create_image(text, cut=120))))
     try:
-        text = command_manager.command_help(cmds[arp.id].path)
+        text = command_manager.command_help(cmds[index.result].path)
         return await app.send_message(sender, MessageChain(Image(data_bytes=await create_image(text, cut=120))))
-    except IndexError:
+    except (IndexError, TypeError):
         return await app.send_message(sender, MessageChain("ID错误！"))

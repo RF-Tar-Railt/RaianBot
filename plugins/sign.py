@@ -1,31 +1,15 @@
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.saya import AlconnaSchema
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
+from arclet.alconna.graia import Alconna
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
-from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.model import Group, Member
 from graia.ariadne.app import Ariadne
 
-
-from app import RaianMain
-from utils.control import require_function
-
-bot = RaianMain.current()
-channel = Channel.current()
-
-sign = Alconna(
-    "签到",
-    headers=bot.config.command_prefix,
-    help_text="在机器人处登记用户信息",
-)
+from app import RaianMain, record, command
 
 
-@bot.data.record('sign')
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=sign, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage], decorators=[require_function('sign')]))
-async def sign_up(app: Ariadne, sender: Group, member: Member, source: Source):
+@record('sign')
+@command(Alconna("签到", help_text="在机器人处登记用户信息"), False)
+async def sign_up(app: Ariadne, sender: Group, member: Member, source: Source, bot: RaianMain):
     """在机器人处登记信息"""
     if bot.data.exist(member.id):
         return await app.send_group_message(

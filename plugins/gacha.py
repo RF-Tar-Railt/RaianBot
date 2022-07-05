@@ -1,42 +1,20 @@
-from typing import Union
 from arclet.alconna import Args
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.dispatcher import AlconnaProperty
-from arclet.alconna.graia.saya import AlconnaSchema
+from arclet.alconna.graia import Alconna, Match
 from graia.ariadne.message.element import Image
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.model import Group, Friend, Member
 from graia.ariadne.app import Ariadne
 
 
-from app import RaianMain
+from app import RaianMain, Sender, Target, command, record
 from modules.arknights import ArknightsGacha
-from utils.control import require_function
-
-channel = Channel.current()
-bot = RaianMain.current()
-draw = Alconna(
-    "(抽卡|寻访)", Args["count", int, 1],
-    headers=bot.config.command_prefix,
-    help_text=f"模拟方舟寻访 Example: {bot.config.command_prefix[0]}抽卡 300;",
-)
 
 
-@bot.data.record("抽卡")
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=draw, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage], decorators=[require_function("抽卡")]))
-async def draw(
-        app: Ariadne,
-        sender: Union[Group, Friend],
-        target: Union[Friend, Member],
-        result: AlconnaProperty
-):
+@command(Alconna("(抽卡|寻访)", Args["count", int, 1], help_text="模拟方舟寻访 Example: $抽卡 300;"))
+@record("抽卡")
+async def draw(app: Ariadne, sender: Sender, target: Target, count: Match[int], bot: RaianMain):
     """模拟抽卡"""
     file = bot.config.plugin.get('gache', 'assets/data/gacha_arknights.json')
-    count = result.result.count
+    count = count.result
     if count < 1:
         count = 1
     if count > 300:

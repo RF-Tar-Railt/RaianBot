@@ -3,11 +3,7 @@ from typing import Union
 from contextlib import suppress
 from PicImageSearch import Ascii2D, SauceNAO, Network, Iqdb
 from arclet.alconna import Args
-from arclet.alconna.graia.saya import AlconnaSchema
-from arclet.alconna.graia import Alconna, AlconnaDispatcher, ImgOrUrl
-from arclet.alconna.graia.dispatcher import AlconnaProperty
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
+from arclet.alconna.graia import Alconna, Match, ImgOrUrl
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.element import Image, Source, Forward, ForwardNode, Plain
@@ -15,31 +11,28 @@ from graia.ariadne.model import Group, Member, BotMessage, Friend
 from graia.ariadne.app import Ariadne
 from graia.broadcast.interrupt import InterruptControl, Waiter
 from loguru import logger
+from creart import it
 
-from app import RaianMain
-from utils.control import require_function
+from app import command, Sender, Target, record, RaianMain
 
-bot = RaianMain.current()
-channel = Channel.current()
-inc = InterruptControl(bot.broadcast)
+inc = it(InterruptControl)
 running = asyncio.Event()
 
 search = Alconna(
     "搜图", Args["img;O", ImgOrUrl],
-    headers=bot.config.command_prefix,
-    help_text=f"以图搜图，搜图结果会自动发送给你。Usage: 该功能会尝试在三类搜索网站中搜索相似图片 ; Example: {bot.config.command_prefix[0]}搜图 [图片];"
+    help_text="以图搜图，搜图结果会自动发送给你。Usage: 该功能会尝试在三类搜索网站中搜索相似图片 ; Example: $搜图 [图片];"
 )
 
 
-@bot.data.record("搜图")
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=search, help_flag='reply')))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage], decorators=[require_function("搜图")]))
+@record("搜图")
+@command(search)
 async def saucenao(
         app: Ariadne,
-        sender: Union[Group, Friend],
-        target: Union[Member, Friend],
+        sender: Sender,
+        target: Target,
         source: Source,
-        result: AlconnaProperty
+        img: Match[Union[Image, str]],
+        bot: RaianMain
 ):
     """通过各API搜图源"""
 
@@ -64,9 +57,8 @@ async def saucenao(
             sender, MessageChain("以图搜图正在运行，请稍后再试")
         )
         return
-    arp = result.result
-    if img := arp.main_args.get('img', None):
-        image_url = img if isinstance(img, str) else img.url
+    if img.available:
+        image_url = img.result if isinstance(img.result, str) else img.result.url
 
     else:
         waite = await app.send_message(

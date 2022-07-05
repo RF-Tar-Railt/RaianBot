@@ -1,56 +1,30 @@
 # coding: utf-8
 import sys
-import traceback
 import subprocess
 import asyncio
 from io import StringIO
-from typing import Union
-from arclet.alconna import Args, AllParam, Option
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
-from arclet.alconna.graia.dispatcher import AlconnaProperty
-from arclet.alconna.graia.saya import AlconnaSchema
-from graia.saya import Channel, Saya
-from graia.saya.builtins.broadcast import ListenerSchema
+from arclet.alconna import Args, AllParam, Option, Alconna, Arpamar
 from graia.ariadne.message.element import Image
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.model import Group, Friend
 from graia.ariadne.app import Ariadne
+from graia.ariadne.util.saya import decorate
 
-from app import RaianMain
+from app import Sender, command, require_admin
 from utils.generate_img import create_image
-from utils.control import require_admin
-
-bot = RaianMain.current()
-saya = Saya.current()
-channel = Channel.current()
+from utils.exception_report import generate_reports
 
 code = Alconna(
     "执行", Args["code;S", str],
-    headers=bot.config.command_prefix,
     options=[Option("out", Args["name;O", str, "res"])],
-    help_text=f"执行简易代码 Example: {bot.config.command_prefix[0]}执行 print(1+1);",
-)
-
-shell = Alconna(
-    "shell", Args["code", AllParam],
-    headers=bot.config.command_prefix,
-    help_text=f"执行命令行语句 Example: {bot.config.command_prefix[0]}shell echo hello;",
+    help_text="执行简易代码 Example: $执行 print(1+1);",
 )
 
 
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=code, help_flag="reply")))
-@channel.use(
-    ListenerSchema([GroupMessage, FriendMessage], decorators=[require_admin(bot.config.master_id)])
-)
-async def _(
-    app: Ariadne,
-    sender: Union[Group, Friend],
-    result: AlconnaProperty
-):
-
-    codes = str(result.result.origin).split("\n")
-    output = result.result.query("out.name", "res")
+@command(code)
+@decorate(require_admin())
+async def execc(app: Ariadne, sender: Sender, result: Arpamar):
+    codes = str(result.origin).split("\n")
+    output = result.query("out.name", "res")
     if len(codes) == 1:
         return
     for _code in codes[1:]:
@@ -89,32 +63,22 @@ async def _(
             )
     except Exception as e:
         sys.stdout = _to
-        return await app.send_message(
-            sender, MessageChain(Image(
-                data_bytes=(await create_image(
-                    '\n'.join(traceback.format_exception(e.__class__, e, e.__traceback__, limit=1)),
-                    cut=120
-                )))
-            )
-        )
+        return await app.send_message(sender, MessageChain(Image(data_bytes=(await create_image(generate_reports(e))))))
     finally:
         sys.stdout = _to
 
 
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=shell, help_flag="reply")))
-@channel.use(
-    ListenerSchema([GroupMessage, FriendMessage], decorators=[require_admin(bot.config.master_id, include_ids=True)])
-)
-async def _(app: Ariadne, sender: Union[Group, Friend], result: AlconnaProperty):
-    arp = result.result
+@command(Alconna("shell", Args["code", AllParam], help_text="执行命令行语句 Example: $shell echo hello;"))
+@decorate(require_admin(True))
+async def shell(app: Ariadne, sender: Sender, result: Arpamar):
     try:
         res = subprocess.run(
-            arp.main_args['code'][0],
+            result.main_args['code'][0],
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         ).stdout.decode('utf-8')
     except UnicodeDecodeError:
         res = subprocess.run(
-            arp.main_args['code'][0],
+            result.main_args['code'][0],
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         ).stdout.decode('gbk')
     await asyncio.sleep(0)

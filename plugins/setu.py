@@ -1,41 +1,30 @@
 import random
 from aiohttp import ClientSession
-from typing import Union
 from arclet.alconna import Args, Option
 from datetime import datetime
-from arclet.alconna.graia import Alconna, AlconnaDispatcher
+from arclet.alconna.graia import Alconna
 from arclet.alconna.graia.dispatcher import AlconnaProperty
-from arclet.alconna.graia.saya import AlconnaSchema
-from graia.saya.channel import Channel
-from graia.saya.builtins.broadcast import ListenerSchema
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Image
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.model import Group, Friend
+from graia.ariadne.event.message import MessageEvent
 from graia.ariadne.app import Ariadne
 
-from app import RaianMain
-from utils.control import require_function
-
-bot = RaianMain.current()
-channel = Channel.current()
+from app import record, command, Sender
 
 setu = Alconna(
     "涩图",
     Args["r-per", ["r9", "r16", "r18"], "r9"],
-    headers=bot.config.command_prefix,
     help_text=f"顾名思义",
     options=[Option("tag", Args["tag", str])]
 )
 
 
-@bot.data.record("setu")
-@channel.use(AlconnaSchema(AlconnaDispatcher(alconna=setu, help_flag="reply")))
-@channel.use(ListenerSchema([GroupMessage, FriendMessage], decorators=[require_function("setu")]))
-async def test2(
+@record('setu')
+@command(setu)
+async def send_setu(
         app: Ariadne,
-        sender: Union[Group, Friend],
-        result: AlconnaProperty
+        sender: Sender,
+        result: AlconnaProperty[MessageEvent]
 ):
     """随机涩图发送"""
     target = result.source.sender
