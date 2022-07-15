@@ -1,22 +1,21 @@
 from arclet.alconna import Args, Option, Arpamar
-from arclet.alconna.graia import Alconna
+from arclet.alconna.graia import Alconna, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
 import asyncio
 
-from app import command, Sender
+from app import Sender
 
 music = Alconna(
-    "点歌",
-    Args["name", str],
-    options=[Option("歌手|s", Args['singer', str], dest="singer")],
-    help_text=f"在网易云点歌 Usage: 用 歌手 选项指定歌手; Example: $点歌 Rise;",
+    "点歌", Args["name", str],
+    options=[Option("歌手|-s", Args['singer', str], dest="singer")],
+    help_text="在网易云点歌 Usage: 用 歌手 选项指定歌手; Example: $点歌 Rise;",
 )
 
 
 @command(music)
 async def song(app: Ariadne, sender: Sender, result: Arpamar):
-    singer = (singer + " ") if (singer := result.query("singer.singer")) else ""
+    singer = f"{singer} " if (singer := result.query("singer.singer")) else ""
     song_search_url = f"http://music.eleuu.com/search?keywords={singer + result.name}"
     try:
         async with app.service.client_session.get(song_search_url, timeout=20) as resp:

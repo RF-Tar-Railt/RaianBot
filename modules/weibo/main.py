@@ -128,9 +128,8 @@ class WeiboAPI:
             return
         if index < 0:
             if len(d_data['cards']) > 1:
-                may_top_id = int(d_data['cards'][0]['mblog']['id'])
-                may_last_id = int(d_data['cards'][1]['mblog']['id'])
-                index = 0 if may_top_id > may_last_id else 1
+                ids = [int(i['mblog']['id']) for i in d_data['cards']]
+                index = ids.index(max(ids))
             else:
                 index = 0
         res = self._handler_dynamic(d_data['cards'][index]['mblog'])

@@ -1,27 +1,22 @@
 from arclet.alconna import Args, Empty, Option, Arpamar
-from arclet.alconna.graia import Alconna
+from arclet.alconna.graia import Alconna, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.app import Ariadne
 
-from app import command, Sender
+from app import Sender
 from modules.dice.rd import RD
 
 draw = Alconna(
     r"r( )?{pattern:[0-z|#\+]*}", Args["expect;O", int]["event", str, Empty],
     headers=['.'],
     options=[Option("max", Args["num", int, 100])],
-    help_text=f"模拟coc掷骰功能",
+    help_text="模拟coc掷骰功能",
 )
 
 
 @command(draw)
-async def dice(
-        app: Ariadne,
-        target: Source,
-        sender: Sender,
-        result: Arpamar
-):
+async def dice(app: Ariadne, target: Source, sender: Sender, result: Arpamar):
     pattern = result.header['pattern']
     expect = result.main_args.get('expect', -1)
     event = result.main_args.get('event')
@@ -31,10 +26,7 @@ async def dice(
         rd_num = rd.roll().total
     except ValueError:
         return await app.send_message(sender, MessageChain("输入有误, 请仔细检查"), quote=target)
-    if event:
-        ans = f"进行{event}检定: {rd.pattern}"
-    else:
-        ans = f"掷骰: {rd.pattern}"
+    ans = f"进行{event}检定: {rd.pattern}" if event else f"掷骰: {rd.pattern}"
     if expect > 0:
         if rd_num == max_num or (expect < max_num / 2 and rd_num >= 0.96 * max_num):
             ans += f"={rd_num}/{expect}, 大失败"

@@ -1,13 +1,13 @@
 from datetime import datetime
 from arclet.alconna import Args, Option, Arpamar
-from arclet.alconna.graia import Alconna, Match
+from arclet.alconna.graia import Alconna, Match, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Source, Image
 from graia.ariadne.model import Friend
 from graia.ariadne.app import Ariadne
 from graia.scheduler.timers import every_minute
 
-from app import RaianMain, Sender, Target, record, command, schedule
+from app import RaianMain, Sender, Target, record, schedule
 from modules.weibo import WeiboAPI, WeiboDynamic
 
 bot = RaianMain.current()
@@ -118,10 +118,10 @@ async def update():
         for uid in followers:
             if uid in dynamics:
                 res = dynamics[uid]
-            else:
-                if not (res := await api.update(int(uid))):
-                    continue
+            elif res := await api.update(int(uid)):
                 dynamics[uid] = res
+            else:
+                continue
             now = datetime.now()
             await bot.app.send_group_message(prof.id, MessageChain(f"{res.user.name} 有一条新动态！请查收!"))
             await bot.app.send_group_message(prof.id, MessageChain(

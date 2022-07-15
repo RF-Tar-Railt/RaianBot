@@ -2,14 +2,14 @@ import os
 import platform
 import time
 import psutil
-from arclet.alconna.graia import Alconna
+from arclet.alconna.graia import Alconna, command
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.util.saya import decorate
 from graia.saya import Channel
 
-from app import require_admin, command, Sender
+from app import require_admin, Sender
 from utils.generate_img import create_image
 
 channel = Channel.current()

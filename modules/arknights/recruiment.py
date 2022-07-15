@@ -1,5 +1,5 @@
 from typing import List
-
+import itertools
 professor_1 = {'先锋': 32, '近卫': 16, '狙击': 8, '重装': 4, '医疗': 2, '辅助': 1}
 professor_2 = {'术师': 32, '特种': 16}
 position_3 = {'近战位': 8, '远程位': 4}
@@ -40,10 +40,9 @@ def recruitment(tags: List[str]):
         if val in others_7:
             add_str[6] += others_7[val]
 
-    for word in alphabet:
-        for i in range(0, 7):
-            if alphabet[word] == add_str[i]:
-                add_str[i] = word
+    for word, i in itertools.product(alphabet, range(7)):
+        if alphabet[word] == add_str[i]:
+            add_str[i] = word
     return base_url + "".join(add_str) + base_str
 
 

@@ -77,11 +77,11 @@ class RD:
         if not _dice:
             _dice += f"D{default_dice}"
         if _dice[0] == 'a':
-            _dice = '1' + _dice
+            _dice = f'1{_dice}'
         if _dice[0] == 'D' and _dice[1] == 'F':
-            _dice = '4' + _dice
+            _dice = f'4{_dice}'
         if _dice[0] == 'F':
-            _dice = '4D' + _dice
+            _dice = f'4D{_dice}'
         _dice = _dice.replace('XX', 'X', 2).replace('//', '/', 2)
         for i in range(1, len(_dice)):
             if _dice[i] == 'F' and (
@@ -218,10 +218,7 @@ class RD:
             return
         if pattern.endswith('F'):
             self.bnp_record.append(DiceType.Fudge_Dice)
-            if pattern.endswith('DF'):
-                _dice_num = pattern[:-2]
-            else:
-                _dice_num = pattern[:-1]
+            _dice_num = pattern[:-2] if pattern.endswith('DF') else pattern[:-1]
             if not _dice_num.isdigit():
                 raise Value_Err
             if len(_dice_num) > 2:
@@ -246,16 +243,14 @@ class RD:
         exist_d = False
         exist_k = False
         for c in filter(lambda x: not x.isdigit(), pattern.upper()):
-            if c == 'D':
-                if exist_d:
-                    raise Input_Err
-                exist_d = True
-            elif c == 'K':
-                if (not exist_d) or exist_k:
-                    raise Input_Err
-                exist_k = True
-            else:
+            if c == 'D' and exist_d or c not in ['D', 'K']:
                 raise Input_Err
+            elif c == 'D':
+                exist_d = True
+            elif (not exist_d) or exist_k:
+                raise Input_Err
+            else:
+                exist_k = True
         if not exist_d:
             if len(pattern) > 5 or not pattern:
                 raise Value_Err

@@ -2,6 +2,7 @@ import asyncio
 import time
 import traceback
 import random
+from creart import it
 from typing import Optional, List
 from loguru import logger
 from pathlib import Path
@@ -26,6 +27,8 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.broadcast.builtin.event import ExceptionThrowed
 from graia.ariadne.app import Ariadne
 from graia.saya import Saya
+from graia.scheduler import GraiaScheduler
+from graia.scheduler.timers import every_hours
 from arclet.alconna import Alconna
 from arclet.alconna.graia import AlconnaBehaviour
 
@@ -49,12 +52,7 @@ class RaianMain:
 
     __slots__ = ("broadcast", "app", "config", "data", "saya", "exit")
 
-    def __init__(
-            self,
-            config: BotConfig,
-            *,
-            debug_log: bool = True
-    ):
+    def __init__(self, config: BotConfig, debug_log: bool = True):
         """
         配置机器人参数
 
@@ -77,8 +75,9 @@ class RaianMain:
             # log_config=LogConfig('DEBUG' if debug_log else 'INFO')
         )
         self.broadcast = self.app.broadcast
-        self.saya = self.app.create(Saya)
-        self.app.create(AlconnaBehaviour)
+        self.saya = it(Saya)
+        it(AlconnaBehaviour)
+        scheduler = it(GraiaScheduler)
         logger.success("------------------机器人初始化完毕--------------------")
 
         @self.broadcast.finale_dispatchers.append
@@ -91,6 +90,11 @@ class RaianMain:
                     return self.config
                 if interface.annotation is BotDataManager:
                     return self.data
+
+        @scheduler.schedule(every_hours())
+        async def save():
+            self.data.save()
+            await asyncio.sleep(0)
 
     @classmethod
     def current(cls):
@@ -216,12 +220,12 @@ class RaianMain:
         async def _report(app: Ariadne):
             await app.send_friend_message(self.config.master_id, MessageChain("机器人关闭中。。。"))
 
-    def init_exception_report(self, level: int = 3):
+    def init_exception_report(self):
         """配置运行时异常报告功能"""
 
         @self.broadcast.receiver(ExceptionThrowed)
         async def _report(app: Ariadne, event: ExceptionThrowed):
-            tb = generate_reports(event.exception)[-level:]
+            tb = generate_reports(event.exception)
             tb.insert(0, f"在处理 {event.event} 时出现如下问题:")
             bts = await create_image('\n'.join(tb))
             await app.send_friend_message(self.config.master_id, MessageChain(Image(data_bytes=bts)))

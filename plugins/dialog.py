@@ -86,7 +86,7 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
                         voice = True
                         break
 
-            if not plain and not voice:  # TODO: 接入AI
+            if not plain and not voice:
                 for key, value in dialog_templates['image'].items():
                     if re.match(f".*?{key}$", msg):
                         rand_str = random.sample(value, 1)[0]
@@ -112,8 +112,8 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
                             rand_str = Image(data_bytes=Path(f"assets/image/{rand_str}").read_bytes())
                         image = True
                         break
-            if not plain and not voice and not image:
-                rand_str = await aiml.chat(message=msg, session_id=target.id)
+                if not image:
+                    rand_str = await aiml.chat(message=msg, session_id=target.id)
         if rand_str:  # noqa
             await app.send_message(sender, MessageChain(rand_str))  # noqa
             raise PropagationCancelled

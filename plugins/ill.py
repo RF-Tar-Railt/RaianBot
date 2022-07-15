@@ -1,13 +1,13 @@
 import json
 import random
 from arclet.alconna import Args, Empty, Option, Arpamar
-from arclet.alconna.graia import Alconna
+from arclet.alconna.graia import Alconna, command, fetch_name
 from graia.ariadne.message.element import At
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.model import Friend
 from graia.ariadne.app import Ariadne
+from graia.ariadne.util.saya import decorate
 
-from app import command, Sender, Target, record
+from app import Sender, record
 
 json_filename = "assets/data/ill_templates.json"
 with open(json_filename, 'r', encoding='UTF-8') as f_obj:
@@ -22,19 +22,9 @@ ill = Alconna(
 
 @command(ill)
 @record("发病")
-async def test2(app: Ariadne, sender: Sender, target: Target, result: Arpamar):
+@decorate({"name": fetch_name()})
+async def test2(app: Ariadne, sender: Sender, name: str, result: Arpamar):
     """依据模板发病"""
-    if result.name:
-        if isinstance(result.name, At):
-            name = result.name.display
-            if not name:
-                name = (await app.getUserProfile(result.name.target)).nickname
-        else:
-            name = result.name
-    elif isinstance(target, Friend):
-        name = target.nickname
-    else:
-        name = target.name
     if result.find("模板"):
         template = ill_templates[result.query("模板.template")]
     else:

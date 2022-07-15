@@ -1,19 +1,19 @@
 from playwright.async_api import async_playwright
 from arclet.alconna import Args, Arpamar
-from arclet.alconna.graia import Alconna
+from arclet.alconna.graia import Alconna, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Source
 from graia.ariadne.app import Ariadne
 
-from app import command, Sender
+from app import Sender
 
 recruit = Alconna(
     "公招", Args["tags;S", str, ...],
-    help_text=f"自助访问 prts 的公招计算器并截图 Usage: 标签之间用空格分隔; Example: $公招 高资 生存;",
+    help_text="自助访问 prts 的公招计算器并截图 Usage: 标签之间用空格分隔; Example: $公招 高资 生存;",
 )
 
 
-@command(recruit)
+@command(recruit, send_error=True)
 async def recruitment(app: Ariadne, sender: Sender, source: Source, result: Arpamar):
     if result.tags is None:
         return await app.send_message(sender, MessageChain('不对劲...'))
@@ -35,7 +35,7 @@ async def recruitment(app: Ariadne, sender: Sender, source: Source, result: Arpa
                 tag = tag.replace("术士", "术师").replace("干员", "").replace(
                     "资深", "资深干员").replace("高级资深", "高级资深干员").replace("高资", "高级资深干员")
                 if tag != "":
-                    await page.click("text=" + tag)
+                    await page.click(f"text={tag}")
             # ---------------------
             data = await page.screenshot(full_page=True, omit_background=True)
             await context.close()

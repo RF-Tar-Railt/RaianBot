@@ -21,19 +21,6 @@ def meta(author: Optional[List[str]] = None, name: Optional[str] = None, descrip
     channel.meta['description'] = description
 
 
-def command(alconna: Alconna, allow_private: bool = True) -> Wrapper:
-    if '$' in alconna.help_text:
-        alconna.help_text = alconna.help_text.replace('$', alconna.headers[0], 1)
-
-    def wrapper(func: T_Callable) -> T_Callable:
-        cube: Cube[ListenerSchema] = ensure_cube_as_listener(func)
-        cube.metaclass.listening_events.extend([GroupMessage, FriendMessage] if allow_private else [GroupMessage])
-        cube.metaclass.inline_dispatchers.append(AlconnaDispatcher(alconna, help_flag='reply'))
-        return func
-
-    return wrapper
-
-
 def record(name: str, require: bool = True) -> Wrapper:
     def wrapper(func: T_Callable) -> T_Callable:
         bot = RaianMain.current()

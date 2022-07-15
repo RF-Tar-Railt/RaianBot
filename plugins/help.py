@@ -1,10 +1,10 @@
 from arclet.alconna import Args, command_manager
-from arclet.alconna.graia import Alconna, Match
+from arclet.alconna.graia import Alconna, Match, command
 from graia.ariadne.message.element import Image
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
 
-from app import command, Sender
+from app import Sender
 from utils.generate_img import create_image
 
 
@@ -21,7 +21,7 @@ async def test2(app: Ariadne, sender: Sender, index: Match[int]):
         )
         return await app.send_message(sender, MessageChain(Image(data_bytes=await create_image(text, cut=120))))
     try:
-        text = command_manager.command_help(cmds[index.result].path)
+        text = cmds[index.result].get_help()
         return await app.send_message(sender, MessageChain(Image(data_bytes=await create_image(text, cut=120))))
     except (IndexError, TypeError):
         return await app.send_message(sender, MessageChain("ID错误！"))

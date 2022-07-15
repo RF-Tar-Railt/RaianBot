@@ -32,7 +32,7 @@ plugin:
 ## 插件的父级路径
 plugin_path: plugins
 ## 禁用的功能列表
-disabled_plugins: ['setu']
+disabled_plugins: ['setu', 'ill', 'img_search']
 
 ## 群组的附加元数据, 为插件提供数据字段
 group_meta:

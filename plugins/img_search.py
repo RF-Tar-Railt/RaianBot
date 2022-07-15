@@ -3,7 +3,7 @@ from typing import Union
 from contextlib import suppress
 from PicImageSearch import Ascii2D, SauceNAO, Network, Iqdb
 from arclet.alconna import Args
-from arclet.alconna.graia import Alconna, Match, ImgOrUrl
+from arclet.alconna.graia import Alconna, Match, ImgOrUrl, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.element import Image, Source, Forward, ForwardNode, Plain
@@ -13,7 +13,7 @@ from graia.broadcast.interrupt import InterruptControl, Waiter
 from loguru import logger
 from creart import it
 
-from app import command, Sender, Target, record, RaianMain
+from app import Sender, Target, record, RaianMain
 
 inc = it(InterruptControl)
 running = asyncio.Event()
@@ -31,7 +31,7 @@ async def saucenao(
         sender: Sender,
         target: Target,
         source: Source,
-        img: Match[Union[Image, str]],
+        img: Match[str],
         bot: RaianMain
 ):
     """通过各API搜图源"""
@@ -57,9 +57,8 @@ async def saucenao(
             sender, MessageChain("以图搜图正在运行，请稍后再试")
         )
         return
-    if img.available:
-        image_url = img.result if isinstance(img.result, str) else img.result.url
-
+    if img.available and img.result:
+        image_url = img.result
     else:
         waite = await app.send_message(
             sender, MessageChain("请发送图片以继续，发送取消可终止搜图")

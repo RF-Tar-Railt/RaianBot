@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "RaianBot"
-version = "0.7.0"
+version = "0.8.0"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = ["RF-Tar-Railt <rf_tar_railt@qq.com>"]
 readme = "README.md"
@@ -20,8 +20,8 @@ graia-ariadne = "^0.7.15"
 graia-broadcast = "^0.18.2"
 graia-saya = "^0.0.16"
 graia-scheduler = "^0.0.8"
-arclet-alconna = "^1.0.2"
-arclet-alconna-graia = "^0.2.3"
+arclet-alconna = "^1.1.0"
+arclet-alconna-graia = "^0.4.0"
 tencentcloud-sdk-python = "^3.0.495"
 ujson = "^5.1.0"
 creart = "^0.2.1"

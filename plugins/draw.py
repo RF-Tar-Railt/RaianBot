@@ -1,12 +1,12 @@
 import json
 import random
 from datetime import datetime
-from arclet.alconna.graia import Alconna
+from arclet.alconna.graia import Alconna, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.app import Ariadne
 
-from app import RaianMain, Sender, Target, command, record
+from app import RaianMain, Sender, Target, record
 from modules.rand import random_pick_small
 
 json_filename = "assets/data/draw_poetry.json"

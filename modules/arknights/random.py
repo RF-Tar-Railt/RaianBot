@@ -22,10 +22,8 @@ class RandomOperator:
             self.rand_operator_dict = json.load(f)
 
     def generate(self, name: str) -> str:
-        count = 0
         rand = Random()
-        for char in name:
-            count += ord(char)
+        count = sum(ord(char) for char in name)
         now = datetime.now()
         rand.seed(count + (now.day * now.month) + now.year)
 
@@ -60,13 +58,13 @@ class RandomOperator:
             f"【攻击速度】{attack_speed}",
             f"【特性】{talent}",
             f"【标签】{tags}",
-            f"\n",
+            "\n",
             f"【种族】{race}",
             f"【身高】{height} cm",
             f"【出生地】{homeland}",
             f"【所属阵营】{organize}",
-            f"【战斗经验】{'无' if fight_exp == 0 else str(fight_exp) + '年'}"
-            f"\n",
+            f"【战斗经验】{'无' if fight_exp == 0 else f'{fight_exp}年'}"
+            "\n",
             f"【矿石病感染情况】{infect}",
             f"【物理强度】{rand.choice(self.rand_operator_dict['phy_exam_evaul'])}",
             f"【战场机动】{rand.choice(self.rand_operator_dict['phy_exam_evaul'])}",

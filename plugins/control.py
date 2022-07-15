@@ -1,13 +1,13 @@
 import asyncio
 from arclet.alconna import Args, Option, Arpamar
-from arclet.alconna.graia import Alconna, Match
+from arclet.alconna.graia import Alconna, Match, command, match_path
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image  # Forward, ForwardNode
 from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
 from graia.ariadne.util.saya import decorate
 
-from app import RaianMain, Sender, require_admin, command
+from app import RaianMain, Sender, require_admin
 from utils.generate_img import create_image
 
 shutdown = Alconna(
@@ -47,7 +47,7 @@ async def debug(app: Ariadne, sender: Sender, bot: RaianMain):
     res = [mds, groups_debug, users_debug]
     if isinstance(sender, Group):
         group = bot.data.get_group(sender.id)
-        fns = f"所在群组已列入黑名单" if group.in_blacklist else f"所在群组已禁用功能: {group.disabled}"
+        fns = "所在群组已列入黑名单" if group.in_blacklist else f"所在群组已禁用功能: {group.disabled}"
         res.append(fns)
     return await app.send_message(sender, MessageChain("\n".join(res)))
 
@@ -61,74 +61,102 @@ async def _s(app: Ariadne, sender: Sender, time: Match[int], bot: RaianMain):
     await asyncio.sleep(0.1)
 
 
-@command(module_control)
-@decorate(require_admin(True))
-async def _m(app: Ariadne, sender: Sender, result: Arpamar, name: Match[str], bot: RaianMain):
+@command(module_control, send_error=True)
+@decorate(require_admin(True), match_path("列出"))
+async def _m_list(app: Ariadne, sender: Sender, bot: RaianMain):
     saya = bot.saya
-    if not result.options:
-        return await app.send_message(sender, MessageChain(module_control.get_help()))
-    if result.find("列出"):
-        res = "=================================\n"
-        enables = [i for i in saya.channels.keys()]
-        e_max = max(len(i) for i in enables) if saya.channels else 0
-        d_max = max(
-            (len(i) + len(bot.config.plugin_path) + 1)
-            for i in bot.config.disabled_plugins
-        ) if bot.config.disabled_plugins else 0
-        l_max = max(e_max, d_max)
-        for name in enables:
-            res += name.ljust(l_max + 1) + "已安装\n"
-        for name in bot.config.disabled_plugins:
-            res += (bot.config.plugin_path + '.' + name).ljust(l_max + 1) + "已卸载\n"
-        res += "================================="
-        return await app.send_message(
-            sender, MessageChain(Image(data_bytes=await create_image(res)))
-        )
+    res = "=================================\n"
+    enables = list(saya.channels.keys())
+    e_max = max(len(i) for i in enables) if saya.channels else 0
+    d_max = max(
+        (len(i) + len(bot.config.plugin_path) + 1)
+        for i in bot.config.disabled_plugins
+    ) if bot.config.disabled_plugins else 0
+    l_max = max(e_max, d_max)
+    for name in enables:
+        res += name.ljust(l_max + 1) + "已安装\n"
+    for name in bot.config.disabled_plugins:
+        res += f'{bot.config.plugin_path}.{name}'.ljust(l_max + 1) + "已卸载\n"
+    res += "================================="
+    return await app.send_message(
+        sender, MessageChain(Image(data_bytes=await create_image(res)))
+    )
+
+
+@command(module_control, send_error=True)
+@decorate(require_admin(True), match_path("卸载"))
+async def _m_uninstall(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
+    saya = bot.saya
     channel_name = (name.result.split(".")[-1]) if name.available else 'control'
     if channel_name == "control":
         return
     parent = bot.config.plugin_path
     module_path = f"{parent}.{channel_name}"
-    if result.find("卸载"):
-        if not (_channel := saya.channels.get(module_path)):
-            return await app.send_message(sender, MessageChain("该模组未安装, 您可能需要安装它"))
-        try:
-            saya.uninstall_channel(_channel)
-        except Exception as e:
-            await app.send_message(sender, MessageChain(f"卸载 {module_path} 失败！"))
-            raise e
-        else:
-            bot.config.disabled_plugins.append(channel_name)
-            return await app.send_message(sender, MessageChain(f"卸载 {module_path} 成功"))
-    if result.find("安装"):
-        if channel_name in saya.channels and channel_name not in bot.config.disabled_plugins:
-            return await app.send_message(sender, MessageChain("该模组已安装"))
-        try:
-            with bot.context.use(bot):
-                with saya.module_context():
-                    saya.require(module_path)
-        except Exception as e:
-            await app.send_message(sender, MessageChain(f"安装 {module_path} 失败！"))
-            raise e
-        else:
-            if channel_name in bot.config.disabled_plugins:
-                bot.config.disabled_plugins.remove(channel_name)
-            return await app.send_message(sender, MessageChain(f"安装 {module_path} 成功"))
-    if result.find("重载"):
-        if not (_channel := saya.channels.get(module_path)):
-            return await app.send_message(sender, MessageChain("该模组未安装, 您可能需要安装它"))
-        try:
-            with bot.context.use(bot):
-                with saya.module_context():
-                    saya.reload_channel(_channel)
-        except Exception as e:
-            await app.send_message(sender, MessageChain(f"重载 {module_path} 失败！"))
-            raise e
-        else:
-            return await app.send_message(sender, MessageChain(f"重载 {module_path} 成功"))
+    if not (_channel := saya.channels.get(module_path)):
+        return await app.send_message(sender, MessageChain("该模组未安装, 您可能需要安装它"))
+    try:
+        saya.uninstall_channel(_channel)
+    except Exception as e:
+        await app.send_message(sender, MessageChain(f"卸载 {module_path} 失败！"))
+        raise e
+    else:
+        bot.config.disabled_plugins.append(channel_name)
+        return await app.send_message(sender, MessageChain(f"卸载 {module_path} 成功"))
 
 
-@command(function_control, False)
+@command(module_control, send_error=True)
+@decorate(require_admin(True), match_path("安装"))
+async def _m_install(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
+    saya = bot.saya
+    channel_name = (name.result.split(".")[-1]) if name.available else 'control'
+    if channel_name == "control":
+        return
+    parent = bot.config.plugin_path
+    module_path = f"{parent}.{channel_name}"
+    if channel_name in saya.channels and channel_name not in bot.config.disabled_plugins:
+        return await app.send_message(sender, MessageChain("该模组已安装"))
+    try:
+        with bot.context.use(bot):
+            with saya.module_context():
+                saya.require(module_path)
+    except Exception as e:
+        await app.send_message(sender, MessageChain(f"安装 {module_path} 失败！"))
+        raise e
+    else:
+        if channel_name in bot.config.disabled_plugins:
+            bot.config.disabled_plugins.remove(channel_name)
+        return await app.send_message(sender, MessageChain(f"安装 {module_path} 成功"))
+
+
+@command(module_control, send_error=True)
+@decorate(require_admin(True), match_path("重载"))
+async def _m_reload(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
+    saya = bot.saya
+    channel_name = (name.result.split(".")[-1]) if name.available else 'control'
+    if channel_name == "control":
+        return
+    parent = bot.config.plugin_path
+    module_path = f"{parent}.{channel_name}"
+    if not (_channel := saya.channels.get(module_path)):
+        return await app.send_message(sender, MessageChain("该模组未安装, 您可能需要安装它"))
+    try:
+        with bot.context.use(bot):
+            with saya.module_context():
+                saya.reload_channel(_channel)
+    except Exception as e:
+        await app.send_message(sender, MessageChain(f"重载 {module_path} 失败！"))
+        raise e
+    else:
+        return await app.send_message(sender, MessageChain(f"重载 {module_path} 成功"))
+
+
+@command(module_control, send_error=True)
+@decorate(require_admin(True), match_path("$main"))
+async def _m_main(app: Ariadne, sender: Sender):
+    return await app.send_message(sender, MessageChain(module_control.get_help()))
+
+
+@command(function_control, private=False, send_error=True)
 @decorate(require_admin(True))
 async def _f(app: Ariadne, sender: Group, result: Arpamar, name: Match[str], bot: RaianMain):
     if not result.options:
@@ -139,7 +167,7 @@ async def _f(app: Ariadne, sender: Group, result: Arpamar, name: Match[str], bot
         res += "====================================\n"
         funcs = [f"{i}  备注: {bot.data.func_description(i)}" for i in bot.data.funcs]
         for sign, nm in zip(funcs, bot.data.funcs):
-            res += f"{'【禁用】' if (nm in group.disabled or group.in_blacklist) else '【启用】'} " + sign + "\n"
+            res += f"{'【禁用】' if nm in group.disabled or group.in_blacklist else '【启用】'} {sign}" + "\n"
         res += "===================================="
         return await app.send_message(
             sender, MessageChain(Image(data_bytes=(await create_image(res))))

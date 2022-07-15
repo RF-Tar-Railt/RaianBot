@@ -75,6 +75,7 @@ RaianBot
 │   ├─── config.py               机器人配置访问接口
 │   ├─── logger.py               为log增加文件输出
 │   ├─── model.py                机器人数据模型
+│   ├─── control.py              鉴权接口
 │   └─── ...
 ├─── assets
 │   ├─── data                    存放插件运行时需要的静态资源或数据文件
@@ -100,7 +101,7 @@ RaianBot
 ├─── plugins                     机器人插件目录 (可以进配置文件中自行变更)
 │   └─── ...
 ├─── utils                       工具函数存放目录
-│   ├─── control.py              鉴权接口
+│   ├─── exception_report.py     报错处理工具
 │   ├─── generate_img.py         图片生成工具
 │   └─── ...             
 ├─── bot_config.yml              机器人配置文件
