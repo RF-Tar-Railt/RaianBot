@@ -45,24 +45,24 @@ dependencies = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.1.2"
+version = "1.1.2.1"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
-    "typing-extensions",
+    "typing-extensions~=4.3.0",
 ]
 
 [[package]]
 name = "arclet-alconna-graia"
-version = "0.4.3.1"
+version = "0.4.4"
 requires_python = ">=3.8"
 summary = "Support Alconna to GraiaProject"
 dependencies = [
-    "arclet-alconna<1.2.0,>=1.1.0",
+    "arclet-alconna<1.2.0,>=1.1.2.1",
     "creart-graia~=0.1.5",
     "creart~=0.2.1",
     "graia-amnesia>=0.5.0",
-    "graia-ariadne<0.8.0,>=0.7.14",
+    "graia-ariadne<1.0.0,>=0.7.14",
     "graia-broadcast>=0.18.0",
     "graia-saya~=0.0.16",
 ]
@@ -159,7 +159,7 @@ dependencies = [
 
 [[package]]
 name = "graia-ariadne"
-version = "0.7.18"
+version = "0.8.0"
 requires_python = ">=3.8,<4.0"
 summary = "Another elegant Python QQ Bot framework for mirai and mirai-api-http v2."
 dependencies = [
@@ -167,7 +167,7 @@ dependencies = [
     "creart-graia<1.0.0,>=0.1.4",
     "graia-amnesia~=0.5.2",
     "graia-broadcast~=0.18",
-    "launart>=0.5.1",
+    "launart<1.0.0,>=0.6.0",
     "pydantic~=1.8",
     "typing-extensions~=4.0",
 ]
@@ -480,11 +480,12 @@ content_hash = "sha256:bdbc4e03c960edc54ea6761752f2208a0f3ff1305dc4379b7952d41c5
     {url = "https://files.pythonhosted.org/packages/27/6b/a89fbcfae70cf53f066ec22591938296889d3cc58fec1e1c393b10e8d71d/aiosignal-1.2.0.tar.gz", hash = "sha256:78ed67db6c7b7ced4f98e495e572106d5c432a93e1ddd1bf475e1dc05f5b7df2"},
     {url = "https://files.pythonhosted.org/packages/3b/87/fe94898f2d44a93a35d5aa74671ed28094d80753a1113d68b799fab6dc22/aiosignal-1.2.0-py3-none-any.whl", hash = "sha256:26e62109036cd181df6e6ad646f91f0dcfd05fe16d0cb924138ff2ab75d64e3a"},
 ]
-"arclet-alconna 1.1.2" = [
-    {url = "https://files.pythonhosted.org/packages/1a/db/1c1bb959346343a388bfd062bc72c994987103db25e0fab9a74455ba391b/arclet_alconna-1.1.2-py3-none-any.whl", hash = "sha256:5f50690d94c7b8bed3ead6b09507ef9da607e9ca7e2c2733a0275179cb7d1f06"},
+"arclet-alconna 1.1.2.1" = [
+    {url = "https://files.pythonhosted.org/packages/4c/19/fca7e72897cb35a19c9dc5a7a58f961441a36e818ded3b9d5967613c62b1/arclet-alconna-1.1.2.1.tar.gz", hash = "sha256:f25a99986faaadaab796bb8c73583dc0a8cc7edd10e3497d65c5567c5c8e0f72"},
+    {url = "https://files.pythonhosted.org/packages/f9/66/d4363380e56acb3f41866c836030661b58ac48f1ca58a90e80f9d8b9f587/arclet_alconna-1.1.2.1-py3-none-any.whl", hash = "sha256:775ff6407ee45c10794feb29b1be864b1a18a71349850b1f15d62e3cf9909250"},
 ]
-"arclet-alconna-graia 0.4.3.1" = [
-    {url = "https://files.pythonhosted.org/packages/61/a1/aa3be96fc81f9509ae225beab0e1d93c8c942873a84a92d7953160184f80/arclet_alconna_graia-0.4.3.1-py3-none-any.whl", hash = "sha256:ddc9980e3d9a2f4a2d5f83fa47c54a96d3d7d3afc882655297067aa6b0bdde30"},
+"arclet-alconna-graia 0.4.4" = [
+    {url = "https://files.pythonhosted.org/packages/c4/a3/7852dcbd152b9da414777c7c99339841427773a9928693f6dddff78f7bf7/arclet_alconna_graia-0.4.4-py3-none-any.whl", hash = "sha256:6d8828f9bd0993ee7c39b85440b0fb982bf516185e02395938e60d784d422440"},
 ]
 "async-timeout 4.0.2" = [
     {url = "https://files.pythonhosted.org/packages/54/6e/9678f7b2993537452710ffb1750c62d2c26df438aa621ad5fa9d1507a43a/async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
@@ -744,9 +745,9 @@ content_hash = "sha256:bdbc4e03c960edc54ea6761752f2208a0f3ff1305dc4379b7952d41c5
     {url = "https://files.pythonhosted.org/packages/0e/0f/698e90a90c9ada08c8e49f2258fa56de6ecde4d408a5187828f045f46a95/graia_amnesia-0.5.4-py3-none-any.whl", hash = "sha256:8fe6e3c4d21bdde326e7569a99bfb5818dfbf0d79fa4da7a66ba29a84989297f"},
     {url = "https://files.pythonhosted.org/packages/1a/61/8971d0207021f2a9a957fc322ce3d34757474a5160940c554247427e2920/graia-amnesia-0.5.4.tar.gz", hash = "sha256:e4515f72b3e16bd958b48271d5d89a2994bd891ca74fa0266cad9dc5e6a45dbb"},
 ]
-"graia-ariadne 0.7.18" = [
-    {url = "https://files.pythonhosted.org/packages/4e/13/a5b2780d2da5b5e862132000c61c1b2a2fc26e05958ed9e24b573df87ab5/graia-ariadne-0.7.18.tar.gz", hash = "sha256:4a985ab6af939a050e94cd666816e3ae828a35648eed7a1027acc7fd41b17948"},
-    {url = "https://files.pythonhosted.org/packages/90/8a/f4e4973abe9c7183449d2e29d8924e32248948f120aa1060c50ab551b149/graia_ariadne-0.7.18-py3-none-any.whl", hash = "sha256:4b6ee7bfdaa2119bb0397acbd2521487989af5b0aecb078b310af726470435b4"},
+"graia-ariadne 0.8.0" = [
+    {url = "https://files.pythonhosted.org/packages/59/df/d72d1abfb65f2473e266a1d60982e71e385ee9f47689c7d44c91d1d0e3c2/graia-ariadne-0.8.0.tar.gz", hash = "sha256:c82e1df77ac14a8eafc98239b57eca13395601a8213534a97e470967009ed7d7"},
+    {url = "https://files.pythonhosted.org/packages/69/d5/5402e17c8551c426836dc7216fa73d11b84d31a9fe647af9af4daeb69df5/graia_ariadne-0.8.0-py3-none-any.whl", hash = "sha256:b0349e7632582b4bd12eb740c4f8651847f47d784369c11e2e48af2415933a3d"},
 ]
 "graia-broadcast 0.18.2" = [
     {url = "https://files.pythonhosted.org/packages/0b/14/e155d41933b6069a0ea85dd04aca5660cdf156aee4bd8b44117b9be751a1/graia_broadcast-0.18.2-py3-none-any.whl", hash = "sha256:dcb712dc5be29419c4b65dc649c4e7c795c834fb810682f6131b313d6bd3e740"},

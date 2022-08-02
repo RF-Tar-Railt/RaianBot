@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "arclet-alconna>=1.1.1",
-    "arclet-alconna-graia>=0.4.3",
+    "arclet-alconna-graia>=0.4.4",
     "graia-ariadne>=0.7.15",
     "graia-broadcast>=0.18.1",
     "graia-saya~=0.0.16",

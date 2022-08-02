@@ -133,6 +133,8 @@ async def fetch(app: Ariadne, target: Target, sender: Sender, source: Source):
     prof = bot.data.get_group(sender.id)
     if not (followers := prof.additional.get("weibo_followers")):
         followers = []
+    if not followers:
+        return await app.send_message(sender, "当前群组不存在微博关注对象")
     nodes = []
     notice = None
     for uid in followers:
