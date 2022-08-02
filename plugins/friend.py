@@ -13,13 +13,13 @@ from app import require_admin, RaianMain
 async def forward(app: Ariadne, friend: Friend, message: MessageChain, bot: RaianMain):
     if friend.id == bot.config.master_id:
         return
-    await app.send_friend_message(bot.config.master_id, MessageChain(f"来自 {friend.id}:"))
+    await app.send_friend_message(bot.config.master_id, MessageChain(f"来自 {friend.nickname}({friend.id}):"))
     return await app.send_friend_message(bot.config.master_id, message.as_sendable())
 
 
 @command(Alconna("回复", Args["target", int]["content", AllParam], headers=[""], ))
 @decorate(require_admin(True))
-async def test2(app: Ariadne, master: Friend, target: Match[int], result: Arpamar):
+async def reply(app: Ariadne, master: Friend, target: Match[int], result: Arpamar):
     message = result.origin.as_sendable().replace(f"回复 {target.result}\n", "")  # type: ignore
     try:
         await app.send_friend_message(target.result, message)

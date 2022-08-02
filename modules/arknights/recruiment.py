@@ -1,9 +1,9 @@
 from typing import List
 import itertools
 professor_1 = {'先锋': 32, '近卫': 16, '狙击': 8, '重装': 4, '医疗': 2, '辅助': 1}
-professor_2 = {'术师': 32, '特种': 16}
+professor_2 = {'术师': 32, '术士': 32, '特种': 16}
 position_3 = {'近战位': 8, '远程位': 4}
-exp_4 = {'新手': 16, '资深干员': 8, '高级资深干员': 4, '高资': 4}
+exp_4 = {'新手': 16, '资深干员': 8, '资深': 8, '高级资深干员': 4, '高资': 4}
 
 others_5 = {'治疗': 4, '支援': 2, '输出': 1}
 others_6 = {'群攻': 32, '减速': 16, '生存': 8, '防护': 4, '削弱': 2, '位移': 1}
@@ -19,10 +19,10 @@ alphabet = {
 }
 
 base_url = 'https://prts.wiki/w/CHAR?filter='
-base_str = 'FQAAAAAAAAAAAAAAAAAAAAAAA'
+base_str = 'QAAAAAAAAAAAAAAAAAAAAAAA'
 
 
-def recruitment(tags: List[str]):
+def recruitment(tags: List[str], simple: bool = True):
     add_str = [0, 0, 0, 2, 0, 0, 0]
     for val in tags:
         if val in professor_1:
@@ -43,7 +43,7 @@ def recruitment(tags: List[str]):
     for word, i in itertools.product(alphabet, range(7)):
         if alphabet[word] == add_str[i]:
             add_str[i] = word
-    return base_url + "".join(add_str) + base_str
+    return f"{base_url}{''.join(add_str)}{'F' if simple else 'E'}{base_str}"
 
 
 if __name__ == '__main__':

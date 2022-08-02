@@ -6,6 +6,7 @@ from graia.ariadne.message.element import Image  # Forward, ForwardNode
 from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
 from graia.ariadne.util.saya import decorate
+from loguru import logger
 
 from app import RaianMain, Sender, require_admin
 from utils.generate_img import create_image
@@ -20,8 +21,8 @@ module_control = Alconna(
     "模块",
     options=[
         Option("列出", alias=['list']),
-        Option("卸载", Args['name', str], alias=["关闭", "uninstall"], help_text="安装一个模块"),
-        Option("安装", Args['name', str], alias=["开启", "install"], help_text="卸载一个模块"),
+        Option("卸载", Args['name', str], alias=["关闭", "uninstall"], help_text="卸载一个模块"),
+        Option("安装", Args['name', str], alias=["开启", "install"], help_text="安装一个模块"),
         Option("重载", Args['name', str], alias=["重启", "reload"], help_text="重新载入一个模块")
     ],
     help_text="管理机器人的模块 Example: $模块 列出\n $模块 卸载 setu;"
@@ -35,6 +36,16 @@ function_control = Alconna(
         Option("启用", Args['name', str], alias=['active'], help_text="启用一个功能")
     ],
     help_text="管理机器人的功能 Example: $功能 列出\n $功能 禁用 greet;"
+)
+
+group_control = Alconna(
+    "群管",
+    options=[
+        Option("当前状态|群组状态|状态|信息", dest="status", help_text="查看当前群组信息"),
+        Option("黑名单 列入|加入", dest="add", help_text="将当前群组加入黑名单"),
+        Option("黑名单 解除|移出|移除", dest="remove", help_text="将当前群组移出黑名单"),
+        Option("退出")
+    ]
 )
 
 
@@ -189,3 +200,36 @@ async def _f(app: Ariadne, sender: Group, result: Arpamar, name: Match[str], bot
         group.disabled.remove(name)
         bot.data.update_group(group)
         return await app.send_message(sender, MessageChain(f"功能 {name} 启用成功"))
+
+
+@command(group_control, private=False, send_error=True)
+@decorate(require_admin(True))
+async def _f(app: Ariadne, sender: Group, result: Arpamar, bot: RaianMain):
+    if not result.options:
+        return await app.send_message(sender, MessageChain(group_control.get_help()))
+    if result.find("退出"):
+        await app.send_message(sender, "正在退出该群聊。。。")
+        logger.debug(f"quiting from {sender.name}({sender.id})...")
+        bot.data.remove_group(sender.id)
+        return await app.quit_group(sender)
+    if result.find("status"):
+        group = bot.data.get_group(sender.id)
+        fns = "所在群组已列入黑名单" if group.in_blacklist else f"所在群组已禁用功能: {group.disabled}"
+        return await app.send_message(sender, fns)
+    if result.find("黑名单_add"):
+        group = bot.data.get_group(sender.id)
+        if group.in_blacklist or sender.id in bot.data.cache['blacklist']:
+            return await app.send_message(sender, "该群组已加入黑名单!")
+        group.in_blacklist = True
+        bot.data.update_group(group)
+        bot.data.cache['blacklist'].append(sender.id)
+        return await app.send_message(sender, "该群组列入黑名单成功!")
+    if result.find("黑名单_remove"):
+        group = bot.data.get_group(sender.id)
+        if group.in_blacklist or sender.id in bot.data.cache['blacklist']:
+            group.in_blacklist = False
+            bot.data.update_group(group)
+            if sender.id in bot.data.cache['blacklist']:
+                bot.data.cache['blacklist'].remove(sender.id)
+            return await app.send_message(sender, "该群组移出黑名单成功!")
+        return await app.send_message(sender, "该群组未列入黑名单!")

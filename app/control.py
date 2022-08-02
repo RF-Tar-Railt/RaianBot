@@ -34,8 +34,7 @@ def require_function(name: str):
             return True
         if name not in data.funcs:
             return True
-        group_data = data.get_group(sender.id)
-        if group_data:
+        if group_data := data.get_group(sender.id):
             if name in group_data.disabled:
                 raise ExecutionStop
             elif group_data.in_blacklist or sender.id in data.cache['blacklist']:

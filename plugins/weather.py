@@ -9,9 +9,9 @@ from app import Sender
 
 @command(
     Alconna(
-        "{city}天气", Args["time", ["今天", "明天", "后天", "大后天"], "今天"],
+        "{city}天气", Args["time", {'今天': 0, '明天': 1, '后天': 2, '大后天': 3, '老后天': 4}, 0],
         help_text="查询某个城市的天气 Usage: 提供四个可查询的时间段; Example: $北京天气 明天;",
-        action=lambda x: ({'今天': 0, '明天': 1, '后天': 2, '大后天': 3, '老后天': 4})[x]
+        action=lambda x: ({'今天': 0, '明天': 1, '后天': 2, '大后天': 3, '老后天': 4}[x], )
     )
 )
 async def weather(app: Ariadne, sender: Sender, time: Match[int], result: Arpamar):
@@ -23,9 +23,9 @@ async def weather(app: Ariadne, sender: Sender, time: Match[int], result: Arpama
             return await app.send_message(sender, MessageChain("不对劲。。。"))
         res = (
             f"城市：{d['data']['city']}\n"
-            f"日期：{d['data']['forecast'][time]['date']}\n"
-            f"天气：{d['data']['forecast'][time]['type']}\n"
-            f"温度：{d['data']['forecast'][time]['high']}, {d['data']['forecast'][time]['low']}\n"
+            f"日期：{d['data']['forecast'][time.result]['date']}\n"
+            f"天气：{d['data']['forecast'][time.result]['type']}\n"
+            f"温度：{d['data']['forecast'][time.result]['high']}, {d['data']['forecast'][time.result]['low']}\n"
             f"提醒：{d['data']['ganmao']}"
         )
         return await app.send_message(sender, MessageChain(res))

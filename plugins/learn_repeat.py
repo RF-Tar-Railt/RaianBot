@@ -105,7 +105,7 @@ async def fetch(app: Ariadne, sender: Group, source: Source, result: Arpamar):
         _data = ujson.load(f_obj)
     if isinstance(name, At):
         _record = None
-        for key, value in _data.items():
+        for key, value in _data.copy().items():
             if value['id'] == name.target:
                 _record = _data.pop(key, None)
         if not _record:

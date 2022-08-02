@@ -65,10 +65,8 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
         if not content and not msg:
             rand_str = random.sample(dialog_templates['default'], 1)[0]
         else:
-            if content and len(success_record) and re.match(
-                re.sub(r"\{[^{}]*}", "(.*?)", success_record.pop()),
-                content
-            ):
+            if content and len(success_record):
+                success_record.clear()
                 return
             plain = False
             voice = False

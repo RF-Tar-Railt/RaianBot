@@ -139,14 +139,13 @@ class BotDataManager(metaclass=Singleton):
 
     def record(self, name: str):
         def __wrapper__(func):
-            self.__functions[name] = func
+            self.__functions.setdefault(name, func)
+            func.__record__ = name
             return func
         return __wrapper__
 
     def func_description(self, name: str):
-        if not (func := self.__functions.get(name)):
-            return "Unknown"
-        return func.__doc__
+        return func.__doc__ if (func := self.__functions.get(name)) else "Unknown"
 
 
 __all__ = ["BotDataManager"]

@@ -77,8 +77,8 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
 @decorate(require_admin(True))
 async def shell(app: Ariadne, sender: Sender, result: Arpamar):
     process = await asyncio.create_subprocess_shell(
-        result.main_args['code'][0],
-        shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        " ".join(result.main_args['code']),
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
     data = await process.stdout.read()
     try:

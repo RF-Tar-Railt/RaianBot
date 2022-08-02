@@ -10,10 +10,9 @@ from app import record, Sender, Target
 
 setu = Alconna(
     "涩图",
-    Args["r_per", ["r9", "r16", "r18"], "r9"],
+    Args["r_per", {"r9": 2, "r16": 4, "r18": 6}, 2],
     help_text="顾名思义",
-    options=[Option("tag", Args["tag", str])],
-    action=lambda x: ({"r9": 2, "r16": 4, "r18": 6})[x]
+    options=[Option("tag", Args["tag", str])]
 )
 
 
@@ -25,9 +24,9 @@ async def send_setu(app: Ariadne, target: Target, sender: Sender, r_per: Match[i
             "GET",
             (
                 f"https://api.a60.one:8443/get/tags/{result.query('tag.tag', '美图')}"
-                f"?num={random.randint(1, 5)}&san={r_per}"
+                f"?num={random.randint(1, 5)}&san={r_per.result}"
                 if result.find("tag") else
-                f"https://api.a60.one:8443/?num={random.randint(1, 5)}&san={r_per}"
+                f"https://api.a60.one:8443/?num={random.randint(1, 5)}&san={r_per.result}"
             ),
             timeout=20
     ) as resp:
