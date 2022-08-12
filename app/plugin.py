@@ -21,10 +21,10 @@ def meta(author: Optional[List[str]] = None, name: Optional[str] = None, descrip
     channel.meta['description'] = description
 
 
-def record(name: str, require: bool = True) -> Wrapper:
+def record(name: str, require: bool = True, disable: bool = False) -> Wrapper:
     def wrapper(func: T_Callable) -> T_Callable:
         bot = RaianMain.current()
-        bot.data.record(name)(func)
+        bot.data.record(name, disable)(func)
         if require:
             cube: Cube[ListenerSchema] = ensure_cube_as_listener(func)
             cube.metaclass.decorators.append(require_function(name))

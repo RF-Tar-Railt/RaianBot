@@ -168,7 +168,7 @@ async def _m_main(app: Ariadne, sender: Sender):
 
 
 @command(function_control, private=False, send_error=True)
-@decorate(require_admin(True))
+@decorate(require_admin())
 async def _f(app: Ariadne, sender: Group, result: Arpamar, name: Match[str], bot: RaianMain):
     if not result.options:
         return await app.send_message(sender, MessageChain(function_control.get_help()))
@@ -176,7 +176,12 @@ async def _f(app: Ariadne, sender: Group, result: Arpamar, name: Match[str], bot
     if result.find('列出'):
         res = f"{sender.name} / {sender.id} 统计情况\n"
         res += "====================================\n"
-        funcs = [f"{i}  备注: {bot.data.func_description(i)}" for i in bot.data.funcs]
+        funcs = [
+            (
+                f"{i} {'(默认禁用)' if i in bot.data.disable_functions else ''} "
+                f"备注: {bot.data.func_description(i)}"
+            ) for i in bot.data.funcs
+        ]
         for sign, nm in zip(funcs, bot.data.funcs):
             res += f"{'【禁用】' if nm in group.disabled or group.in_blacklist else '【启用】'} {sign}" + "\n"
         res += "===================================="
@@ -189,12 +194,16 @@ async def _f(app: Ariadne, sender: Group, result: Arpamar, name: Match[str], bot
     if group.in_blacklist or sender.id in bot.data.cache['blacklist']:
         return await app.send_message(sender, MessageChain("所在群组已进入黑名单, 设置无效"))
     if result.find("禁用"):
+        if name not in bot.data.funcs:
+            return await app.send_message(sender, MessageChain(f"功能 {name} 不存在"))
         if name in group.disabled:
             return await app.send_message(sender, MessageChain(f"功能 {name} 已经禁用"))
         group.disabled.append(name)
         bot.data.update_group(group)
         return await app.send_message(sender, MessageChain(f"功能 {name} 禁用成功"))
     if result.find("启用"):
+        if name not in bot.data.funcs:
+            return await app.send_message(sender, MessageChain(f"功能 {name} 不存在"))
         if name not in group.disabled:
             return await app.send_message(sender, MessageChain(f"功能 {name} 未禁用"))
         group.disabled.remove(name)

@@ -317,10 +317,9 @@ class RaianMain:
                     "收到邀请入群事件",
                     f"\n邀请者：{event.supplicant} | {event.nickname}",
                     f"\n群号：{event.source_group}",
-                    f"\n群名：{event.group_name}",
-                    "\n该群未在黑名单中，已同意加入"
+                    f"\n群名：{event.group_name}"
                 ))
-                await event.accept("")
+                await event.accept(f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in self.data.cache['blacklist'] else ''}")
             else:
                 await event.reject("请先加机器人好友")
 

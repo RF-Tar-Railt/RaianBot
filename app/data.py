@@ -1,6 +1,6 @@
 import ujson
 from pathlib import Path
-from typing import Dict, Callable
+from typing import Dict, Callable, Set
 from weakref import finalize
 from arclet.alconna.util import Singleton
 
@@ -9,6 +9,7 @@ from .model import UserProfile, GroupProfile
 
 
 class BotDataManager(metaclass=Singleton):
+    disable_functions: Set[str]
     __functions: Dict[str, Callable]
     __group_profiles: Dict[str, GroupProfile]
     __user_profiles: Dict[str, UserProfile]
@@ -20,6 +21,7 @@ class BotDataManager(metaclass=Singleton):
         dir_path = Path(config.cache_dir)
         dir_path.mkdir(exist_ok=True)
         self.__functions = {}
+        self.disable_functions = set()
         self.group_path = dir_path / "groups_data.json"
         self.user_path = dir_path / "users_data.json"
         self.cache_path = dir_path / "basic_data.json"
@@ -56,6 +58,7 @@ class BotDataManager(metaclass=Singleton):
             mgr.__group_profiles.clear()
             mgr.__cache_data.clear()
             mgr.__functions.clear()
+            mgr.disable_functions.clear()
             Singleton.remove(self.__class__)
 
         finalize(self, _s, self)
@@ -65,7 +68,8 @@ class BotDataManager(metaclass=Singleton):
             if k not in self.config.group_meta:
                 raise ValueError
         self.__group_profiles[str(gid)] = GroupProfile(
-            id=gid, additional=kwargs, in_blacklist=(gid in self.__cache_data['blacklist'])
+            id=gid, additional=kwargs, in_blacklist=(gid in self.__cache_data['blacklist']),
+            disabled=list(self.disable_functions)
         )
 
     def add_user(self, uid: int, **kwargs):
@@ -137,10 +141,12 @@ class BotDataManager(metaclass=Singleton):
         with self.cache_path.open('w+', encoding='UTF-8') as fo:
             ujson.dump(self.__cache_data, fo, ensure_ascii=False, indent=2)
 
-    def record(self, name: str):
+    def record(self, name: str, disable: bool = False):
         def __wrapper__(func):
             self.__functions.setdefault(name, func)
             func.__record__ = name
+            if disable:
+                self.disable_functions.add(name)
             return func
         return __wrapper__
 

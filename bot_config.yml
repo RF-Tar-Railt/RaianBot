@@ -29,6 +29,7 @@ plugin:
     tencent: true
     id: "xxxxxxxxxxxxxxxxxxxx"
     key: "xxxxxxxxxxxxxxxxxxx"
+    ai_url: ""
 ## 插件的父级路径
 plugin_path: plugins
 ## 禁用的功能列表

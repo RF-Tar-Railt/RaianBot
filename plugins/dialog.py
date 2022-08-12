@@ -1,16 +1,18 @@
 import ujson
 import random
 import re
+from datetime import datetime
 from pathlib import Path
 from io import BytesIO
 from PIL import Image as Img
 from arclet.alconna.analysis.base import analyse_header
 from arclet.alconna.graia.dispatcher import success_record
-from graia.ariadne.message.element import Plain, Voice, Image
+from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face, Quote
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.app import Ariadne
-from graia.ariadne.util.saya import listen, priority
+from graia.ariadne.util.saya import listen, priority, dispatch
+from graia.ariadne.util.cooldown import CoolDown
 from graia.broadcast.exceptions import PropagationCancelled
 
 from app import RaianMain, record, Sender, Target
@@ -67,7 +69,7 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
         else:
             if content and len(success_record):
                 success_record.clear()
-                return
+                raise PropagationCancelled
             plain = False
             voice = False
             image = False
@@ -116,3 +118,34 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
             await app.send_message(sender, MessageChain(rand_str))  # noqa
             raise PropagationCancelled
     return
+
+
+@record("ai", disable=True)
+@priority(18)
+@dispatch(CoolDown(0.1))
+@listen(GroupMessage, FriendMessage)
+async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
+    """真AI对话功能"""
+    if not (ai_url := bot.config.plugin['dialog']['ai_url']):
+        return
+    if (message.has(At) and message.get_first(At).target == bot.config.account) or (
+        message.has(Quote) and message.get_first(Quote).sender_id == bot.config.account
+    ):
+        async with app.service.client_session.get(
+            ai_url, params={
+                "text": message.include(Plain, Face).display,
+                "session": f"{bot.config.bot_name}/{target.id}"
+            }
+        ) as resp:
+            reply = (await resp.json())["result"]
+        return await app.send_message(sender, reply, quote=source)
+    if analyse_header(bot.config.command_prefix, "{content}?", message, raise_exception=False):
+        for elem in bot.config.command_prefix:
+            message = message.replace(elem, "")
+    msg = str(message.include(Plain, Face))
+    if random.randint(0, 2000) == datetime.now().microsecond // 5000:
+        async with app.service.client_session.get(
+                ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{target.id}"}
+        ) as resp:
+            reply = (await resp.json())["result"]
+        return await app.send_message(sender, reply, quote=source)

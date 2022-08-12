@@ -63,7 +63,7 @@ async def fetch(app: Ariadne, sender: Group, result: Arpamar):
             if _target and _value['id'] != _target.target:
                 continue
             try:
-                name = (await app.getMember(sender, _value['id'])).name
+                name = (await app.get_member(sender, _value['id'])).name
             except (UnknownTarget, UnknownError):
                 name = str(_value['id'])
             forwards.append(
