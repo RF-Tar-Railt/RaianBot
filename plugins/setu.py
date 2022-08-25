@@ -1,5 +1,5 @@
 import random
-from arclet.alconna import Args, Option, Arpamar
+from arclet.alconna import Args, Option, Arpamar, ArgField, CommandMeta
 from datetime import datetime
 from arclet.alconna.graia import Alconna, command, Match
 from graia.ariadne.message.chain import MessageChain
@@ -10,8 +10,8 @@ from app import record, Sender, Target
 
 setu = Alconna(
     "涩图",
-    Args["r_per", {"r9": 2, "r16": 4, "r18": 6}, 2],
-    help_text="顾名思义",
+    Args["r_per", {"r9": 2, "r16": 4, "r18": 6}, ArgField(2, alias="r9", completion=lambda: "有 r9, r16 和 r18")],
+    meta=CommandMeta("顾名思义"),
     options=[Option("tag", Args["tag", str])]
 )
 

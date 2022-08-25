@@ -1,4 +1,4 @@
-from arclet.alconna import Args, Option, Arpamar
+from arclet.alconna import Args, Option, Arpamar, ArgField, CommandMeta
 from arclet.alconna.graia import Alconna, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import MusicShare, MusicShareKind
@@ -8,9 +8,9 @@ import asyncio
 from app import Sender
 
 music = Alconna(
-    "点歌", Args["name", str],
+    "点歌", Args["name", str, ArgField(completion=lambda: "比如说, ‘以父之名’")],
     options=[Option("歌手|-s", Args['singer', str], dest="singer")],
-    help_text="在网易云点歌 Usage: 用 歌手 选项指定歌手; Example: $点歌 Rise;",
+    meta=CommandMeta("在网易云点歌", usage="用 歌手 选项指定歌手", example="$点歌 Rise")
 )
 JUMP_URL = "https://music.163.com/song?id={id}"
 MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"

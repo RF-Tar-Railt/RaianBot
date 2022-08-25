@@ -1,5 +1,5 @@
 from datetime import datetime
-from arclet.alconna import Args, Option
+from arclet.alconna import Args, Option, ArgField, CommandMeta
 from arclet.alconna.graia import Alconna, Match, command, match_path
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Source, Image
@@ -14,7 +14,7 @@ from modules.weibo import WeiboAPI, WeiboDynamic
 bot = RaianMain.current()
 
 weibo_fetch = Alconna(
-    "微博", Args["user;O#微博用户名称", str],
+    "微博", Args["user;O#微博用户名称", str, ArgField(completion=lambda: "比如说, 育碧")],
     options=[
         Option(
             "动态", Args["index#从最前动态排起的第几个动态", int, 0],
@@ -24,7 +24,7 @@ weibo_fetch = Alconna(
         Option("取消关注|解除关注", dest="unfollow", help_text="解除一位微博动态关注对象"),
         Option("列出", dest="list", help_text="列出该群的微博动态关注对象")
     ],
-    help_text="获取指定用户的微博资料 Example: $微博 育碧\n $微博 育碧 动态 1\n $微博 育碧 关注\n $微博 育碧 取消关注;"
+    meta=CommandMeta("获取指定用户的微博资料", example="$微博 育碧\n $微博 育碧 动态 1\n $微博 育碧 关注\n $微博 育碧 取消关注")
 )
 
 api = WeiboAPI(f"{bot.config.cache_dir}/plugins/weibo_data.json")

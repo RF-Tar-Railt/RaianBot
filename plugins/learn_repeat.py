@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from arclet.alconna import Args, Empty, Option, AllParam, ArgParserTextFormatter, Arpamar
+from arclet.alconna import Args, Empty, Option, AllParam, ArgParserTextFormatter, Arpamar, CommandMeta
 from arclet.alconna.graia import Alconna, command, match_path
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
@@ -28,7 +28,7 @@ repeat = Alconna(
         Option("列出", Args["target", At, Empty], help_text="列出该群所有的学习记录, 若at用户则列出该用户的所有学习记录")
     ],
     headers=[''],
-    help_text="让机器人记录指定内容并尝试回复 Example: 学习回复 增加 abcd xyz;",
+    meta=CommandMeta("让机器人记录指定内容并尝试回复 注意: 该命令不需要 “渊白” 开头", example="学习回复 增加 abcd xyz"),
     formatter_type=ArgParserTextFormatter
 )
 
@@ -120,7 +120,7 @@ async def fetch(app: Ariadne, sender: Group, source: Source, result: Arpamar):
     return await app.send_message(sender, MessageChain("删除记录成功了！"))
 
 
-@command(repeat, private=False)
+@command(repeat, private=False, send_error=True)
 @decorate(match_path("增加"))
 async def fetch(app: Ariadne, target: Member, sender: Group, source: Source, result: Arpamar):
     this_file = base_path / f"record_{sender.id}.json"

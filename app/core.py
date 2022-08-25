@@ -131,7 +131,8 @@ class RaianMain:
                         f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
                     )
                     self.stop()
-                    exit()
+                    raise e
+                    #exit()
 
     def init_announcement(self, title: Optional[str] = None):
         """配置公告功能"""
@@ -218,6 +219,7 @@ class RaianMain:
 
         @self.broadcast.receiver(ApplicationShutdowned)
         async def _report(app: Ariadne):
+            print(1)
             await app.send_friend_message(self.config.master_id, MessageChain("机器人关闭中。。。"))
 
     def init_exception_report(self):

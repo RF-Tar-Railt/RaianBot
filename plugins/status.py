@@ -2,17 +2,15 @@ import os
 import platform
 import time
 import psutil
+from arclet.alconna import CommandMeta
 from arclet.alconna.graia import Alconna, command
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.util.saya import decorate
-from graia.saya import Channel
 
 from app import require_admin, Sender
 from utils.generate_img import create_image
-
-channel = Channel.current()
 
 python_version = platform.python_version()
 if platform.uname().system == 'Windows':
@@ -23,7 +21,7 @@ total_memory = '%.1f' % (psutil.virtual_memory().total / 1073741824)
 pid = os.getpid()
 
 
-@command(Alconna("(状态|设备信息)", help_text="显示机器人运行设备的状态信息"))
+@command(Alconna("(状态|设备信息)", meta=CommandMeta("显示机器人运行设备的状态信息")))
 @decorate(require_admin())
 async def status(app: Ariadne, sender: Sender):
     p = psutil.Process(pid)

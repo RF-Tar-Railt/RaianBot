@@ -1,4 +1,4 @@
-from arclet.alconna import Args
+from arclet.alconna import Args, ArgField, CommandMeta
 from arclet.alconna.graia import Alconna, Match, command, AtID
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
@@ -11,9 +11,8 @@ from app import RaianMain, record
 from modules.petpet import PetGenerator
 
 rua = Alconna(
-    "摸", Args["target", AtID],
-    headers=[''],
-    help_text="rua别人 Example: 摸@123456;",
+    "摸", Args["target", AtID, ArgField(completion=lambda: "可以不输入东西的")],
+    headers=[''], meta=CommandMeta("rua别人  注意: 该命令不需要 “渊白” 开头", example="摸@123456")
 )
 
 pet = PetGenerator("assets/image/rua")

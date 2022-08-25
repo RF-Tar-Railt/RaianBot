@@ -1,4 +1,4 @@
-from arclet.alconna import Args, Empty, Option, Arpamar
+from arclet.alconna import Args, Empty, Option, Arpamar, CommandMeta
 from arclet.alconna.graia import Alconna, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
@@ -11,7 +11,7 @@ draw = Alconna(
     r"r( )?{pattern:[0-z|#\+]*}", Args["expect;O", int]["event", str, Empty],
     headers=['.'],
     options=[Option("max", Args["num", int, 100])],
-    help_text="模拟coc掷骰功能",
+    meta=CommandMeta("模拟coc掷骰功能", example=".rd100")
 )
 
 

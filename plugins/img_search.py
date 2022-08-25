@@ -2,7 +2,7 @@ import asyncio
 from typing import Union
 from contextlib import suppress
 from PicImageSearch import Ascii2D, SauceNAO, Network, Iqdb
-from arclet.alconna import Args
+from arclet.alconna import Args, CommandMeta
 from arclet.alconna.graia import Alconna, Match, ImgOrUrl, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
@@ -20,12 +20,12 @@ running = asyncio.Event()
 
 search = Alconna(
     "搜图", Args["img;O", ImgOrUrl],
-    help_text="以图搜图，搜图结果会自动发送给你。Usage: 该功能会尝试在三类搜索网站中搜索相似图片 ; Example: $搜图 [图片];"
+    meta=CommandMeta("以图搜图，搜图结果会自动发送给你。", usage="该功能会尝试在三类搜索网站中搜索相似图片", example="$搜图 [图片]")
 )
 
 
 @record("搜图")
-@command(search)
+@command(search, send_error=True)
 async def saucenao(
         app: Ariadne,
         sender: Sender,

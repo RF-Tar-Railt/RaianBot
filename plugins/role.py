@@ -1,5 +1,5 @@
 from typing import Tuple
-from arclet.alconna import Args, Option, Empty
+from arclet.alconna import Args, Option, Empty, CommandMeta
 from arclet.alconna.graia import Alconna, command, match_path, AtID, Match
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
@@ -19,7 +19,7 @@ role = Alconna(
         Option("列出", help_text="列出该群所有的分组")
     ],
     headers=[''],
-    help_text="为群成员设置特殊分组"
+    meta=CommandMeta("为群成员设置特殊分组 注意: 该命令不需要 “渊白” 开头")
 )
 
 

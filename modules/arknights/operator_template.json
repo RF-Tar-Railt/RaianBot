@@ -61,6 +61,19 @@
               "控场"
             ]
           }
+        },
+        {
+          "name": "情报官",
+          "block": 1,
+          "attack_speed": "1.0s",
+          "cost_basic": 6,
+          "talent": "再部署时间减少，可使用远程攻击",
+          "tags": {
+            "static": "近战位 费用回复 快速复活",
+            "optional": [
+              ""
+            ]
+          }
         }
       ]
     },
