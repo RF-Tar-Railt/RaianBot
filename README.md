@@ -23,7 +23,7 @@
 
 ## 下载
 
-链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.7/raian-bot-0.7.0.zip)
+链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.9/raian-bot-0.9.0.zip)
 
 ## 安装
 
@@ -32,7 +32,8 @@
 
 **mirai部分**
 1. 确保安装并配置好了`java`环境, 推荐`java17`或`openj9`
-2. 解压缩`mcl.zip`
+2. 解压缩`mcl.zip`, 或前往[`mirai-console-loader`](https://github.com/iTXTech/mirai-console-loader)下载mcl
+, 并在[`mirai-api-http`](https://github.com/project-mirai/mirai-api-http/releases)处下载mirai-api-http.jar(当前bot使用版本为2.5.2), 然后放入`.mcl/plugins/`下
 
 **bot部分**
 1. 安装`python`环境，至少要求`python 3.8`及以上版本
@@ -45,10 +46,11 @@ pip install -r requirements.txt
 ### 配置文件
 
 **mirai部分**
-1. 前往`mcl/config/net.mamoe.mirai-api-http`下, 打开`config.yml`文件
-2. 修改其中的`verifyKey`, 适当修改`adapterSettings`下的`host`与`port`
-3. 前往`mcl/config/Console`下, 打开`AutoLogin.yml`文件
-4. 按提示修改其中的`account`与`password`
+1. 先运行一遍mcl, 以自动生成配置文件, 确认生成后关闭mcl
+2. 前往`mcl/config/net.mamoe.mirai-api-http`下, 打开`config.yml`文件
+3. 修改其中的`verifyKey`, 适当修改`adapterSettings`下的`host`与`port`
+4. 前往`mcl/config/Console`下, 打开`AutoLogin.yml`文件
+5. 按提示修改其中的`account`与`password`
 
 **bot部分**
 1. 打开`bot_config.yml`

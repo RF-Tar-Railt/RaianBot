@@ -5,7 +5,7 @@ import asyncio
 import contextlib
 from io import StringIO
 from arclet.alconna import Args, AllParam, Option, Alconna, Arpamar, CommandMeta, ArgField
-from arclet.alconna.graia import command
+from arclet.alconna.graia import command, shortcuts
 from graia.ariadne.message.element import Image
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
@@ -22,12 +22,10 @@ code = Alconna(
     meta=CommandMeta(description="执行简易代码", example="$执行 print(1+1)", hide=True),
 )
 
-code.shortcut(
-    "命令概览",
-    MessageChain("渊白执行\nfrom arclet.alconna import command_manager\nprint(command_manager)"),  # type: ignore
+
+@shortcuts(
+    命令概览=MessageChain("渊白执行\nfrom arclet.alconna import command_manager\nprint(command_manager)"),  # type: ignore
 )
-
-
 @command(code, send_error=True)
 @decorate(require_admin())
 async def execc(app: Ariadne, sender: Sender, result: Arpamar):
