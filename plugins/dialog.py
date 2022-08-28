@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from io import BytesIO
 from PIL import Image as Img
-from arclet.alconna.analysis.base import analyse_header
+from arclet.alconna.analysis.base import analyse_header, _DummyAnalyser
 from arclet.alconna.graia.dispatcher import success_record
 from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face, Quote
 from graia.ariadne.message.chain import MessageChain
@@ -59,7 +59,9 @@ aiml.load_aiml(aiml_files, aiml_brain)
 @listen(GroupMessage, FriendMessage)
 async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
+    _DummyAnalyser.filter_out = ["Source", "Quote", "File"]
     if res := analyse_header(bot.config.command_prefix, "{content}?", message, raise_exception=False):
+        _DummyAnalyser.filter_out = []
         for elem in bot.config.command_prefix:
             message = message.replace(elem, "")
         msg = str(message.include(Plain))

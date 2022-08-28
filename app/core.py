@@ -148,8 +148,7 @@ class RaianMain:
             group_list = await app.get_group_list()
             for group in group_list:
                 try:
-                    await app.send_group_message(group.id, MessageChain(title))
-                    await app.send_group_message(group.id, msg)
+                    await app.send_group_message(group.id, MessageChain(f'{title}\n') + msg)
                 except Exception as err:
                     await app.send_friend_message(friend, MessageChain(f"{group.id} 的公告发送失败\n{err}"))
                 await asyncio.sleep(random.uniform(2, 3))
@@ -338,11 +337,11 @@ class RaianMain:
                 f"\n群人数：{member_count}"
             ))
             await app.send_group_message(group.id, MessageChain(
-                f"我是 {self.config.master_name}",
-                f"的机器人 {(await app.get_bot_profile()).nickname}\n",
-                f"如果有需要可以联系主人QQ ”{self.config.master_id}“，\n",
-                f"尝试发送 {self.config.command_prefix[0]}帮助 以查看功能列表",
-                "项目地址：https://github.com/RF-Tar-Railt/RaianBot"
+                f"我是 {self.config.master_name} 的机器人 {(await app.get_bot_profile()).nickname}\n",
+                f"如果有需要可以联系主人{self.config.master_name}({self.config.master_id})，\n",
+                f"尝试发送 {self.config.command_prefix[0]}帮助 以查看功能列表\n",
+                "项目地址：https://github.com/RF-Tar-Railt/RaianBot\n",
+                "机器人交流群：122680593"
             ))
 
     def init_greet(self):

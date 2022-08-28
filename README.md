@@ -2,6 +2,10 @@
 
 `RaianBot` 是基于 `graia-ariadne` 与 `arclet-alconna` 的简易 QQ 机器人 
 
+## 交流反馈
+
+QQ交流：[122680593](https://jq.qq.com/?_wv=1027&k=lhxRkibY)
+
 ## 已有功能
 
 - 管理
@@ -16,7 +20,7 @@
 - 每日抽签
 - 状态获取
 - 跑团掷骰
-- 随机涩图 (慎用)
+- 随机涩图
 - 点歌
 - 分组管理
 - rua图

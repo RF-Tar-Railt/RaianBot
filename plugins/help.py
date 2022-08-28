@@ -31,7 +31,7 @@ async def test2(app: Ariadne, sender: Sender, index: Match[int]):
             "\n========================================================"
             "\n所有功能均无需 @机器人本身"
             "\n想给点饭钱的话，这里有赞助链接：https://afdian.net/@rf_tar_railt"
-            "\n更多功能待开发，如有特殊需求可以向 3165388245 询问"
+            "\n更多功能待开发，如有特殊需求可以向 3165388245 询问, 或前往 122680593 交流"
         )
         return await app.send_message(
             sender, MessageChain(Image(data_bytes=await create_image(text, cut=120)))
