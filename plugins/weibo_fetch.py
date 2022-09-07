@@ -8,6 +8,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.util.saya import decorate
 from graia.scheduler.timers import every_minute
 from graiax.playwright import PlaywrightBrowser
+from graiax.playwright.interface import Page
 
 from app import RaianMain, Sender, Target, record, schedule
 from modules.weibo import WeiboAPI, WeiboDynamic
@@ -30,19 +31,28 @@ weibo_fetch = Alconna(
 api = WeiboAPI(f"{bot.config.cache_dir}/plugins/weibo_data.json")
 
 
-def _handle_dynamic(
+async def _handle_dynamic(
+        page: Page,
         data: WeiboDynamic,
         time: datetime,
         target: int,
         name: str
 ):
+    await page.click("html")
+    await page.goto(data.url, timeout=60000, wait_until='networkidle')
+    elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']"))
+    elem1 = page.locator("//article[@class='weibo-main']")
+    bounding = await elem.bounding_box()
+    bounding1 = await elem1.bounding_box()
+    bounding['height'] += bounding1['height']
+    first = MessageChain(Image(data_bytes=await page.screenshot(full_page=True, clip=bounding)))
     text = MessageChain(data.text, *(Image(url=i) for i in data.img_urls))
     url = MessageChain(data.url)
-    nodes = [text, url]
+    nodes = [first, text, url]
     if data.video_url:
         nodes.append(MessageChain(f"视频链接: {data.video_url}"))
     if data.retweet:
-        nodes.append(MessageChain(Forward(*_handle_dynamic(data.retweet, time, target, name))))
+        nodes.append(MessageChain(Forward(*(await _handle_dynamic(page, data.retweet, time, target, name)))))
     return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
 
 
@@ -74,24 +84,14 @@ async def fetch(
 ):
     if dynamic := await api.get_dynamic(user.result, index=index.result):
         browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
-        async with browser.page() as page:
-            await page.click("html")
-            await page.goto(dynamic.url, timeout=60000, wait_until='networkidle')
-            elem = page.locator("//div[@class='main']")
-            data = await elem.screenshot()
-        return await app.send_message(
-            sender,
-            MessageChain(Forward(
-                ForwardNode(
-                    target=target,
-                    name=getattr(target, 'name', getattr(target, 'nickname', "")),
-                    time=source.time, message=MessageChain(Image(data_bytes=data))
-                ),
-                *_handle_dynamic(
-                    dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
-                )
-            ))
-        )
+        async with browser.page(viewport={"width": 800, "height": 2400}) as page:
+            return await app.send_message(
+                sender,
+                MessageChain(Forward(*(await _handle_dynamic(
+                        page, dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
+                    ))
+                ))
+            )
     return await app.send_message(sender, MessageChain("获取失败啦"))
 
 
@@ -176,33 +176,27 @@ async def fetch(app: Ariadne, target: Target, sender: Sender, source: Source):
 @schedule(every_minute())
 async def update():
     dynamics = {}
-    for gid in bot.data.groups:
-        prof = bot.data.get_group(int(gid))
-        if "微博动态自动获取" in prof.disabled:
-            continue
-        if not (followers := prof.additional.get("weibo_followers")):
-            continue
-        for uid in followers:
-            now = datetime.now()
-            if uid in dynamics:
-                res, first = dynamics[uid]
-            elif res := await api.update(int(uid)):
-                browser: PlaywrightBrowser = bot.app.launch_manager.get_interface(PlaywrightBrowser)
-                async with browser.page() as page:
-                    await page.click("html")
-                    await page.goto(res.url, timeout=60000, wait_until='networkidle')
-                    elem = page.locator("//div[@class='main']")
-                    data = await elem.screenshot()
-                    first = ForwardNode(
-                        target=bot.config.account,
-                        name=bot.config.bot_name,
-                        time=now, message=MessageChain(Image(data_bytes=data))
-                    )
-                dynamics[uid] = res, first
-            else:
+    browser: PlaywrightBrowser = bot.app.launch_manager.get_interface(PlaywrightBrowser)
+    async with browser.page(viewport={"width": 800, "height": 2400}) as page:
+        for gid in bot.data.groups:
+            prof = bot.data.get_group(int(gid))
+            if "微博动态自动获取" in prof.disabled:
                 continue
-            await bot.app.send_group_message(prof.id, MessageChain(f"{res.user.name} 有一条新动态！请查收!"))
-            await bot.app.send_group_message(prof.id, MessageChain(
-                Forward(first, *_handle_dynamic(res, now, bot.config.account, bot.config.bot_name))
-            ))
+            if not (followers := prof.additional.get("weibo_followers")):
+                continue
+            for uid in followers:
+                if uid in dynamics:
+                    data, name = dynamics[uid]
+                elif res := await api.update(int(uid)):
+                    dynamics[uid] = (
+                        data := await _handle_dynamic(page, res, now, bot.config.account, bot.config.bot_name),
+                        name := res.user.name
+                    )
+                else:
+                    continue
+                now = datetime.now()
+                await bot.app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
+                await bot.app.send_group_message(prof.id, MessageChain(
+                    Forward(*data)
+                ))
     dynamics.clear()

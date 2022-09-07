@@ -88,7 +88,7 @@ class RaianMain:
         self.saya = it(Saya)
         it(AlconnaBehaviour)
         scheduler = it(GraiaScheduler)
-        self.app.launch_manager.add_launchable(PlaywrightService())
+        self.app.launch_manager.add_launchable(PlaywrightService("chromium"))
         logger.success("------------------机器人初始化完毕--------------------")
 
         @self.broadcast.finale_dispatchers.append
