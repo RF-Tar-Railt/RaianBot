@@ -7,7 +7,7 @@ from arclet.alconna.graia import Alconna, Match, ImgOrUrl, command
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.element import Image, Source, Forward, ForwardNode, Plain
-from graia.ariadne.model import Group, Member, BotMessage, Friend
+from graia.ariadne.model import Group, Member, Friend
 from graia.ariadne.app import Ariadne
 from graia.broadcast.interrupt import InterruptControl, Waiter
 from loguru import logger
@@ -71,7 +71,7 @@ async def saucenao(
                 )
         except asyncio.TimeoutError:
             return await app.send_message(
-                sender, MessageChain("等待超时"), quote=waite.messageId
+                sender, MessageChain("等待超时"), quote=waite.id
             )
     await app.send_message(
         sender, MessageChain("正在搜索，请稍后"), quote=source.id
@@ -170,7 +170,7 @@ async def saucenao(
             ForwardNode(target=target, time=source.time, message=MessageChain(Forward(*iqdb_list)))
         )
     try:
-        res: BotMessage = await app.send_message(
+        res = await app.send_message(
             sender,  MessageChain(
                 Forward(
                     ForwardNode(target=target, message=MessageChain("搜索结果："), time=source.time),
@@ -179,7 +179,7 @@ async def saucenao(
             ),
             quote=source.id,
         )
-        if res.messageId < 0:
+        if res.id < 0:
             await app.send_group_message(sender, MessageChain("搜图结果存在敏感信息，搜索失败"))
     finally:
         running.clear()

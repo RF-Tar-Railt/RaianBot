@@ -8,7 +8,6 @@ if __name__ == '__main__':
     bot.init_announcement()
     bot.init_member_change_report()
     bot.init_start_report()
-    bot.init_exception_report()
     bot.init_request_report()
     bot.init_greet()
     bot.running_sync()

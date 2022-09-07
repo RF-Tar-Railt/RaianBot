@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from io import BytesIO
 from PIL import Image as Img
+from aiohttp import ClientSession, TCPConnector
 from arclet.alconna.analysis.base import analyse_header, _DummyAnalyser
 from arclet.alconna.graia.dispatcher import success_record
 from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face, Quote
@@ -14,6 +15,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.util.saya import listen, priority, dispatch
 from graia.ariadne.util.cooldown import CoolDown
 from graia.broadcast.exceptions import PropagationCancelled
+from graiax.silkcoder import async_encode
 
 from app import RaianMain, record, Sender, Target
 from modules.aiml.entry import AIML
@@ -72,28 +74,50 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
             if content and len(success_record):
                 success_record.clear()
                 raise PropagationCancelled
-            plain = False
-            voice = False
-            image = False
-            for key, value in dialog_templates['plain'].items():
+            for key, value in dialog_templates['content'].items():
                 if re.match(f".*?{key}$", msg):
                     rand_str = random.sample(value, 1)[0]
-                    plain = True
-                    break
-            if not plain:
-                for key, value in dialog_templates['voice'].items():
-                    if re.match(f".*?{key}$", msg):
-                        rand_str = random.sample(value, 1)[0]
-                        rand_str = Voice(data_bytes=Path(f"assets/voice/{rand_str}").read_bytes())
-                        voice = True
-                        break
-
-            if not plain and not voice:
-                for key, value in dialog_templates['image'].items():
-                    if re.match(f".*?{key}$", msg):
-                        rand_str = random.sample(value, 1)[0]
+                    if rand_str.startswith("#voice"):
+                        rand_str = rand_str.replace("#voice", "")
                         if rand_str.startswith("^"):
-                            mode, file = rand_str.split("$", 1)
+                            mode, sentence = rand_str.lstrip("^").split("$", 1)
+                            if mode == 'jp':
+                                async with ClientSession(connector=TCPConnector(limit=64, verify_ssl=False)) as session:
+                                    try:
+                                        async with session.post(
+                                            "https://cloud.ai-j.jp/demo/aitalk2webapi_nop.php",
+                                            data={"speaker_id": 1209, "text": sentence},
+
+                                        ) as resp:
+                                            audio_name = (await resp.text())[47:-3]
+                                        async with session.get(
+                                            f"https://cloud.ai-j.jp/demo/tmp/{audio_name}"
+                                        ) as resp:
+                                            data = await resp.read()
+                                        res = await async_encode(
+                                            data[int(
+                                                (
+                                                    3.5
+                                                    if (len(data) * 8 / 128000 > (2.9 if len(sentence) < 4 else 4.5))
+                                                    else 2.3
+                                                )
+                                                * 128000 / 8
+                                            ):],
+                                            ios_adaptive=True
+                                        )
+                                        rand_str = Voice(data_bytes=res)
+                                    except Exception:
+                                        rand_str = sentence
+                            else:
+                                rand_str = sentence
+                        else:
+                            name = rand_str.split('$')[-1]
+                            path = Path(f"assets/voice/{name}")
+                            rand_str = Voice(data_bytes=path.read_bytes()) if path.exists() else name
+                    elif rand_str.startswith("#image"):
+                        rand_str = rand_str.replace("#image", "")
+                        if rand_str.startswith("^"):
+                            mode, file = rand_str.lstrip("^").split("$", 1)
                             if mode.endswith("cover"):
                                 cover = Img.open(f"assets/image/{file}")
                                 size = cover.size
@@ -111,11 +135,12 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
                             else:
                                 rand_str = Image(data_bytes=Path(f"assets/image/{file}").read_bytes())
                         else:
-                            rand_str = Image(data_bytes=Path(f"assets/image/{rand_str}").read_bytes())
-                        image = True
-                        break
-                if not image:
-                    rand_str = await aiml.chat(message=msg, session_id=target.id)
+                            name = rand_str.split('$')[-1]
+                            path = Path(f"assets/image/{name}")
+                            rand_str = Image(data_bytes=path.read_bytes()) if path.exists() else name
+                    break
+            else:
+                rand_str = await aiml.chat(message=msg, session_id=target.id)
         if rand_str:  # noqa
             await app.send_message(sender, MessageChain(rand_str))  # noqa
             raise PropagationCancelled

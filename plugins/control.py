@@ -45,13 +45,15 @@ function_control = Alconna(
         Option("列出", alias=["list"]),
         Option(
             "禁用",
-            Args["name", str, ArgField(completion=lambda: "试试用‘greet’")],
+            Args
+            ["name", str, ArgField(completion=lambda: "试试用‘greet’")],
             alias=["ban"],
             help_text="禁用一个功能",
         ),
         Option(
             "启用",
-            Args["name", str, ArgField(completion=lambda: "试试用‘greet’")],
+            Args
+            ["name", str, ArgField(completion=lambda: "试试用‘greet’")],
             alias=["active"],
             help_text="启用一个功能",
         ),
@@ -121,7 +123,7 @@ async def _m_list(app: Ariadne, sender: Sender, bot: RaianMain):
 
 
 @command(module_control, send_error=True)
-@decorate(require_admin(True), match_path("卸载"))
+@decorate(match_path("卸载"), require_admin(True), )
 async def _m_uninstall(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
     saya = bot.saya
     channel_name = (name.result.split(".")[-1]) if name.available else "control"
@@ -142,7 +144,7 @@ async def _m_uninstall(app: Ariadne, sender: Sender, name: Match[str], bot: Raia
 
 
 @command(module_control, send_error=True)
-@decorate(require_admin(True), match_path("安装"))
+@decorate(match_path("安装"), require_admin(True), )
 async def _m_install(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
     saya = bot.saya
     channel_name = (name.result.split(".")[-1]) if name.available else "control"
@@ -169,7 +171,7 @@ async def _m_install(app: Ariadne, sender: Sender, name: Match[str], bot: RaianM
 
 
 @command(module_control, send_error=True)
-@decorate(require_admin(True), match_path("重载"))
+@decorate(match_path("重载"), require_admin(True), )
 async def _m_reload(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
     saya = bot.saya
     channel_name = (name.result.split(".")[-1]) if name.available else "control"
@@ -227,7 +229,7 @@ async def _f_list(app: Ariadne, sender: Group, bot: RaianMain):
 
 
 @command(function_control, private=False, send_error=True)
-@decorate(require_admin(), match_path("启用"))
+@decorate(match_path("启用"), require_admin(), )
 async def _f_active(app: Ariadne, sender: Group, name: Match[str], bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if not name.available:
@@ -245,7 +247,7 @@ async def _f_active(app: Ariadne, sender: Group, name: Match[str], bot: RaianMai
 
 
 @command(function_control, private=False, send_error=True)
-@decorate(require_admin(), match_path("禁用"))
+@decorate(match_path("禁用"), require_admin(), )
 async def _f(app: Ariadne, sender: Group, name: Match[str], bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if not name.available:
@@ -269,7 +271,7 @@ async def _g_main(app: Ariadne, sender: Sender):
 
 
 @command(group_control, private=False, send_error=True)
-@decorate(require_admin(True), match_path("退出"))
+@decorate(match_path("退出"), require_admin(True), )
 async def _g_quit(app: Ariadne, sender: Group, bot: RaianMain):
     await app.send_message(sender, "正在退出该群聊。。。")
     logger.debug(f"quiting from {sender.name}({sender.id})...")
@@ -286,8 +288,8 @@ async def _g_state(app: Ariadne, sender: Group, bot: RaianMain):
 
 
 @command(group_control, private=False, send_error=True)
-@decorate(require_admin(), match_path("黑名单_add"))
-async def _f(app: Ariadne, sender: Group, bot: RaianMain):
+@decorate(match_path("黑名单_add"), require_admin(), )
+async def _g_bl_add(app: Ariadne, sender: Group, bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if group.in_blacklist or sender.id in bot.data.cache["blacklist"]:
         return await app.send_message(sender, "该群组已加入黑名单!")
@@ -298,8 +300,8 @@ async def _f(app: Ariadne, sender: Group, bot: RaianMain):
 
 
 @command(group_control, private=False, send_error=True)
-@decorate(require_admin(), match_path("黑名单_remove"))
-async def _f(app: Ariadne, sender: Group, bot: RaianMain):
+@decorate(match_path("黑名单_remove"), require_admin(), )
+async def _g_bl_remove(app: Ariadne, sender: Group, bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if group.in_blacklist or sender.id in bot.data.cache["blacklist"]:
         group.in_blacklist = False

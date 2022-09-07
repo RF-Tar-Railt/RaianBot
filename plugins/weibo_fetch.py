@@ -7,17 +7,17 @@ from graia.ariadne.model import Friend
 from graia.ariadne.app import Ariadne
 from graia.ariadne.util.saya import decorate
 from graia.scheduler.timers import every_minute
+from graiax.playwright import PlaywrightBrowser
 
 from app import RaianMain, Sender, Target, record, schedule
 from modules.weibo import WeiboAPI, WeiboDynamic
-
 bot = RaianMain.current()
 
 weibo_fetch = Alconna(
     "微博", Args["user;O#微博用户名称", str, ArgField(completion=lambda: "比如说, 育碧")],
     options=[
         Option(
-            "动态", Args["index#从最前动态排起的第几个动态", int, 0],
+            "动态", Args["index#从最前动态排起的第几个动态", int, -1],
             help_text="从微博获取指定用户的动态"
         ),
         Option("关注|增加关注", dest="follow", help_text="增加一位微博动态关注对象"),
@@ -52,7 +52,7 @@ def _handle_dynamic(
 async def fetch(app: Ariadne, sender: Sender, user: Match[str]):
     if not user.available or not user.result:
         return await app.send_message(sender, MessageChain("不对劲。。。"))
-    if prof := await api.get_profile(user.result, save=False):
+    if prof := await api.get_profile(user.result, save=False, cache=False):
         return await app.send_message(
             sender, MessageChain(
                 Image(url=prof.avatar),
@@ -73,11 +73,24 @@ async def fetch(
         user: Match[str], index: Match[int]
 ):
     if dynamic := await api.get_dynamic(user.result, index=index.result):
+        browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
+        async with browser.page() as page:
+            await page.click("html")
+            await page.goto(dynamic.url, timeout=60000, wait_until='networkidle')
+            elem = page.locator("//div[@class='main']")
+            data = await elem.screenshot()
         return await app.send_message(
             sender,
-            MessageChain(Forward(*_handle_dynamic(
-                dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
-            )))
+            MessageChain(Forward(
+                ForwardNode(
+                    target=target,
+                    name=getattr(target, 'name', getattr(target, 'nickname', "")),
+                    time=source.time, message=MessageChain(Image(data_bytes=data))
+                ),
+                *_handle_dynamic(
+                    dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
+                )
+            ))
         )
     return await app.send_message(sender, MessageChain("获取失败啦"))
 
@@ -170,15 +183,26 @@ async def update():
         if not (followers := prof.additional.get("weibo_followers")):
             continue
         for uid in followers:
+            now = datetime.now()
             if uid in dynamics:
-                res = dynamics[uid]
+                res, first = dynamics[uid]
             elif res := await api.update(int(uid)):
-                dynamics[uid] = res
+                browser: PlaywrightBrowser = bot.app.launch_manager.get_interface(PlaywrightBrowser)
+                async with browser.page() as page:
+                    await page.click("html")
+                    await page.goto(res.url, timeout=60000, wait_until='networkidle')
+                    elem = page.locator("//div[@class='main']")
+                    data = await elem.screenshot()
+                    first = ForwardNode(
+                        target=bot.config.account,
+                        name=bot.config.bot_name,
+                        time=now, message=MessageChain(Image(data_bytes=data))
+                    )
+                dynamics[uid] = res, first
             else:
                 continue
-            now = datetime.now()
             await bot.app.send_group_message(prof.id, MessageChain(f"{res.user.name} 有一条新动态！请查收!"))
             await bot.app.send_group_message(prof.id, MessageChain(
-                Forward(*_handle_dynamic(res, now, bot.config.account, bot.config.bot_name))
+                Forward(first, *_handle_dynamic(res, now, bot.config.account, bot.config.bot_name))
             ))
     dynamics.clear()

@@ -135,6 +135,7 @@ class WeiboAPI:
         res = self._handler_dynamic(d_data['cards'][index]['mblog'])
         res.user = target
         if save:
+            target.latest = res.bid
             self.data.followers[str(target.id)] = target
             await self.data.save()
         return res
@@ -155,4 +156,11 @@ class WeiboAPI:
             return
         if d_data['cardlistInfo']['total'] > dynamic_total:
             profile.total = d_data['cardlistInfo']['total']
-            return await self.get_dynamic(profile, save=True)
+            dy = await self.get_dynamic(profile, save=False)
+            if dy.bid == profile.latest:
+                return
+            profile.latest = dy.bid
+            self.data.followers[str(profile.id)] = profile
+            await self.data.save()
+            return dy
+        return

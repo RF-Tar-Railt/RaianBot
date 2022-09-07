@@ -52,15 +52,14 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
         glb.pop("eval", None)
         glb.pop("exec", None)
         exec(
-            "async def rc():\n    "
+            "async def rc(__out: str):\n    "
             + "    ".join(_code + "\n" for _code in codes[1:])
             + "    await asyncio.sleep(0.1)\n"
-            + "    return locals()",
+            + "    return locals().get(__out)",
             {**glb, **locals()},
             lcs,
         )
-        data = await asyncio.wait_for(lcs["rc"](), 10)
-        code_res = data.get(output)
+        code_res = await asyncio.wait_for(lcs["rc"](), 10)
         sys.stdout = _to
         if code_res is not None:
             return await app.send_message(
@@ -73,11 +72,11 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
                     )
                 ),
             )
-        out = _stdout.getvalue()
+        _out = _stdout.getvalue()
         return await app.send_message(
             sender,
             MessageChain(
-                Image(data_bytes=(await create_image(f"output: {out}", cut=120)))
+                Image(data_bytes=(await create_image(f"output: {_out}", cut=120)))
             ),
         )
     except Exception as e:

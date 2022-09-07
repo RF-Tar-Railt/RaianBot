@@ -53,5 +53,5 @@ async def send_setu(app: Ariadne, target: Target, sender: Sender, r_per: Match[i
             )
         )
     res = await app.send_message(sender, MessageChain(Forward(*nodes)))
-    if res.messageId < 0:
+    if res.id < 0:
         return await app.send_message(sender, MessageChain("图片发不出来，抱歉。。"))

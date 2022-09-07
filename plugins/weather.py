@@ -13,7 +13,7 @@ from app import Sender
         Args[
             "time",
             {"今天": 0, "明天": 1, "后天": 2, "大后天": 3, "老后天": 4},
-            ArgField(0, alias="今天", completion=lambda: "试试五个时间段:\n - 今天\n - 明天\n - 后天\n - 大后天\n - 老后天"),
+            ArgField(0, alias="今天", completion=lambda: ["今天", "明天", "后天", "大后天", "老后天"]),
         ],
         meta=CommandMeta("查询某个城市的天气", usage="提供五个可查询的时间段", example="$北京天气 明天"),
     )

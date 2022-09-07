@@ -11,7 +11,7 @@ draw = Alconna(
     r"r( )?{pattern:[0-z|#\+]*}", Args["expect;O", int]["event", str, Empty],
     headers=['.'],
     options=[Option("max", Args["num", int, 100])],
-    meta=CommandMeta("模拟coc掷骰功能", example=".rd100")
+    meta=CommandMeta("模拟coc掷骰功能  注意：该命令以 “.” 为开头", example=".rd100")
 )
 
 

@@ -10,6 +10,7 @@ class WeiboUser(BaseModel):
     statuses: int = Field(default=0)
     visitable: bool = Field(default=True)
     total: int = Field(default=0)
+    latest: str = Field(default='')
 
     __mapping = {
         "profile": 230283,

@@ -25,7 +25,7 @@ from utils.generate_img import create_image
 )
 async def test2(app: Ariadne, sender: Sender, index: Match[int]):
 
-    cmds = command_manager.get_commands()
+    cmds = list(command_manager.all_command_raw_help().keys())
     if index.result < 0:
         text = command_manager.all_command_help(show_index=True) + (
             "\n========================================================"
@@ -37,7 +37,7 @@ async def test2(app: Ariadne, sender: Sender, index: Match[int]):
             sender, MessageChain(Image(data_bytes=await create_image(text, cut=120)))
         )
     try:
-        text = cmds[index.result].get_help()
+        text = command_manager.get_command(cmds[index.result]).get_help()
         return await app.send_message(
             sender, MessageChain(Image(data_bytes=await create_image(text, cut=120)))
         )

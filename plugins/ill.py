@@ -9,7 +9,7 @@ from graia.ariadne.util.saya import decorate
 
 from app import Sender, record
 
-json_filename = "assets/data/ill_templates.json"
+json_filename = "../assets/data/ill_templates.json"
 with open(json_filename, "r", encoding="UTF-8") as f_obj:
     ill_templates = json.load(f_obj)["templates"]
 
@@ -23,8 +23,7 @@ ill = Alconna(
                 "template",
                 list(ill_templates.keys()),
                 ArgField(
-                    completion=lambda: "模板有这些:\n> "
-                    + "\n> ".join(list(ill_templates.keys()))
+                    completion=lambda: list(ill_templates.keys())
                 ),
             ],
             dest="tp",
@@ -38,7 +37,7 @@ ill = Alconna(
 @command(ill, send_error=True)
 @record("发病")
 @decorate({"name": fetch_name()})
-async def test2(app: Ariadne, sender: Sender, name: str, result: Arpamar):
+async def ill_(app: Ariadne, sender: Sender, name: str, result: Arpamar):
     """依据模板发病"""
     if result.find("tp"):
         template = ill_templates[result.query("tp.template")]

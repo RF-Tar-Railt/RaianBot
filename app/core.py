@@ -6,19 +6,21 @@ from creart import it
 from typing import Optional, List
 from loguru import logger
 from pathlib import Path
-from contextlib import ExitStack
+from contextlib import ExitStack, suppress
 from datetime import datetime
 
 from graia.ariadne.event.mirai import (
     MemberLeaveEventQuit, MemberJoinEvent,
     BotLeaveEventKick, NewFriendRequestEvent,
-    BotInvitedJoinGroupRequestEvent, BotJoinGroupEvent
+    BotInvitedJoinGroupRequestEvent, BotJoinGroupEvent,
+    BotLeaveEventDisband
 )
 from graia.ariadne.message.element import Image, At
 from graia.ariadne.event.lifecycle import ApplicationLaunched, ApplicationShutdowned
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.model import Group, Member, Friend
+from graia.ariadne.model import Group, Member, Friend, MemberPerm
+from graia.ariadne.exception import AccountMuted, AccountNotFound, InvalidArgument
 from graia.ariadne.connection.config import config as conn_cfg, HttpClientConfig, WebsocketClientConfig
 from graia.broadcast import Broadcast
 from graia.broadcast.utilles import Ctx
@@ -30,7 +32,8 @@ from graia.saya import Saya
 from graia.scheduler import GraiaScheduler
 from graia.scheduler.timers import every_hours
 from arclet.alconna import Alconna
-from arclet.alconna.graia import AlconnaBehaviour
+from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher
+from graiax.playwright import PlaywrightService
 
 from utils.generate_img import create_image
 from utils.exception_report import generate_reports
@@ -40,6 +43,13 @@ from .config import BotConfig
 from .logger import set_output
 
 BotInstance: Ctx['RaianMain'] = Ctx("raian_bot")
+
+
+async def handler(output: str):
+    return MessageChain(Image(data_bytes=await create_image(output)))
+
+
+AlconnaDispatcher.default_send_handler = handler
 
 
 class RaianMain:
@@ -78,6 +88,7 @@ class RaianMain:
         self.saya = it(Saya)
         it(AlconnaBehaviour)
         scheduler = it(GraiaScheduler)
+        self.app.launch_manager.add_launchable(PlaywrightService())
         logger.success("------------------机器人初始化完毕--------------------")
 
         @self.broadcast.finale_dispatchers.append
@@ -95,6 +106,50 @@ class RaianMain:
         async def save():
             self.data.save()
             await asyncio.sleep(0)
+
+        @self.broadcast.receiver(FriendMessage)
+        async def discard_mute(app: Ariadne, friend: Friend, message: MessageChain):
+            msg = message.as_sendable()
+            if friend.id != self.config.master_id or not msg.startswith('解除群限制:'):
+                return
+            target = int(str(msg).replace('解除群限制:', ''))
+            if not self.data.exist(target):
+                return
+            prof = self.data.get_group(target)
+            prof.additional['mute'] = 5
+            self.data.update_group(prof)
+            return await app.send_friend_message(friend, MessageChain("该群限制解除成功"))
+
+        @self.broadcast.receiver(ExceptionThrowed)
+        async def report(app: Ariadne, event: ExceptionThrowed):
+            member: Optional[Member]
+            if isinstance(event.exception, AccountMuted) and (member := getattr(
+                    event.event, 'sender', getattr(event.event, 'member', None)
+            )):
+                group = self.data.get_group(member.group.id)
+                if not (count := group.additional.get('mute')):
+                    count = 5
+                if count > 0:
+                    await app.quit_group(member.group)
+                    count -= 1
+                group.additional['mute'] = count
+                self.data.update_group(group)
+                members = await app.get_member_list(member.group)
+                friend_ids = [f.id for f in (await app.get_friend_list())]
+                for ad in filter(lambda x: x.id in friend_ids and x.permission > MemberPerm.Member, members):
+                    with suppress(AccountNotFound, InvalidArgument):
+                        await app.send_friend_message(ad.id, MessageChain(
+                            f"因机器人被禁言, 机器人将自动退出该群聊\n"
+                            f"再禁言 {count} 次后机器人将不再自动接受该群的邀请入群申请\n"
+                            f"到达 5次后需要群主或管理员向机器人报备禁言理由后才可接受邀请"
+                        ))
+                return await app.send_friend_message(self.config.master_id, MessageChain(
+                    f"检测到在 {member.group} 中被禁言，已退出该群聊"
+                ))
+            tb = generate_reports(event.exception)
+            tb.insert(0, f"在处理 {event.event} 时出现如下问题:")
+            bts = await create_image('\n'.join(tb))
+            await app.send_friend_message(self.config.master_id, MessageChain(Image(data_bytes=bts)))
 
     @classmethod
     def current(cls):
@@ -132,7 +187,6 @@ class RaianMain:
                     )
                     self.stop()
                     raise e
-                    #exit()
 
     def init_announcement(self, title: Optional[str] = None):
         """配置公告功能"""
@@ -180,6 +234,16 @@ class RaianMain:
                 f"\n已添加至黑名单"
             ))
 
+        @self.broadcast.receiver(BotLeaveEventDisband)
+        async def handle_disband(app: Ariadne, event: BotLeaveEventDisband):
+            self.data.cache['all_joined_group'].remove(event.group.id)
+            self.data.remove_group(event.group.id)
+            await app.send_friend_message(self.config.master_id, MessageChain(
+                "收到群聊解散事件",
+                f"\n群号：{event.group.id}",
+                f"\n群名：{event.group.name}"
+            ))
+
     def init_start_report(self, init_for_new_group: bool = True):
         """配置机器人启动事件"""
 
@@ -199,10 +263,13 @@ class RaianMain:
             count = 0
             for gp in joined_set.copy():
                 if gp not in gp_list:
-                    logger.debug(f"发现失效群组: {gp}")
-                    joined_set.remove(gp)
                     if self.data.exist(gp):
+                        prof = self.data.get_group(gp)
+                        if prof.additional.get('mute', 6) != 6:
+                            continue
                         self.data.remove_group(gp)
+                    joined_set.remove(gp)
+                    logger.debug(f"发现失效群组: {gp}")
             for gp in group_list:
                 if not self.data.exist(gp.id):
                     logger.debug(f"发现新增群组: {gp.name}")
@@ -218,18 +285,7 @@ class RaianMain:
 
         @self.broadcast.receiver(ApplicationShutdowned)
         async def _report(app: Ariadne):
-            print(1)
             await app.send_friend_message(self.config.master_id, MessageChain("机器人关闭中。。。"))
-
-    def init_exception_report(self):
-        """配置运行时异常报告功能"""
-
-        @self.broadcast.receiver(ExceptionThrowed)
-        async def _report(app: Ariadne, event: ExceptionThrowed):
-            tb = generate_reports(event.exception)
-            tb.insert(0, f"在处理 {event.event} 时出现如下问题:")
-            bts = await create_image('\n'.join(tb))
-            await app.send_friend_message(self.config.master_id, MessageChain(Image(data_bytes=bts)))
 
     def init_member_change_report(self, welcome: Optional[str] = None):
         """配置用户相关事件"""
@@ -320,9 +376,19 @@ class RaianMain:
                     f"\n群号：{event.source_group}",
                     f"\n群名：{event.group_name}"
                 ))
-                await event.accept(f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in self.data.cache['blacklist'] else ''}")
-            else:
-                await event.reject("请先加机器人好友")
+                if self.data.exist(event.source_group) and self.data.get_group(
+                        event.source_group
+                ).additional.get('mute', 1) < 1:
+                    await event.reject('')
+                    return await app.send_friend_message(event.supplicant, MessageChain(
+                        f"该群被禁言次数达到上限, 已拒绝申请\n"
+                        f"请联系群主或管理员向机器人报备禁言理由"
+                    ))
+                await event.accept('')
+                return await app.send_friend_message(event.supplicant, MessageChain(
+                    f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in self.data.cache['blacklist'] else 'accepted.'}"
+                ))
+            return await event.reject("请先加机器人好友")
 
         @self.broadcast.receiver(BotJoinGroupEvent)
         async def get_join_group(app: Ariadne, group: Group):
@@ -343,6 +409,12 @@ class RaianMain:
                 "项目地址：https://github.com/RF-Tar-Railt/RaianBot\n",
                 "机器人交流群：122680593"
             ))
+            if self.data.exist(group.id) and (count := self.data.get_group(group.id).additional.get('mute')):
+                await app.send_group_message(group.id, MessageChain(
+                    f"检测到机器人曾在该群被禁言 {5 - count}次\n"
+                    f"达到5次后机器人将不再接收入群申请\n"
+                    f"5次以上后群主或管理员需要将禁言理由发送给机器人, 经过审核后可继续使用机器人\n"
+                ))
 
     def init_greet(self):
         @self.data.record("greet")
@@ -352,8 +424,8 @@ class RaianMain:
             msg = message.display
             now = datetime.now()
             if (
-                msg.startswith("早上好") or msg.startswith("早安") or msg.startswith("中午好") or msg.startswith("下午好")
-                or msg.startswith("晚上好")
+                    msg.startswith("早上好") or msg.startswith("早安") or msg.startswith("中午好") or msg.startswith("下午好")
+                    or msg.startswith("晚上好")
             ):
                 if 6 <= now.hour < 11:
                     reply = "\t早上好~"

@@ -9,7 +9,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, At, Source, Plain, Face, ForwardNode, Forward
-from graia.ariadne.model import Group, Member, BotMessage
+from graia.ariadne.model import Group, Member
 from graia.ariadne.exception import UnknownTarget, UnknownError
 from graia.ariadne.util.saya import listen, priority, decorate
 from graia.broadcast.exceptions import PropagationCancelled
@@ -76,8 +76,8 @@ async def fetch(app: Ariadne, sender: Group, result: Arpamar):
             )
         if not forwards:
             return await app.send_message(sender, MessageChain("呜, 找不到这个人的记录"))
-        res: BotMessage = await app.send_message(sender, MessageChain(Forward(*forwards)))
-        if res.messageId < 0:
+        res = await app.send_message(sender, MessageChain(Forward(*forwards)))
+        if res.id < 0:
             await app.send_message(sender, MessageChain("该群的记录中有敏感信息，无法列出"))
     return
 
@@ -166,8 +166,8 @@ async def handle(app: Ariadne, sender: Group, message: MessageChain):
         for key in _data.keys():
             if re.fullmatch(key, msg):
                 content = _data[key]['content']
-                res: BotMessage = await app.send_message(sender, MessageChain.from_persistent_string(content))
-                if res.messageId < 0:
+                res = await app.send_message(sender, MessageChain.from_persistent_string(content))
+                if res.id < 0:
                     await app.send_message(sender, MessageChain("该条记录存在敏感信息，回复出错"))
                 raise PropagationCancelled
     return

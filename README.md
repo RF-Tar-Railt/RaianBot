@@ -24,6 +24,7 @@ QQ交流：[122680593](https://jq.qq.com/?_wv=1027&k=lhxRkibY)
 - 点歌
 - 分组管理
 - rua图
+- 日本语
 
 ## 下载
 
@@ -37,7 +38,7 @@ QQ交流：[122680593](https://jq.qq.com/?_wv=1027&k=lhxRkibY)
 **mirai部分**
 1. 确保安装并配置好了`java`环境, 推荐`java17`或`openj9`
 2. 解压缩`mcl.zip`, 或前往[`mirai-console-loader`](https://github.com/iTXTech/mirai-console-loader)下载mcl
-, 并在[`mirai-api-http`](https://github.com/project-mirai/mirai-api-http/releases)处下载mirai-api-http.jar(当前bot使用版本为2.5.2), 然后放入`.mcl/plugins/`下
+, 并在[`mirai-api-http`](https://github.com/project-mirai/mirai-api-http/releases)处下载mirai-api-http.jar(当前bot使用版本为2.6.2), 然后放入`.mcl/plugins/`下
 
 **bot部分**
 1. 安装`python`环境，至少要求`python 3.8`及以上版本
