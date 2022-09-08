@@ -86,7 +86,7 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
                                     try:
                                         async with session.post(
                                             "https://cloud.ai-j.jp/demo/aitalk2webapi_nop.php",
-                                            data={"speaker_id": 1209, "text": sentence},
+                                            data={"speaker_id": 1209, "text": sentence, "speed": 0.8, "pitch": 1.1},
 
                                         ) as resp:
                                             audio_name = (await resp.text())[47:-3]
@@ -94,17 +94,9 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
                                             f"https://cloud.ai-j.jp/demo/tmp/{audio_name}"
                                         ) as resp:
                                             data = await resp.read()
-                                        res = await async_encode(
-                                            data[int(
-                                                (
-                                                    3.5
-                                                    if (len(data) * 8 / 128000 > (2.9 if len(sentence) < 4 else 4.5))
-                                                    else 2.3
-                                                )
-                                                * 128000 / 8
-                                            ):],
-                                            ios_adaptive=True
-                                        )
+                                        time = len(data) * 8 / 128000
+                                        start = 3.8 if time > (3.1 if len(sentence) < 4 else 4.5) else 2.3
+                                        res = await async_encode(data[int(start * 128000 / 8):], ios_adaptive=True)
                                         rand_str = Voice(data_bytes=res)
                                     except Exception:
                                         rand_str = sentence
