@@ -4,14 +4,14 @@ from datetime import datetime
 from pathlib import Path
 
 from arclet.alconna import Args, Empty, Option, AllParam, ArgParserTextFormatter, Arpamar, CommandMeta
-from arclet.alconna.graia import Alconna, command, match_path
+from arclet.alconna.graia import Alconna, alcommand, assign
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, At, Source, Plain, Face, ForwardNode, Forward
 from graia.ariadne.model import Group, Member
 from graia.ariadne.exception import UnknownTarget, UnknownError
-from graia.ariadne.util.saya import listen, priority, decorate
+from graia.ariadne.util.saya import listen, priority
 from graia.broadcast.exceptions import PropagationCancelled
 from contextlib import suppress
 
@@ -36,14 +36,14 @@ base_path = Path(f"{bot.config.cache_dir}/plugins/learn_repeat")
 base_path.mkdir(parents=True, exist_ok=True)
 
 
-@command(repeat, private=False)
-@decorate(match_path("$main"))
+@assign("$main")
+@alcommand(repeat, private=False)
 async def fetch(app: Ariadne, sender: Group):
     return await app.send_message(sender, MessageChain(repeat.get_help()))
 
 
-@command(repeat, private=False)
-@decorate(match_path("列出"))
+@assign("列出")
+@alcommand(repeat, private=False)
 async def fetch(app: Ariadne, sender: Group, result: Arpamar):
     this_file = base_path / f"record_{sender.id}.json"
     if not this_file.exists():
@@ -82,8 +82,8 @@ async def fetch(app: Ariadne, sender: Group, result: Arpamar):
     return
 
 
-@command(repeat, private=False)
-@decorate(match_path("查找"))
+@assign("查找")
+@alcommand(repeat, private=False)
 async def fetch(app: Ariadne, sender: Group, result: Arpamar):
     this_file = base_path / f"record_{sender.id}.json"
     if not this_file.exists():
@@ -94,8 +94,8 @@ async def fetch(app: Ariadne, sender: Group, result: Arpamar):
     return await app.send_message(sender, MessageChain(f"查找{'成功' if name in _data else '失败'}！"))
 
 
-@command(repeat, private=False)
-@decorate(match_path("删除"))
+@assign("删除")
+@alcommand(repeat, private=False)
 async def fetch(app: Ariadne, sender: Group, source: Source, result: Arpamar):
     this_file = base_path / f"record_{sender.id}.json"
     if not this_file.exists():
@@ -120,8 +120,8 @@ async def fetch(app: Ariadne, sender: Group, source: Source, result: Arpamar):
     return await app.send_message(sender, MessageChain("删除记录成功了！"))
 
 
-@command(repeat, private=False, send_error=True)
-@decorate(match_path("增加"))
+@assign("增加")
+@alcommand(repeat, private=False, send_error=True)
 async def fetch(app: Ariadne, target: Member, sender: Group, source: Source, result: Arpamar):
     this_file = base_path / f"record_{sender.id}.json"
     name, content = result.query("增加.name"), result.query("增加.content")
@@ -140,12 +140,9 @@ async def fetch(app: Ariadne, target: Member, sender: Group, source: Source, res
     if not this_file.exists():
         with this_file.open("w+", encoding='utf-8') as fo:
             ujson.dump({}, fo)
-    if not this_file.exists():
-        with this_file.open("w+", encoding='utf-8') as fo:
-            ujson.dump({}, fo)
     with this_file.open("r+", encoding='utf-8') as f_obj:
         _data = ujson.load(f_obj)
-    _data[name] = {"id": target.id, "content": _record.as_persistent_string()}
+    _data[name] = {"id": target.id, "content": _record.json(), "json": True}
     with this_file.open("w+", encoding='utf-8') as fo:
         ujson.dump(_data, fo, ensure_ascii=False, indent=2)
     return await app.send_message(sender, MessageChain("我学会了！你现在可以来问我了！"), quote=source.id)
@@ -166,7 +163,15 @@ async def handle(app: Ariadne, sender: Group, message: MessageChain):
         for key in _data.keys():
             if re.fullmatch(key, msg):
                 content = _data[key]['content']
-                res = await app.send_message(sender, MessageChain.from_persistent_string(content))
+                if _data[key].get("json"):
+                    send = MessageChain.parse_obj(ujson.loads(content))
+                else:
+                    send = MessageChain.from_persistent_string(content)
+                    _data[key]['content'] = send.json()
+                    _data[key]['json'] = True
+                    with this_file.open("w+", encoding='utf-8') as fo:
+                        ujson.dump(_data, fo, ensure_ascii=False, indent=2)
+                res = await app.send_message(sender, send)
                 if res.id < 0:
                     await app.send_message(sender, MessageChain("该条记录存在敏感信息，回复出错"))
                 raise PropagationCancelled

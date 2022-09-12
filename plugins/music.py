@@ -1,5 +1,5 @@
 from arclet.alconna import Args, Option, Arpamar, ArgField, CommandMeta
-from arclet.alconna.graia import Alconna, command
+from arclet.alconna.graia import Alconna, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import MusicShare, MusicShareKind
 from graia.ariadne.app import Ariadne
@@ -16,7 +16,7 @@ JUMP_URL = "https://music.163.com/song?id={id}"
 MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"
 
 
-@command(music)
+@alcommand(music)
 async def song(app: Ariadne, sender: Sender, result: Arpamar):
     singer = f"{singer} " if (singer := result.query("singer.singer")) else ""
     song_search_url = f"http://localhost:4000/search?keywords={singer + result.name}&limit=10"

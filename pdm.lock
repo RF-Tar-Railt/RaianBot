@@ -55,7 +55,7 @@ dependencies = [
 
 [[package]]
 name = "arclet-alconna-graia"
-version = "0.5.0"
+version = "0.6.0"
 requires_python = ">=3.8"
 summary = "Support Alconna to GraiaProject"
 dependencies = [
@@ -165,7 +165,7 @@ dependencies = [
 
 [[package]]
 name = "graia-ariadne"
-version = "0.9.3"
+version = "0.9.4"
 requires_python = ">=3.8,<4.0"
 summary = "Another elegant Python QQ Bot framework for mirai and mirai-api-http v2."
 dependencies = [
@@ -209,7 +209,7 @@ dependencies = [
 
 [[package]]
 name = "graiax-playwright"
-version = "0.1.1"
+version = "0.1.2"
 requires_python = ">=3.8"
 summary = "适用于 Graia 的 Playwright 管理器"
 dependencies = [
@@ -221,7 +221,7 @@ dependencies = [
 
 [[package]]
 name = "graiax-silkcoder"
-version = "0.3.2"
+version = "0.3.4"
 requires_python = ">=3.8"
 summary = "transform audio file to silk"
 
@@ -440,7 +440,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:c2202c339f8d00063b6da9e58e84c46336dfe67dd9e106d42e019a19f4bf5379"
+content_hash = "sha256:68ebdcb0683b5c13a77d2bc19f070f9ca4caf77ac8d8d7a9b987de568ab1f820"
 
 [metadata.files]
 "aiodns 3.0.0" = [
@@ -529,9 +529,9 @@ content_hash = "sha256:c2202c339f8d00063b6da9e58e84c46336dfe67dd9e106d42e019a19f
     {url = "https://files.pythonhosted.org/packages/0b/09/449cc29e28018baeeff8fc5c14096dc28bb4a03edef51335875bb4342e7b/arclet-alconna-1.2.0.7.tar.gz", hash = "sha256:43720f95bec6a12bf027d7442eca360cac6d610fadbe19fc2d9355284442fb1e"},
     {url = "https://files.pythonhosted.org/packages/0b/d4/90e038b4f6fae4c0b87e65ab1d3212d59b89225cfa285b2889a928892980/arclet_alconna-1.2.0.7-py3-none-any.whl", hash = "sha256:b6c6149bb42a34b4354fbbb19b1544700ce5643b731f2dbf551f500154889840"},
 ]
-"arclet-alconna-graia 0.5.0" = [
-    {url = "https://files.pythonhosted.org/packages/0d/9b/619eaa289bd0c5bb5352ab54d9044ab6638226300790032927be9b4b1b18/arclet-alconna-graia-0.5.0.tar.gz", hash = "sha256:9572ba9c7a15d2b6d8d8a68e7c98d913bbad695cfcc59ce4d7fbcb0e776bdfe1"},
-    {url = "https://files.pythonhosted.org/packages/ee/72/d32dc2edd09141b7cddc761e8313bd8ab7a2bf68c9a985dc7a4965263973/arclet_alconna_graia-0.5.0-py3-none-any.whl", hash = "sha256:f1b6910f87c74802462d37b291ebd5072d239f47f6f235f30f76af4ab8c65609"},
+"arclet-alconna-graia 0.6.0" = [
+    {url = "https://files.pythonhosted.org/packages/05/f3/6fb939886a0de43b79e67a3b491f40c114cc953ed034a878274f8d3b76ec/arclet-alconna-graia-0.6.0.tar.gz", hash = "sha256:5db4bfcc45e30f1d557f0205e369cac491ffdd5fa1e9be4e22bbc882293ac382"},
+    {url = "https://files.pythonhosted.org/packages/6d/4f/37f831a1cf94e60e8b0a9c6119ab97604448430ed23a0055380b2b15773c/arclet_alconna_graia-0.6.0-py3-none-any.whl", hash = "sha256:7e80f41117ddee85391aba76a3c44384cd3cda72dec7376b4f2423b09dbfcb32"},
 ]
 "async-timeout 4.0.2" = [
     {url = "https://files.pythonhosted.org/packages/54/6e/9678f7b2993537452710ffb1750c62d2c26df438aa621ad5fa9d1507a43a/async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
@@ -791,9 +791,9 @@ content_hash = "sha256:c2202c339f8d00063b6da9e58e84c46336dfe67dd9e106d42e019a19f
     {url = "https://files.pythonhosted.org/packages/4f/0d/434bae97145de0e5bda33e4757c5def19e034fdb12a32ea2dd7d0d4d1c70/graia_amnesia-0.6.0-py3-none-any.whl", hash = "sha256:c1e347171cd42d81b10dea4fb6afef4bed4e836fa9c698ecf595ccaa5c2d1939"},
     {url = "https://files.pythonhosted.org/packages/e4/17/23accd9a4466a7cebc4cd6f74821197ad1e74b23cd5395acee7ccd19ce1f/graia-amnesia-0.6.0.tar.gz", hash = "sha256:9f4ed226ebd2ccfe5e09489e4afffd9e58ae28c3fa93211dda72c3c6b9a439f0"},
 ]
-"graia-ariadne 0.9.3" = [
-    {url = "https://files.pythonhosted.org/packages/82/25/e2fa8fbf3ab119ee97a86f3d05b84aa2ec062921d408506fe33215232063/graia-ariadne-0.9.3.tar.gz", hash = "sha256:4bfc995fbe54db4e95382d29e5e80da4f7596865270ed5f3abcc26530433ec25"},
-    {url = "https://files.pythonhosted.org/packages/d5/5b/3422db12231ce27585a461c52f0461a871204beec96d0f05cbf891f4b396/graia_ariadne-0.9.3-py3-none-any.whl", hash = "sha256:6b132210cf33c8ff44f5f03833eaefc190bbf4ebc995c117cc51e7e369548ddd"},
+"graia-ariadne 0.9.4" = [
+    {url = "https://files.pythonhosted.org/packages/40/7a/c07a7f1abd8edd8a82742dbc9e4bce59ee0369807bf7a5ac2b129f1c6820/graia-ariadne-0.9.4.tar.gz", hash = "sha256:a9a4bcdd3a1fb6f5ccd0024b3f6120449b4b7e434fd90a28ae63bc4367280a9c"},
+    {url = "https://files.pythonhosted.org/packages/f6/df/707ce3560cbf093d748640464dd04926bda134868d87d893d8fbcb2d2ce0/graia_ariadne-0.9.4-py3-none-any.whl", hash = "sha256:5c87d60da11c42aad32d3d70100c646e91af1b6911c14b657dd88688290fb082"},
 ]
 "graia-broadcast 0.18.2" = [
     {url = "https://files.pythonhosted.org/packages/0b/14/e155d41933b6069a0ea85dd04aca5660cdf156aee4bd8b44117b9be751a1/graia_broadcast-0.18.2-py3-none-any.whl", hash = "sha256:dcb712dc5be29419c4b65dc649c4e7c795c834fb810682f6131b313d6bd3e740"},
@@ -807,30 +807,52 @@ content_hash = "sha256:c2202c339f8d00063b6da9e58e84c46336dfe67dd9e106d42e019a19f
     {url = "https://files.pythonhosted.org/packages/10/38/38cdb58872fdeeb673c16aeb826a0c643810f5aedd6890f8df7667216709/graia-scheduler-0.0.8.tar.gz", hash = "sha256:b26731e8f83f413e3dda435b5b46d49e78f6bae4b902596c9c51adc9f93b5a18"},
     {url = "https://files.pythonhosted.org/packages/52/22/34cd437ca69ba215fdcc9f3e78b7c17d0588867d117173438e9a657dcb64/graia_scheduler-0.0.8-py3-none-any.whl", hash = "sha256:73515cc46a71e7e9c5b48825b20df3fa8d97f5708637d6cf29e51b152294c0fa"},
 ]
-"graiax-playwright 0.1.1" = [
-    {url = "https://files.pythonhosted.org/packages/52/d8/89b970b11b643e46d3b89a00ce45d4290fd05e6211b6bada7b58d6e4bc37/graiax_playwright-0.1.1-py3-none-any.whl", hash = "sha256:86c5d93a0038eebf39c2050f6249151fedfdc3443a369aded3f0524d3cd9238f"},
-    {url = "https://files.pythonhosted.org/packages/94/04/0f007061215307d96c6ec2ffc25063dce554fe9d6f263c222767b99079b2/graiax-playwright-0.1.1.tar.gz", hash = "sha256:4a87e68e23415c61aa93f04ff9795a96a328c3e8d258e0cb473c63d3f4a597f2"},
+"graiax-playwright 0.1.2" = [
+    {url = "https://files.pythonhosted.org/packages/39/6d/87605c820ad904049145e5a7348dfaf7f5db5a5e5d1e80a720719f575af8/graiax_playwright-0.1.2-py3-none-any.whl", hash = "sha256:f64a39a6b9785b92f8a315d91ba0ead7ae27d551c069be87bcda4fd62481bb85"},
+    {url = "https://files.pythonhosted.org/packages/9f/00/9700d163a72bef6232ac8495a2eb669630188fc59a344c88f22232c205b8/graiax-playwright-0.1.2.tar.gz", hash = "sha256:eeeb60dd7f662fa568b93f8fb8edb279ca0d96fdb5c67926899f4e7c323df897"},
 ]
-"graiax-silkcoder 0.3.2" = [
-    {url = "https://files.pythonhosted.org/packages/00/1b/9d5f891e69a5e8aa1022507c2214a39542df6a6fadb0410e039bfc1d88aa/graiax_silkcoder-0.3.2-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:670aad0c1189a6bdeb3175b55e0eca38fb24ae3f00347a9c5b5c5592ae5354aa"},
-    {url = "https://files.pythonhosted.org/packages/0e/4d/db22d19aab6d9c300a323489b41495410bcb30c90f96091dd2d7d96279a3/graiax_silkcoder-0.3.2-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:3a3bc677490a5981739978f88d2ae6fb7daa779c8a2d3ff90f70132550f98d4d"},
-    {url = "https://files.pythonhosted.org/packages/36/88/d4fe01af0d396967543fdc4b7e0a3861e999211a4fcf5748837e74d1ff93/graiax_silkcoder-0.3.2-cp38-cp38-win_amd64.whl", hash = "sha256:f5607bf0cc93247452433470877374013dbf2c71149aeca7aa3a2057d6c64727"},
-    {url = "https://files.pythonhosted.org/packages/41/33/6fc96549dc51ea25b0cb60d868370551c77145c0c8db773ddec9f9402870/graiax_silkcoder-0.3.2-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:c0c696ccd159b5f40ca243f2846266c222df7076bc9bd465f76819480f41f560"},
-    {url = "https://files.pythonhosted.org/packages/43/3f/b671421d5320802afc7d1cb6ef7db9b045b46783b8664aa3f6a41e2f3338/graiax_silkcoder-0.3.2-cp310-cp310-win_amd64.whl", hash = "sha256:972cc207a59ebc29a935e249bf6f8b4fcb4068cb655984b11f94a4df71781860"},
-    {url = "https://files.pythonhosted.org/packages/4a/59/2b3a56c531389a7a88d3a201e9b20dcbd09c3d609b91fede98b5280ce201/graiax-silkcoder-0.3.2.tar.gz", hash = "sha256:654ba9ca7412bb2728d0830c52e3acca2b2c2bc6f1d10d81367d281f62b117b1"},
-    {url = "https://files.pythonhosted.org/packages/57/b4/a9893fceeb9e7c2666760ad48dd38b286755913f00bc0ec891ed930d5d8b/graiax_silkcoder-0.3.2-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:021802368ddf901e328b5826b6685f0be2aed428e774fbb407b4a3cf30979b18"},
-    {url = "https://files.pythonhosted.org/packages/61/69/2e47aaf96d2af3ec2bc236287cfcabde4e87217e66548c59a49689db63a9/graiax_silkcoder-0.3.2-cp39-cp39-win_amd64.whl", hash = "sha256:1c8aeb6ca61184881aca55f726ca598f8474f894235e0c72c6e451653265bfc2"},
-    {url = "https://files.pythonhosted.org/packages/65/39/f3c22351c319120362c92b34e7fcff61e4d1f3c883c752f7299cf13eb8e0/graiax_silkcoder-0.3.2-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:48a1423d8ddbfbe2873e98d971171bd7df0b098ed0bdc8f88b806b36ecae71cb"},
-    {url = "https://files.pythonhosted.org/packages/67/bc/46ad5fb72fa5ed4cec9e3994b78f438f4ad447f19a0ffb55f0a7b346bbe6/graiax_silkcoder-0.3.2-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:a8dae799169a4dadc67f2c92c733b87add372a352b9d3c0ac166192025050cf0"},
-    {url = "https://files.pythonhosted.org/packages/68/f2/e36cb2e07c22ddabbbcb0e6439a4c879b51e3dd73933c483cdfa92d7eb90/graiax_silkcoder-0.3.2-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:9cd1e724e19dcb5708a4a4c1c63ccf8f4ea04c9fedf80f9504a4da5ca3906ba9"},
-    {url = "https://files.pythonhosted.org/packages/8d/b9/372c7f49d0a3fc5810389079c1ce8e9f9f0765b05d23ccdd222d7a09613c/graiax_silkcoder-0.3.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5243ef164c7f145efa8d4c5dcd99e7c09898585e35cdc3f60a1e02dadf05cc63"},
-    {url = "https://files.pythonhosted.org/packages/ca/1e/10cd7ddecf833055542f31d2b2a0e4d3f92af55a40a81183ef968ca8f565/graiax_silkcoder-0.3.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f038f31dba5c097b12830b149b43f092578291a287659bc813fa1e879ca9202b"},
-    {url = "https://files.pythonhosted.org/packages/d2/fa/58390591b563b424fc3945bdc7b0fcab5891b1eccf2e9e5900ee8946e31b/graiax_silkcoder-0.3.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5fadf9a68b0271bb6992cc069c69347998fa923a498c4f321090e91a173a1360"},
-    {url = "https://files.pythonhosted.org/packages/db/60/23470dea3586bb9ed3b5e90af02a8cdbd1b1641a87995d085d78b2c3e061/graiax_silkcoder-0.3.2-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:704b1823392655c29976b63772b4439a585a4412212df61ea1e3bcc80578a347"},
-    {url = "https://files.pythonhosted.org/packages/e4/4b/e4bcfc4327f5f136b4580560826a7079d784a5715a5483d61973bdf1f49f/graiax_silkcoder-0.3.2-cp38-cp38-win32.whl", hash = "sha256:61a2f34e91c5ec165206a7b0c2b9858f2d9eea8c585b8c4ef2f122f36459ee02"},
-    {url = "https://files.pythonhosted.org/packages/f0/6a/1a5c72a8e3a4263cf70ebf60007cc36fcfc7f439789c721778ec6eb36e7d/graiax_silkcoder-0.3.2-cp310-cp310-win32.whl", hash = "sha256:b3c8eb4700c8de345e004f63e92cf8555e3e6c83e9080135280e99445c370fc5"},
-    {url = "https://files.pythonhosted.org/packages/f2/1d/1d2b1b2703e4e1232c3ee2275160a9a151578925deb0fa7478b3176b2070/graiax_silkcoder-0.3.2-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:4a22f9683e57f9513596dd2fdcfe25d5ba85b1d33d98439b2748ae9695619c8a"},
-    {url = "https://files.pythonhosted.org/packages/f4/14/2493b7b911c8b751ced3e896fdb1a58c5600ba2482b6006d08f3d4afb37c/graiax_silkcoder-0.3.2-cp39-cp39-win32.whl", hash = "sha256:44b8a65e9fc069ba9636fe9fa16f18b6ac0752104e17c8e03b729b9349c641bf"},
+"graiax-silkcoder 0.3.4" = [
+    {url = "https://files.pythonhosted.org/packages/00/d7/1fa8c071b889306ed66c21e2411bc7a0e9878a22e7ffb7d168543da9ac5a/graiax_silkcoder-0.3.4-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:a3b00ed05b1423efa78c516dad1bb97d0460d95f8703d692b65a0cef667574d1"},
+    {url = "https://files.pythonhosted.org/packages/07/c2/0d64fe8bb0736077f8292c96d71a36b092fac6a09691447a644024b154af/graiax_silkcoder-0.3.4-cp39-cp39-win32.whl", hash = "sha256:bf70207a71f62abc67fbfca0152d8ad05ba879c3c2b819ba48885d99c1604ca7"},
+    {url = "https://files.pythonhosted.org/packages/0b/50/6c11739161514a4385a0d29eab72e2b08bb3a9d73d1b3ba49872f53228b7/graiax_silkcoder-0.3.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:2295867ecdf712b3d21e035805a3b72f19bf290a98423ee11d124a1826f0e237"},
+    {url = "https://files.pythonhosted.org/packages/1b/1b/d2d980b27ec1d75e13e2e05dcb537005b2fda2f634ab6c329b0acc7f0a2c/graiax_silkcoder-0.3.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6baa9da1b34159e2b8e192c7252d6ecb8e06db5d586b857a8a1b51a5b491f405"},
+    {url = "https://files.pythonhosted.org/packages/20/8a/8ada30426a0e78fa177c3c3f4c0f4f12c36a91a0fad641a20cae40d42d1b/graiax_silkcoder-0.3.4-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f773d4e1fe3c8313bf70e005e592b4bdec1f9d08ee2f9563219eef4dbc929198"},
+    {url = "https://files.pythonhosted.org/packages/31/ea/1f8b253e9717a5ae1954f7a9321e2d3ce51bab8c99e4af3c58e768db54a0/graiax_silkcoder-0.3.4-cp38-cp38-win32.whl", hash = "sha256:da3c6b7e44f365cd22e3068418dafaea09eebe8ef09cc934b1d27a4ecf817d27"},
+    {url = "https://files.pythonhosted.org/packages/33/f1/2a8b1323d55628f63cfd5ee558380b17cae0b50e45bb74e9a60713dc6f10/graiax_silkcoder-0.3.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e341f59941f5ec3bdc7cdd3abb630f9485e08fa1d2f6bbba98aa7f8e2125af53"},
+    {url = "https://files.pythonhosted.org/packages/35/f4/240598c801c65a06de23a56d3b38aa435ee42916ee73138b8a7e563c6a97/graiax_silkcoder-0.3.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dc7a8052ad1a8b354db79eae66a22198491d4ba87d68893268aa3a5015f6ef74"},
+    {url = "https://files.pythonhosted.org/packages/3e/25/091a84fe086cc6f61e3a4e6ab0432142c25dad30b8502febf65f7b521cd8/graiax_silkcoder-0.3.4-cp311-cp311-musllinux_1_1_i686.whl", hash = "sha256:ca3ecf997580ca09d005a3ca7f740e13d3e4145d34e31d7cec9e2b806b3e9455"},
+    {url = "https://files.pythonhosted.org/packages/3e/be/9cb08523fffb0dd1d2c345a5b575d032dab041c12c6c7b5d255283825241/graiax_silkcoder-0.3.4-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:ffc4758736fcecfe82922c0ce850d8aad2352a69afd324f9d64899b63b50701e"},
+    {url = "https://files.pythonhosted.org/packages/42/da/f2822278fe07a20f89f320da3c6586f8216ba5c6d9112c4cffc9bdaaf6cc/graiax_silkcoder-0.3.4-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f3a3241cbd6f784ca358cafbff723c915d7e38fd7afc2343177075d5958dc900"},
+    {url = "https://files.pythonhosted.org/packages/49/b7/51ab39c4c83766836d54388d4c3aa6aec1df35d645e549aad90bdaeb2b9c/graiax_silkcoder-0.3.4-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:47f02bf4032306329a087ef1a3fa8f1dcae95f7a95c590854a2d6498049a404d"},
+    {url = "https://files.pythonhosted.org/packages/66/12/c923fbba7d7d7199f7172b7df1d542dd09d94de3d7925b857e490b6e1594/graiax_silkcoder-0.3.4-cp310-cp310-win32.whl", hash = "sha256:f1cae5486354186df50e06e194071bba0b3af81e54e2b0d043bc29ba85e87b34"},
+    {url = "https://files.pythonhosted.org/packages/67/a6/f05c16296c4e9a7ddf496cedf300bfbe951b7704f558c0c4a308322bb2b3/graiax_silkcoder-0.3.4-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:090277fcc8176910047871ee83e5c85a2eb2af2f2429e73f673bdc408b8a81f1"},
+    {url = "https://files.pythonhosted.org/packages/6f/af/512ead93434070c04eb257f9de017ecb8291015af39c07f1d43dd6df3dfd/graiax_silkcoder-0.3.4-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3c823e3eba80295f634c7805f8e42ab82d0a6bd901bb53af7a9a710b95ae836e"},
+    {url = "https://files.pythonhosted.org/packages/70/81/bc0caa7c06beaa7093fe24d81a9c14e316e1bcd800603e29e811463acd8b/graiax_silkcoder-0.3.4-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:f1814ffb1607314ff914bdaacbdc5af0c2aad6c0e00bce1e66d74e00f37c273d"},
+    {url = "https://files.pythonhosted.org/packages/7a/a6/2dd28881a207c6aa7664ae069be498dbfd3797a22233c47cb368639e3256/graiax-silkcoder-0.3.4.tar.gz", hash = "sha256:e6e93eb578fb9368c7d1e44f5c2c5aafbe03af89347c25bcd7b9d2d43d3e130b"},
+    {url = "https://files.pythonhosted.org/packages/82/cc/fe0b38fa22dbe4c91ed945eca854c3fcf0eac0054ac2a399059b971af74d/graiax_silkcoder-0.3.4-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:1519241a3ef574dcb9d05c136bb86056eeb79fe8b72d17e9f439c389b6a85513"},
+    {url = "https://files.pythonhosted.org/packages/87/9e/e7465086aef52e1d5b01c38b6daa26a7360177828814857f2048664d863d/graiax_silkcoder-0.3.4-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:f6497acb57386ee38a0c5f272dd3de9d3046c157b7a794c236effab372a36ae1"},
+    {url = "https://files.pythonhosted.org/packages/8e/fc/30f3a37896ccff984b7201be3b31f4b004bf96ba4554e8010e46c8a06663/graiax_silkcoder-0.3.4-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d459e0b77079e44f08933dfbd52d6fb4abd72376c23b31e110016590a1a83900"},
+    {url = "https://files.pythonhosted.org/packages/92/67/c28b316a54ad53b39d1dd1e1d3bb512bec2facded13a32256162a9390865/graiax_silkcoder-0.3.4-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:abe92dfcc71827a1a6f691fc733dde8bd8c9fe37f4d4ae4a691d402b2161233c"},
+    {url = "https://files.pythonhosted.org/packages/92/d5/987cae6fa08d3098eb042218af268bec05c219a3ae97c1f8f1df8ceb3ed9/graiax_silkcoder-0.3.4-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2b323ad18f0f2f1b8297904518687e65322bbe58c65896f78ef21122042c6361"},
+    {url = "https://files.pythonhosted.org/packages/93/6a/dd997eb8af93dbc871c673b02d3a73a98e3149c05f6bbe60fd1c5b0686a6/graiax_silkcoder-0.3.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:21e3e8d65e54b2650cd3b9dc29da6bd2cbe42b5db7c84a9c716624d53087efa6"},
+    {url = "https://files.pythonhosted.org/packages/95/85/79930090ed4bd2e291942ecc84a182e247db18ab800b5840c2707d646c33/graiax_silkcoder-0.3.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:9d24bb29d010ecea6eef15f90ca6c6c6170f02730cdc73971d5062cdbe5ce7d0"},
+    {url = "https://files.pythonhosted.org/packages/a1/70/6ae5a1f22fbc630038e28fd4993d4230f15f6522310c73461ed3af04e485/graiax_silkcoder-0.3.4-cp311-cp311-win_amd64.whl", hash = "sha256:2f3d2be1430496ccd17247264b4df75b11f9f15240d4cbdbfdaeccd60c430ae2"},
+    {url = "https://files.pythonhosted.org/packages/a7/f0/1b896d82be96e832fe7a5c9f21cb11ee5545bf47ee2aff9dfcac0e813e6a/graiax_silkcoder-0.3.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:f6726bc28d42889ec8c7a3191e12d1e3966450e89fc06c656bcfb81e00d09aeb"},
+    {url = "https://files.pythonhosted.org/packages/b8/c9/4f76b9fee814e0fea5fe4174bd7e7ff2a7b6c7f0152aa701eee35b700632/graiax_silkcoder-0.3.4-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:aa89354c5fc86b9c57df0925d9a58e5635a51f6288d107d39a805975fdf23edc"},
+    {url = "https://files.pythonhosted.org/packages/d1/02/99c110bc5c2d39d0335db4bb04a9d0b414e66b9d6cc2283e01ee62a28913/graiax_silkcoder-0.3.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8517242d646c49d721b2ca8bdebbd4528b42f1f47bc73787857403d1b6872b5c"},
+    {url = "https://files.pythonhosted.org/packages/d7/a3/132c4c09c328dc6da499d6d055ef18ed287248e0793b582b5c371af9a9a1/graiax_silkcoder-0.3.4-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d40ff744ca3d3e826c73afca77500ce454ac5fa335177676265641bdd4dd1aa5"},
+    {url = "https://files.pythonhosted.org/packages/d8/ee/2525772cd4f4851953faebfa800579864d5107bfb3554385c92d4729d843/graiax_silkcoder-0.3.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:dba92c434386d4f59f39e39d1b66efff3e56bce67f6629c93ed1e3eb954df105"},
+    {url = "https://files.pythonhosted.org/packages/da/40/5919f1c32bfaa84b8c4d691d94672767a9894e2630f1a1c2be912a7cb2a0/graiax_silkcoder-0.3.4-cp310-cp310-win_amd64.whl", hash = "sha256:2ddaaaefed548830e82d9b888f5584735766a03b18ab35312f4a053832d0ef7c"},
+    {url = "https://files.pythonhosted.org/packages/e2/b4/14ada82e3413dcf4e73f3738b21e0548e55a1a34531eff52bd3d36011cc0/graiax_silkcoder-0.3.4-cp311-cp311-win32.whl", hash = "sha256:1851a978d3af4c154ada8243445c0a693866b288787b25108349e256b49d9dc3"},
+    {url = "https://files.pythonhosted.org/packages/e4/3a/03c6538d20ac842f468f5f3cc23a58d87e6b7a3289a1db5719a56c4a2b04/graiax_silkcoder-0.3.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c83985f8f57e627055c049602fcfbbece3271ad0c5e3d44ce194464ec9cf8c66"},
+    {url = "https://files.pythonhosted.org/packages/e5/71/d4691917d4fbb4ae0a5f319ccf01dda68f70402eab175fee69a64c6d7f39/graiax_silkcoder-0.3.4-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:ae3b23c0bc9d1d04a580cc48670de45e98484411250802310aa7cc9a5246afb6"},
+    {url = "https://files.pythonhosted.org/packages/e8/81/744e89b3fd0b5db32daf72305c54ed19f6789f9afe96bccee421175a48a3/graiax_silkcoder-0.3.4-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:b91c65cbaeff182c4155f82e621050874a80d2b58f08171e8d40b976b484c703"},
+    {url = "https://files.pythonhosted.org/packages/ec/0c/8d50bfc06107e28e976c574c2c7ef7a34435008e736ed8880597c92dac86/graiax_silkcoder-0.3.4-cp39-cp39-win_amd64.whl", hash = "sha256:9cffb95b6dabfebd47b080b64d4dc0e2763f542146c9189c7c498bba2781b5f8"},
+    {url = "https://files.pythonhosted.org/packages/ee/e2/275418695e4859b73a1cdee91c38d67dc5632b7581d40d5cd9fd7e3fbeca/graiax_silkcoder-0.3.4-cp38-cp38-win_amd64.whl", hash = "sha256:0983b2a86b3f89df127c1f8f45eb2ecda2862daa8a3e871bd7749b3f5775a326"},
+    {url = "https://files.pythonhosted.org/packages/f1/08/f514fdc7ed14500bb7964573f3320db908f2ff9ae015b8e3b5399a32b908/graiax_silkcoder-0.3.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e9b82bee05860a2aad2559edcd0fd1998c29cf27ca8e9a24c3be3157687c06fa"},
+    {url = "https://files.pythonhosted.org/packages/f4/4d/092a799f0d2f5e936694ef11fa6a2c20a31d7e108765a8a1418cb1d993cc/graiax_silkcoder-0.3.4-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:8c591493f4d139210befabaf0b254999b1b6644622002903215521326d529cfc"},
+    {url = "https://files.pythonhosted.org/packages/fd/8a/e23f816c91b6ebdc49ee0b756b0926f8372c56f5628822e584c14c46d623/graiax_silkcoder-0.3.4-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:55246a04575c554a885d6a37790957d468a37c95f619918a419df9a3fb573547"},
+    {url = "https://files.pythonhosted.org/packages/ff/b8/bdf3ea53bd798859843814ca5be1f011657a69e546e7480ece400a891712/graiax_silkcoder-0.3.4-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:50c79c1e939e80d32416cdc049c1c4761afb667a41bb28664e33c9d76145015b"},
 ]
 "greenlet 1.1.2" = [
     {url = "https://files.pythonhosted.org/packages/07/59/f4656193ac084b7134dcf5f5d4d5c4d3a154d222202eecf00b367d367e90/greenlet-1.1.2-cp310-cp310-win_amd64.whl", hash = "sha256:14d4f3cd4e8b524ae9b8aa567858beed70c392fdec26dbdb0a8a418392e71708"},

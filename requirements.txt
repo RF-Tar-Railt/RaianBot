@@ -1,6 +1,6 @@
 arclet-alconna<2.0.0, >=1.2.0.1
-arclet-alconna-graia<1.0.0, >=0.4.7.1
-graia-ariadne<1.0.0, >=0.9.3
+arclet-alconna-graia<1.0.0, >=0.6.1
+graia-ariadne<1.0.0, >=0.9.4
 graia-amnesia~=0.6.0
 graia-broadcast>=0.18.2
 graia-saya~=0.0.16
@@ -18,5 +18,5 @@ psutil~=5.9.0
 tencentcloud-sdk-python==3.0.495
 ujson~=5.1.0
 creart~=0.2.1
-graiax-playwright>=0.1.1
-graiax-silkcoder[ffmpeg]>=0.3.2
+graiax-playwright>=0.1.2
+graiax-silkcoder[ffmpeg]>=0.3.3

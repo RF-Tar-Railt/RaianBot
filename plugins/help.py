@@ -1,5 +1,5 @@
 from arclet.alconna import Args, command_manager, ArgField, CommandMeta
-from arclet.alconna.graia import Alconna, Match, command
+from arclet.alconna.graia import Alconna, Match, alcommand
 from graia.ariadne.message.element import Image
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
@@ -9,7 +9,7 @@ from app import Sender
 from utils.generate_img import create_image
 
 
-@command(
+@alcommand(
     Alconna(
         "帮助",
         Args[
@@ -23,7 +23,7 @@ from utils.generate_img import create_image
         meta=CommandMeta("查看帮助")
     )
 )
-async def test2(app: Ariadne, sender: Sender, index: Match[int]):
+async def send_help(app: Ariadne, sender: Sender, index: Match[int]):
 
     cmds = list(command_manager.all_command_raw_help().keys())
     if index.result < 0:

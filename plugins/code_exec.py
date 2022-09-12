@@ -4,14 +4,15 @@ import subprocess
 import asyncio
 import contextlib
 from io import StringIO
-from arclet.alconna import Args, AllParam, Option, Alconna, Arpamar, CommandMeta, ArgField
-from arclet.alconna.graia import command, shortcuts
+from arclet.alconna import Args, Option, Alconna, Arpamar, CommandMeta, ArgField
+from arclet.alconna.graia import alcommand, shortcuts, startswith
 from graia.ariadne.message.element import Image
 from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.app import Ariadne
-from graia.ariadne.util.saya import decorate
+from graia.ariadne.util.saya import listen
 
-from app import Sender, require_admin
+from app import Sender, admin, master
 from utils.generate_img import create_image
 from utils.exception_report import generate_reports
 
@@ -23,11 +24,11 @@ code = Alconna(
 )
 
 
+@admin
 @shortcuts(
     命令概览=MessageChain("渊白执行\nfrom arclet.alconna import command_manager\nprint(command_manager)"),  # type: ignore
 )
-@command(code, send_error=True)
-@decorate(require_admin())
+@alcommand(code, send_error=True)
 async def execc(app: Ariadne, sender: Sender, result: Arpamar):
     codes = str(result.origin).split("\n")
     output = result.query("out.name", "res")
@@ -89,19 +90,14 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
         sys.stdout = _to
 
 
-@command(
-    Alconna(
-        "shell",
-        Args["code", AllParam, ArgField(completion=lambda: "试试 echo hello")],
-        meta=CommandMeta("执行命令行语句", example="$shell echo hello", hide=True),
-    )
-)
-@decorate(require_admin(True))
-async def shell(app: Ariadne, sender: Sender, result: Arpamar):
+@master
+@startswith("shell", bind="echos")
+@listen(GroupMessage, FriendMessage)
+async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
     with contextlib.suppress(asyncio.TimeoutError):
         process = await asyncio.wait_for(
             asyncio.create_subprocess_shell(
-                " ".join(result.main_args["code"]),
+                str(echos),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 shell=True,

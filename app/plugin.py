@@ -1,14 +1,12 @@
 from typing import Union, Optional, List
-from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.util.saya import ensure_cube_as_listener, Wrapper, T_Callable, ListenerSchema, Cube
 from graia.ariadne.model import Group, Friend, Member
 from graia.saya import Channel
 from graia.scheduler.saya import SchedulerSchema
 from graia.scheduler import Timer
-from arclet.alconna.graia import AlconnaDispatcher, Alconna
 
 from .core import RaianMain
-from .control import require_function
+from .control import require_function, require_admin
 
 Sender = Union[Group, Friend]
 Target = Union[Member, Friend]
@@ -33,10 +31,22 @@ def record(name: str, require: bool = True, disable: bool = False) -> Wrapper:
     return wrapper
 
 
+def admin(func: T_Callable) -> T_Callable:
+    cube: Cube[ListenerSchema] = ensure_cube_as_listener(func)
+    cube.metaclass.decorators.append(require_admin(False))
+    return func
+
+
+def master(func: T_Callable) -> T_Callable:
+    cube: Cube[ListenerSchema] = ensure_cube_as_listener(func)
+    cube.metaclass.decorators.append(require_admin(True))
+    return func
+
+
 def schedule(timer: Timer) -> Wrapper:
     def wrapper(func: T_Callable) -> T_Callable:
         channel = Channel.current()
-        channel.use(SchedulerSchema(timer))(func)
+        channel.use(SchedulerSchema(timer, True))(func)
         return func
 
     return wrapper

@@ -1,7 +1,7 @@
 import json
 import random
 from arclet.alconna import Args, Empty, Option, Arpamar, ArgField, CommandMeta
-from arclet.alconna.graia import Alconna, command, fetch_name
+from arclet.alconna.graia import Alconna, alcommand, fetch_name
 from graia.ariadne.message.element import At
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
@@ -9,7 +9,7 @@ from graia.ariadne.util.saya import decorate
 
 from app import Sender, record
 
-json_filename = "../assets/data/ill_templates.json"
+json_filename = "assets/data/ill_templates.json"
 with open(json_filename, "r", encoding="UTF-8") as f_obj:
     ill_templates = json.load(f_obj)["templates"]
 
@@ -19,13 +19,7 @@ ill = Alconna(
     options=[
         Option(
             "模板|模版",
-            Args[
-                "template",
-                list(ill_templates.keys()),
-                ArgField(
-                    completion=lambda: list(ill_templates.keys())
-                ),
-            ],
+            Args["template", list(ill_templates.keys()), ArgField(completion=lambda: list(ill_templates.keys()))],
             dest="tp",
             help_text="指定发病模板",
         )
@@ -34,7 +28,7 @@ ill = Alconna(
 )
 
 
-@command(ill, send_error=True)
+@alcommand(ill, send_error=True)
 @record("发病")
 @decorate({"name": fetch_name()})
 async def ill_(app: Ariadne, sender: Sender, name: str, result: Arpamar):

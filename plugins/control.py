@@ -1,14 +1,13 @@
 import asyncio
 from arclet.alconna import Args, Option, CommandMeta, ArgField
-from arclet.alconna.graia import Alconna, Match, command, match_path
+from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image  # Forward, ForwardNode
 from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
-from graia.ariadne.util.saya import decorate
 from loguru import logger
 
-from app import RaianMain, Sender, require_admin
+from app import RaianMain, Sender, admin, master
 from utils.generate_img import create_image
 
 shutdown = Alconna("关机", Args["time", int, 0], meta=CommandMeta("关闭机器人", hide=True))
@@ -73,8 +72,8 @@ group_control = Alconna(
 )
 
 
-@command(Alconna("调试", meta=CommandMeta("显示调试信息")))
-@decorate(require_admin())
+@admin
+@alcommand(Alconna("调试", meta=CommandMeta("显示调试信息")))
 async def debug(app: Ariadne, sender: Sender, bot: RaianMain):
     mds = f"当前共加载模块：{len(bot.saya.channels)}个\n已禁用模块: {bot.config.disabled_plugins}"
     groups_debug = f"当前共加入群：{len(bot.data.groups)}个"
@@ -87,8 +86,8 @@ async def debug(app: Ariadne, sender: Sender, bot: RaianMain):
     return await app.send_message(sender, MessageChain("\n".join(res)))
 
 
-@command(shutdown)
-@decorate(require_admin(True))
+@master
+@alcommand(shutdown)
 async def _s(app: Ariadne, sender: Sender, time: Match[int], bot: RaianMain):
     await app.send_message(sender, MessageChain("正在关机。。。"))
     await asyncio.sleep(time.result)
@@ -96,8 +95,8 @@ async def _s(app: Ariadne, sender: Sender, time: Match[int], bot: RaianMain):
     await asyncio.sleep(0.1)
 
 
-@command(module_control, send_error=True)
-@decorate(match_path("列出"))
+@assign("列出")
+@alcommand(module_control, send_error=True)
 async def _m_list(app: Ariadne, sender: Sender, bot: RaianMain):
     saya = bot.saya
     res = "=================================\n"
@@ -122,8 +121,9 @@ async def _m_list(app: Ariadne, sender: Sender, bot: RaianMain):
     )
 
 
-@command(module_control, send_error=True)
-@decorate(match_path("卸载"), require_admin(True), )
+@master
+@assign("卸载")
+@alcommand(module_control, send_error=True)
 async def _m_uninstall(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
     saya = bot.saya
     channel_name = (name.result.split(".")[-1]) if name.available else "control"
@@ -143,8 +143,9 @@ async def _m_uninstall(app: Ariadne, sender: Sender, name: Match[str], bot: Raia
         return await app.send_message(sender, MessageChain(f"卸载 {module_path} 成功"))
 
 
-@command(module_control, send_error=True)
-@decorate(match_path("安装"), require_admin(True), )
+@master
+@assign("安装")
+@alcommand(module_control, send_error=True)
 async def _m_install(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
     saya = bot.saya
     channel_name = (name.result.split(".")[-1]) if name.available else "control"
@@ -170,8 +171,9 @@ async def _m_install(app: Ariadne, sender: Sender, name: Match[str], bot: RaianM
         return await app.send_message(sender, MessageChain(f"安装 {module_path} 成功"))
 
 
-@command(module_control, send_error=True)
-@decorate(match_path("重载"), require_admin(True), )
+@master
+@assign("重载")
+@alcommand(module_control, send_error=True)
 async def _m_reload(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMain):
     saya = bot.saya
     channel_name = (name.result.split(".")[-1]) if name.available else "control"
@@ -192,20 +194,20 @@ async def _m_reload(app: Ariadne, sender: Sender, name: Match[str], bot: RaianMa
         return await app.send_message(sender, MessageChain(f"重载 {module_path} 成功"))
 
 
-@command(module_control, send_error=True)
-@decorate(match_path("$main"))
+@assign("$main")
+@alcommand(module_control, send_error=True)
 async def _m_main(app: Ariadne, sender: Sender):
     return await app.send_message(sender, MessageChain(module_control.get_help()))
 
 
-@command(function_control, send_error=True)
-@decorate(match_path("$main"))
+@assign("$main")
+@alcommand(function_control, send_error=True)
 async def _f_main(app: Ariadne, sender: Sender):
     return await app.send_message(sender, MessageChain(function_control.get_help()))
 
 
-@command(function_control, private=False, send_error=True)
-@decorate(match_path("列出"))
+@assign("列出")
+@alcommand(function_control, private=False, send_error=True)
 async def _f_list(app: Ariadne, sender: Group, bot: RaianMain):
     group = bot.data.get_group(sender.id)
     res = f"{sender.name} / {sender.id} 统计情况\n"
@@ -228,8 +230,9 @@ async def _f_list(app: Ariadne, sender: Group, bot: RaianMain):
     )
 
 
-@command(function_control, private=False, send_error=True)
-@decorate(match_path("启用"), require_admin(), )
+@admin
+@assign("启用")
+@alcommand(function_control, private=False, send_error=True)
 async def _f_active(app: Ariadne, sender: Group, name: Match[str], bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if not name.available:
@@ -246,8 +249,9 @@ async def _f_active(app: Ariadne, sender: Group, name: Match[str], bot: RaianMai
     return await app.send_message(sender, MessageChain(f"功能 {name} 启用成功"))
 
 
-@command(function_control, private=False, send_error=True)
-@decorate(match_path("禁用"), require_admin(), )
+@admin
+@assign("禁用")
+@alcommand(function_control, private=False, send_error=True)
 async def _f(app: Ariadne, sender: Group, name: Match[str], bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if not name.available:
@@ -264,14 +268,15 @@ async def _f(app: Ariadne, sender: Group, name: Match[str], bot: RaianMain):
     return await app.send_message(sender, MessageChain(f"功能 {name} 禁用成功"))
 
 
-@command(group_control, send_error=True)
-@decorate(match_path("$main"))
+@assign("$main")
+@alcommand(group_control, send_error=True)
 async def _g_main(app: Ariadne, sender: Sender):
     return await app.send_message(sender, MessageChain(group_control.get_help()))
 
 
-@command(group_control, private=False, send_error=True)
-@decorate(match_path("退出"), require_admin(True), )
+@master
+@assign("退出")
+@alcommand(group_control, private=False, send_error=True)
 async def _g_quit(app: Ariadne, sender: Group, bot: RaianMain):
     await app.send_message(sender, "正在退出该群聊。。。")
     logger.debug(f"quiting from {sender.name}({sender.id})...")
@@ -279,16 +284,17 @@ async def _g_quit(app: Ariadne, sender: Group, bot: RaianMain):
     return await app.quit_group(sender)
 
 
-@command(group_control, private=False, send_error=True)
-@decorate(match_path("status"))
+@assign("status")
+@alcommand(group_control, private=False, send_error=True)
 async def _g_state(app: Ariadne, sender: Group, bot: RaianMain):
     group = bot.data.get_group(sender.id)
     fns = "所在群组已列入黑名单" if group.in_blacklist else f"所在群组已禁用功能: {group.disabled}"
     return await app.send_message(sender, fns)
 
 
-@command(group_control, private=False, send_error=True)
-@decorate(match_path("黑名单_add"), require_admin(), )
+@admin
+@assign("黑名单_add")
+@alcommand(group_control, private=False, send_error=True)
 async def _g_bl_add(app: Ariadne, sender: Group, bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if group.in_blacklist or sender.id in bot.data.cache["blacklist"]:
@@ -299,8 +305,9 @@ async def _g_bl_add(app: Ariadne, sender: Group, bot: RaianMain):
     return await app.send_message(sender, "该群组列入黑名单成功!")
 
 
-@command(group_control, private=False, send_error=True)
-@decorate(match_path("黑名单_remove"), require_admin(), )
+@admin
+@assign("黑名单_remove")
+@alcommand(group_control, private=False, send_error=True)
 async def _g_bl_remove(app: Ariadne, sender: Group, bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if group.in_blacklist or sender.id in bot.data.cache["blacklist"]:

@@ -1,7 +1,7 @@
 import random
 from arclet.alconna import Args, Option, Arpamar, ArgField, CommandMeta
 from datetime import datetime
-from arclet.alconna.graia import Alconna, command, Match
+from arclet.alconna.graia import Alconna, alcommand, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Image
 from graia.ariadne.app import Ariadne
@@ -17,7 +17,7 @@ setu = Alconna(
 
 
 @record('setu')
-@command(setu)
+@alcommand(setu)
 async def send_setu(app: Ariadne, target: Target, sender: Sender, r_per: Match[int], result: Arpamar):
     """随机涩图发送"""
     async with app.service.client_session.request(

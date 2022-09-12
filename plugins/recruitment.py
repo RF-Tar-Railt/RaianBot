@@ -1,5 +1,5 @@
 from arclet.alconna import Args, Arpamar, Option, ArgField, CommandMeta
-from arclet.alconna.graia import Alconna, command
+from arclet.alconna.graia import Alconna, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Source
 from graia.ariadne.app import Ariadne
@@ -15,7 +15,7 @@ recruit = Alconna(
 )
 
 
-@command(recruit, send_error=True)
+@alcommand(recruit, send_error=True)
 async def recruit(app: Ariadne, sender: Sender, source: Source, result: Arpamar):
     if result.tags is None:
         return await app.send_message(sender, MessageChain('不对劲...'))

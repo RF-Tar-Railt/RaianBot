@@ -1,11 +1,10 @@
 from typing import Tuple
 from arclet.alconna import Args, Option, Empty, CommandMeta
-from arclet.alconna.graia import Alconna, command, match_path, AtID, Match
+from arclet.alconna.graia import Alconna, alcommand, assign, AtID, Match
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Source, ForwardNode, Forward
 from graia.ariadne.model import Group, Member
-from graia.ariadne.util.saya import decorate
 
 from app import record, RaianMain
 
@@ -24,15 +23,15 @@ role = Alconna(
 
 
 @record('role')
-@command(role, private=False)
-@decorate(match_path("$main"))
+@assign("$main")
+@alcommand(role, private=False)
 async def _r(app: Ariadne, sender: Group):
     return await app.send_message(sender, MessageChain(role.get_help()))
 
 
 @record('role')
-@command(role, private=False)
-@decorate(match_path("列出"))
+@assign("列出")
+@alcommand(role, private=False)
 async def _r(app: Ariadne, target: Member, sender: Group, source: Source, bot: RaianMain):
     group = bot.data.get_group(sender.id)
     if not (roles := group.additional.get("roles")):
@@ -60,9 +59,9 @@ async def _r(app: Ariadne, target: Member, sender: Group, source: Source, bot: R
     bot.data.update_group(group)
 
 
+@assign("设置")
 @record('role')
-@command(role, private=False)
-@decorate(match_path("设置"))
+@alcommand(role, private=False)
 async def _r(
         app: Ariadne, sender: Group, bot: RaianMain,
         tag: Match[str], targets: Match[Tuple[int, ...]]
@@ -80,9 +79,9 @@ async def _r(
     bot.data.update_group(group)
 
 
+@assign("增加")
 @record('role')
-@command(role, private=False)
-@decorate(match_path("增加"))
+@alcommand(role, private=False)
 async def _r(
         app: Ariadne, sender: Group, bot: RaianMain,
         tag: Match[str], targets: Match[Tuple[int, ...]]
@@ -103,8 +102,8 @@ async def _r(
 
 
 @record('role')
-@command(role, private=False)
-@decorate(match_path("删除"))
+@assign("删除")
+@alcommand(role, private=False)
 async def _r(
         app: Ariadne, sender: Group, bot: RaianMain,
         tag: Match[str], targets: Match[Tuple[int, ...]]
@@ -128,9 +127,9 @@ async def _r(
     bot.data.update_group(group)
 
 
+@assign("呼叫")
 @record('role')
-@command(role, private=False)
-@decorate(match_path("呼叫"))
+@alcommand(role, private=False)
 async def _r(
         app: Ariadne, sender: Group, bot: RaianMain,
         tag: Match[str], content: Match[str]

@@ -2,7 +2,7 @@ import json
 import random
 from datetime import datetime
 from arclet.alconna import CommandMeta
-from arclet.alconna.graia import Alconna, command
+from arclet.alconna.graia import Alconna, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.app import Ariadne
@@ -16,7 +16,7 @@ with open(json_filename, 'r', encoding='UTF-8') as f_obj:
 
 
 @record("抽签")
-@command(Alconna("抽签", meta=CommandMeta("进行一次抽签, 可以解除")))
+@alcommand(Alconna("抽签", meta=CommandMeta("进行一次抽签, 可以解除")))
 async def draw(app: Ariadne, sender: Sender, target: Target, source: Source, bot: RaianMain):
     """每日运势抽签"""
     today = datetime.now().day
@@ -46,7 +46,7 @@ async def draw(app: Ariadne, sender: Sender, target: Target, source: Source, bot
     )
 
 
-@command(Alconna("解签", meta=CommandMeta("解除上一次的抽签")))
+@alcommand(Alconna("解签", meta=CommandMeta("解除上一次的抽签")))
 async def draw(app: Ariadne, sender: Sender, target: Target, source: Source, bot: RaianMain):
     if not bot.data.exist(target.id):
         return await app.send_message(sender, MessageChain("您还未找我签到~"), quote=source.id)

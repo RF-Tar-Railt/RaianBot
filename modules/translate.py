@@ -40,5 +40,4 @@ class YoudaoTrans(BaseTrans):
         async with ClientSession() as session:
             async with session.post(url, data=data) as resp:
                 result = await resp.json()
-                tran = result['translateResult'][0][0]['tgt']
-                return tran
+                return result['translateResult'][0][0]['tgt']

@@ -1,5 +1,5 @@
 from arclet.alconna import Args, ArgField, CommandMeta
-from arclet.alconna.graia import Alconna, Match, command, AtID
+from arclet.alconna.graia import Alconna, Match, alcommand, AtID
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.event.mirai import NudgeEvent
@@ -18,7 +18,7 @@ rua = Alconna(
 pet = PetGenerator("assets/image/rua")
 
 
-@command(rua, private=False)
+@alcommand(rua, private=False)
 async def draw(
         app: Ariadne,
         member: Member,

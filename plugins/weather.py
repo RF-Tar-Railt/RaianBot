@@ -1,20 +1,18 @@
 import json
 from arclet.alconna import Args, Arpamar, ArgField, CommandMeta
-from arclet.alconna.graia import Alconna, command, Match
+from arclet.alconna.graia import Alconna, alcommand, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
 
 from app import Sender
 
+times = {"今天": 0, "明天": 1, "后天": 2, "大后天": 3, "老后天": 4}
 
-@command(
+
+@alcommand(
     Alconna(
         "{city}?天气",
-        Args[
-            "time",
-            {"今天": 0, "明天": 1, "后天": 2, "大后天": 3, "老后天": 4},
-            ArgField(0, alias="今天", completion=lambda: ["今天", "明天", "后天", "大后天", "老后天"]),
-        ],
+        Args["time", times, ArgField(0, alias="今天", completion=lambda: list(times.keys()))],
         meta=CommandMeta("查询某个城市的天气", usage="提供五个可查询的时间段", example="$北京天气 明天"),
     )
 )

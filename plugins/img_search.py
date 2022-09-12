@@ -3,7 +3,7 @@ from typing import Union
 from contextlib import suppress
 from PicImageSearch import Ascii2D, SauceNAO, Network, Iqdb
 from arclet.alconna import Args, CommandMeta
-from arclet.alconna.graia import Alconna, Match, ImgOrUrl, command
+from arclet.alconna.graia import Alconna, Match, ImgOrUrl, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.element import Image, Source, Forward, ForwardNode, Plain
@@ -25,7 +25,7 @@ search = Alconna(
 
 
 @record("搜图")
-@command(search, send_error=True)
+@alcommand(search, send_error=True)
 async def saucenao(
         app: Ariadne,
         sender: Sender,

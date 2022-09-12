@@ -1,13 +1,13 @@
 from app import RaianMain, Sender, Target, record
 from arclet.alconna import Args, CommandMeta, ArgField
-from arclet.alconna.graia import Alconna, Match, command
+from arclet.alconna.graia import Alconna, Match, alcommand
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from modules.arknights import ArknightsGacha
 
 
-@command(
+@alcommand(
     Alconna(
         "(抽卡|寻访)",
         Args["count", int, ArgField(default=10, completion=lambda: "试试输入 300")],

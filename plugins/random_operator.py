@@ -1,5 +1,5 @@
 from arclet.alconna import Args, Empty, ArgField, CommandMeta
-from arclet.alconna.graia import Alconna, command, fetch_name
+from arclet.alconna.graia import Alconna, alcommand, fetch_name
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, At
 from graia.ariadne.util.saya import decorate
@@ -11,7 +11,7 @@ from utils.generate_img import create_image
 
 
 @record("随机干员")
-@command(
+@alcommand(
     Alconna(
         "测试干员",
         Args["name#你的代号是?", [str, At], ArgField(Empty, completion=lambda: "你的代号是?")],

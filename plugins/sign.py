@@ -1,5 +1,5 @@
 from arclet.alconna import CommandMeta
-from arclet.alconna.graia import Alconna, command
+from arclet.alconna.graia import Alconna, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.model import Group, Member
@@ -9,7 +9,7 @@ from app import RaianMain, record
 
 
 @record('sign')
-@command(Alconna("签到", meta=CommandMeta("在机器人处登记用户信息")), private=False)
+@alcommand(Alconna("签到", meta=CommandMeta("在机器人处登记用户信息")), private=False)
 async def sign_up(app: Ariadne, sender: Group, member: Member, source: Source, bot: RaianMain):
     """在机器人处登记信息"""
     if bot.data.exist(member.id):

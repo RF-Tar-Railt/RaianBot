@@ -1,11 +1,10 @@
 from datetime import datetime
 from arclet.alconna import Args, Option, ArgField, CommandMeta
-from arclet.alconna.graia import Alconna, Match, command, match_path
+from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Source, Image
 from graia.ariadne.model import Friend
 from graia.ariadne.app import Ariadne
-from graia.ariadne.util.saya import decorate
 from graia.scheduler.timers import every_minute
 from graiax.playwright import PlaywrightBrowser
 from graiax.playwright.interface import Page
@@ -57,8 +56,8 @@ async def _handle_dynamic(
 
 
 @record("微博功能")
-@command(weibo_fetch)
-@decorate(match_path("$main"))
+@assign("$main")
+@alcommand(weibo_fetch)
 async def fetch(app: Ariadne, sender: Sender, user: Match[str]):
     if not user.available or not user.result:
         return await app.send_message(sender, MessageChain("不对劲。。。"))
@@ -76,8 +75,8 @@ async def fetch(app: Ariadne, sender: Sender, user: Match[str]):
 
 
 @record("微博功能")
-@command(weibo_fetch)
-@decorate(match_path("动态"))
+@assign("动态")
+@alcommand(weibo_fetch)
 async def fetch(
         app: Ariadne, target: Target, sender: Sender, source: Source,
         user: Match[str], index: Match[int]
@@ -96,8 +95,8 @@ async def fetch(
 
 
 @record("微博功能")
-@command(weibo_fetch)
-@decorate(match_path("follow"))
+@assign("follow")
+@alcommand(weibo_fetch)
 async def fetch(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
     if isinstance(sender, Friend):
         return
@@ -116,8 +115,8 @@ async def fetch(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
 
 
 @record("微博功能")
-@command(weibo_fetch)
-@decorate(match_path("unfollow"))
+@assign("unfollow")
+@alcommand(weibo_fetch)
 async def fetch(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
     if isinstance(sender, Friend):
         return
@@ -136,8 +135,8 @@ async def fetch(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
 
 
 @record("微博功能")
-@command(weibo_fetch)
-@decorate(match_path("list"))
+@assign("list")
+@alcommand(weibo_fetch)
 async def fetch(app: Ariadne, target: Target, sender: Sender, source: Source):
     if isinstance(sender, Friend):
         return
@@ -185,6 +184,7 @@ async def update():
             if not (followers := prof.additional.get("weibo_followers")):
                 continue
             for uid in followers:
+                now = datetime.now()
                 if uid in dynamics:
                     data, name = dynamics[uid]
                 elif res := await api.update(int(uid)):
@@ -194,7 +194,6 @@ async def update():
                     )
                 else:
                     continue
-                now = datetime.now()
                 await bot.app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
                 await bot.app.send_group_message(prof.id, MessageChain(
                     Forward(*data)

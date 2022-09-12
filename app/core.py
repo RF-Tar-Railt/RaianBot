@@ -32,7 +32,7 @@ from graia.saya import Saya
 from graia.scheduler import GraiaScheduler
 from graia.scheduler.timers import every_hours
 from arclet.alconna import Alconna
-from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher
+from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, MatchPrefix
 from graiax.playwright import PlaywrightService
 
 from utils.generate_img import create_image
@@ -193,11 +193,10 @@ class RaianMain:
         title = title or "来自管理者的公告"
 
         @self.broadcast.receiver(FriendMessage)
-        async def announcement(app: Ariadne, friend: Friend, message: MessageChain):
+        async def announcement(app: Ariadne, friend: Friend, message: MessageChain = MatchPrefix("公告:")):
             msg = message.as_sendable()
-            if friend.id != self.config.master_id or not msg.startswith('公告:'):
+            if friend.id != self.config.master_id:
                 return
-            msg.replace('公告:', '')
             ft = time.time()
             group_list = await app.get_group_list()
             for group in group_list:

@@ -1,5 +1,5 @@
 from arclet.alconna import Args, Empty, Option, Arpamar, CommandMeta
-from arclet.alconna.graia import Alconna, command
+from arclet.alconna.graia import Alconna, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.app import Ariadne
@@ -15,7 +15,7 @@ draw = Alconna(
 )
 
 
-@command(draw)
+@alcommand(draw)
 async def dice(app: Ariadne, target: Source, sender: Sender, result: Arpamar):
     pattern = result.header['pattern']
     expect = result.main_args.get('expect', -1)
