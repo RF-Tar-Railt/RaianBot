@@ -2,7 +2,7 @@ import asyncio
 import time
 import traceback
 import random
-from creart import it
+from creart import it, add_creator
 from typing import Optional, List
 from loguru import logger
 from pathlib import Path
@@ -33,6 +33,7 @@ from graia.scheduler import GraiaScheduler
 from graia.scheduler.timers import every_hours
 from arclet.alconna import Alconna, namespace
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
+from arclet.alconna.graia.create import AlconnaBehaviorCreator
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, MatchPrefix
 from graiax.playwright import PlaywrightService
 
@@ -44,6 +45,7 @@ from .config import BotConfig
 from .logger import set_output
 
 BotInstance: Ctx['RaianMain'] = Ctx("raian_bot")
+add_creator(AlconnaBehaviorCreator)
 
 
 async def handler(output: str):
