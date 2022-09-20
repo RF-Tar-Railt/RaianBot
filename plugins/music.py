@@ -1,4 +1,4 @@
-from arclet.alconna import Args, Option, Arpamar, ArgField, CommandMeta
+from arclet.alconna import Args, Arpamar, ArgField, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import MusicShare, MusicShareKind
@@ -8,9 +8,10 @@ import asyncio
 from app import Sender
 
 music = Alconna(
-    "点歌", Args["name", str, ArgField(completion=lambda: "比如说, ‘以父之名’")],
-    options=[Option("歌手|-s", Args['singer', str], dest="singer")],
-    meta=CommandMeta("在网易云点歌", usage="用 歌手 选项指定歌手", example="$点歌 Rise")
+    "点歌",
+    Args["name", str, ArgField(completion=lambda: "比如说, ‘以父之名’")],
+    Args["singer;O", str, ArgField(completion=lambda: "比如说, ‘周杰伦’")],
+    meta=CommandMeta("在网易云点歌", usage="可以指定歌手, 与歌名用空格分开", example="$点歌 Rise")
 )
 JUMP_URL = "https://music.163.com/song?id={id}"
 MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"
@@ -18,7 +19,7 @@ MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"
 
 @alcommand(music)
 async def song(app: Ariadne, sender: Sender, result: Arpamar):
-    singer = f"{singer} " if (singer := result.query("singer.singer")) else ""
+    singer = f"{singer} " if (singer := result.query("singer")) else ""
     song_search_url = f"http://localhost:4000/search?keywords={singer + result.name}&limit=10"
     try:
         async with app.service.client_session.get(song_search_url, timeout=20) as resp:

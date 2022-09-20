@@ -17,7 +17,7 @@ async def forward(app: Ariadne, friend: Friend, message: MessageChain, bot: Raia
     return await app.send_friend_message(bot.config.master_id, message.as_sendable())
 
 
-@alcommand(Alconna("回复", Args["target", int]["content", AllParam], headers=[""], meta=CommandMeta(hide=True)))
+@alcommand(Alconna([""], "回复", Args["target", int]["content", AllParam], meta=CommandMeta(hide=True)))
 @decorate(require_admin(True))
 async def reply(app: Ariadne, master: Friend, target: Match[int], result: Arpamar):
     message = result.origin.as_sendable().replace(f"回复 {target.result}\n", "")  # type: ignore

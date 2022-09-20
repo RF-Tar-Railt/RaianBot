@@ -10,7 +10,7 @@ from modules.arknights import ArknightsGacha
 @alcommand(
     Alconna(
         "(抽卡|寻访)",
-        Args["count", int, ArgField(default=10, completion=lambda: "试试输入 300")],
+        Args["count", int, ArgField(10, completion=lambda: "试试输入 300")],
         meta=CommandMeta("模拟方舟寻访", example="$抽卡 300"),
         send_error=True,
     )
@@ -20,7 +20,7 @@ async def draw(
     app: Ariadne, sender: Sender, target: Target, count: Match[int], bot: RaianMain
 ):
     """模拟抽卡"""
-    file = bot.config.plugin.get("gache", "assets/data/gacha_arknights.json")
+    file = bot.config.plugin.get("gacha", "assets/data/gacha_arknights.json")
     count = min(max(count.result, 1), 300)
     if bot.data.exist(target.id):
         user = bot.data.get_user(target.id)

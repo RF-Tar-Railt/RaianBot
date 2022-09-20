@@ -6,7 +6,6 @@ from arclet.alconna import Args, ArgField, CommandMeta, Option
 from arclet.alconna.graia import Alconna, alcommand, Match, assign
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
-from graia.ariadne.util.saya import decorate
 from graia.ariadne.message.element import Voice
 from graiax.silkcoder import async_encode
 from app import Sender
@@ -31,27 +30,21 @@ character = {
 
 jp = Alconna(
     "日本语",
-    Args[
-        "jptext;S",
-        str,
-        ArgField(completion=lambda: "比如说，daisuki"),
-    ],
-    options=[
-        Option(
-            "moe",
-            Args[
-                "char",
-                int,
-                ArgField(
-                    0,
-                    alias="綾地寧々",
-                    completion=lambda: [f"{v}: {k}" for k, v in character.items()],
-                ),
-            ],
-            help_text="使用vits生成语音\n可使用角色与对应id：\n"
-            + "\n".join([f"    {v}: {k}" for k, v in character.items()]),
-        )
-    ],
+    Args["jptext;S", str, ArgField(completion=lambda: "比如说，daisuki")],
+    Option(
+        "moe",
+        Args[
+            "char",
+            int,
+            ArgField(
+                0,
+                alias="綾地寧々",
+                completion=lambda: [f"{v}: {k}" for k, v in character.items()],
+            ),
+        ],
+        help_text="使用vits生成语音\n可使用角色与对应id：\n"
+        + "\n".join([f"    {v}: {k}" for k, v in character.items()]),
+    ),
     meta=CommandMeta("日本语本当上手", usage="日语文本的tts", example="$日本语 suki"),
 )
 

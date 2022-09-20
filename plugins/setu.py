@@ -11,8 +11,8 @@ from app import record, Sender, Target
 setu = Alconna(
     "涩图",
     Args["r_per", {"r9": 2, "r16": 4, "r18": 6}, ArgField(2, alias="r9", completion=lambda: "有 r9, r16 和 r18")],
+    Option("tag", Args["tag", str]),
     meta=CommandMeta("顾名思义"),
-    options=[Option("tag", Args["tag", str])]
 )
 
 

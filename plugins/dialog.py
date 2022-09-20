@@ -6,7 +6,6 @@ from pathlib import Path
 from io import BytesIO
 from PIL import Image as Img
 from contextlib import suppress
-from aiohttp import ClientSession, TCPConnector
 from arclet.alconna.graia import success_record, startswith
 from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face, Quote
 from graia.ariadne.message.chain import MessageChain
@@ -63,23 +62,17 @@ async def voice(string: str):
         mode, sentence = rand_str.lstrip("^").split("$", 1)
         if mode != 'jp':
             return sentence
-        async with ClientSession(connector=TCPConnector(limit=64, verify_ssl=False)) as session:
-            with suppress(Exception):
-                async with session.post(
-                        "https://cloud.ai-j.jp/demo/aitalk2webapi_nop.php",
-                        data={"speaker_id": 1209, "text": sentence, "speed": 0.8, "pitch": 1.1},
-
-                ) as resp:
-                    audio_name = (await resp.text())[47:-3]
-                async with session.get(
-                        f"https://cloud.ai-j.jp/demo/tmp/{audio_name}"
-                ) as resp:
-                    data = await resp.read()
-                time = len(data) * 8 / 128000
-                start = 3.8 if time > (3.1 if len(sentence) < 4 else 4.5) else 2.3
-                res = await async_encode(data[int(start * 128000 / 8):], ios_adaptive=True)
-                return Voice(data_bytes=res)
-            return sentence
+        with suppress(Exception):
+            async with Ariadne.current().service.client_session.get(
+                f"https://moegoe.azurewebsites.net/api/speak?text={sentence}&id={random.randint(0, 6)}",
+                timeout=120,
+            ) as resp:
+                data = await resp.read()
+            if data[:3] == b"400":
+                return sentence
+            res = await async_encode(data, ios_adaptive=True)
+            return Voice(data_bytes=res)
+        return sentence
     else:
         name = rand_str.split('$')[-1]
         path = Path(f"assets/voice/{name}")
@@ -130,7 +123,13 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
                     rand_str = await image(rand_str, target)
                 break
         else:
-            rand_str = await aiml.chat(message=msg, session_id=target.id)
+            if random.randint(1, 100) > 50 and (ai_url := bot.config.plugin['dialog']['ai_url']):
+                async with app.service.client_session.get(
+                    ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{target.id}"}
+                ) as resp:
+                    rand_str = ''.join((await resp.json())["result"])
+            else:
+                rand_str = await aiml.chat(message=msg, session_id=target.id)
     else:
         rand_str = random.sample(dialog_templates['default'], 1)[0]
     if rand_str:  # noqa
@@ -144,6 +143,9 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
 @listen(GroupMessage, FriendMessage)
 async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
     """真AI对话功能"""
+    if len(success_record):
+        success_record.clear()
+        raise PropagationCancelled
     if not (ai_url := bot.config.plugin['dialog']['ai_url']):
         return
     if isinstance(target, Friend) or (message.has(At) and message.get_first(At).target == bot.config.account) or (

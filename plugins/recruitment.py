@@ -10,7 +10,7 @@ from modules.arknights.recruiment import recruitment
 
 recruit = Alconna(
     "公招", Args["tags;S", str, ArgField(..., completion=lambda: "高资")],
-    options=[Option("详细|--d", dest='detail')],
+    Option("详细|--d", dest='detail'),
     meta=CommandMeta("自助访问 prts 的公招计算器并截图", usage="标签之间用空格分隔", example="$公招 高资 生存")
 )
 

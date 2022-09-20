@@ -8,10 +8,12 @@ from app import Sender
 from modules.dice.rd import RD
 
 draw = Alconna(
-    r"r( )?{pattern:[0-z|#\+]*}", Args["expect;O", int]["event", str, Empty],
-    headers=['.'],
-    options=[Option("max", Args["num", int, 100])],
-    meta=CommandMeta("模拟coc掷骰功能  注意：该命令以 “.” 为开头", example=".rd100")
+    ['.'],
+    r"r( )?{pattern:[0-z|#\+]*}",
+    Args["expect;O", int],
+    Args["event", str, Empty],
+    Option("max", Args["num", int, 100]),
+    meta=CommandMeta("模拟coc掷骰功能", usage="注意：该命令以 “.” 为开头", example=".rd100")
 )
 
 

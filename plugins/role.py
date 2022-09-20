@@ -1,6 +1,6 @@
 from typing import Tuple
 from arclet.alconna import Args, Option, Empty, CommandMeta
-from arclet.alconna.graia import Alconna, alcommand, assign, AtID, Match
+from arclet.alconna.graia import Alconna, alcommand, assign, AtID, Match, AlconnaDispatcher
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Source, ForwardNode, Forward
@@ -9,16 +9,14 @@ from graia.ariadne.model import Group, Member
 from app import record, RaianMain
 
 role = Alconna(
+    [''],
     "群员分组",
-    options=[
-        Option("设置", Args["tag", str]["targets;S", AtID], help_text="设置分组并选择目标"),
-        Option("增加", Args["tag", str]["targets;S", AtID], help_text="为分组增加目标"),
-        Option("删除", Args["tag", str]["targets;S", AtID, Empty], help_text="删除指定分组或分组内的指定成员"),
-        Option("呼叫", Args["tag", str]["content;O", str], help_text="At 指定分组下的群成员"),
-        Option("列出", help_text="列出该群所有的分组")
-    ],
-    headers=[''],
-    meta=CommandMeta("为群成员设置特殊分组 注意: 该命令不需要 “渊白” 开头")
+    Option("设置", Args["tag", str]["targets;S", AtID], help_text="设置分组并选择目标"),
+    Option("增加", Args["tag", str]["targets;S", AtID], help_text="为分组增加目标"),
+    Option("删除", Args["tag", str]["targets;S", AtID, Empty], help_text="删除指定分组或分组内的指定成员"),
+    Option("呼叫", Args["tag", str]["content;O", str], help_text="At 指定分组下的群成员"),
+    Option("列出", help_text="列出该群所有的分组"),
+    meta=CommandMeta("为群成员设置特殊分组", usage="注意: 该命令不需要 “渊白” 开头")
 )
 
 
@@ -26,7 +24,7 @@ role = Alconna(
 @assign("$main")
 @alcommand(role, private=False)
 async def _r(app: Ariadne, sender: Group):
-    return await app.send_message(sender, MessageChain(role.get_help()))
+    return await app.send_message(sender, await AlconnaDispatcher.default_send_handler(role.get_help()))
 
 
 @record('role')

@@ -16,14 +16,12 @@ with open(json_filename, "r", encoding="UTF-8") as f_obj:
 ill = Alconna(
     "发病",
     Args["name#你想对谁发病?", [str, At], Empty],
-    options=[
-        Option(
-            "模板|模版",
-            Args["template", list(ill_templates.keys()), ArgField(completion=lambda: list(ill_templates.keys()))],
-            dest="tp",
-            help_text="指定发病模板",
-        )
-    ],
+    Option(
+        "模板|模版",
+        Args["template", list(ill_templates.keys()), ArgField(completion=lambda: list(ill_templates.keys()))],
+        dest="tp",
+        help_text="指定发病模板",
+    ),
     meta=CommandMeta(description="生成一段模板文字", usage="若不指定模板则会随机挑选一个", example="$发病 老公")
 )
 

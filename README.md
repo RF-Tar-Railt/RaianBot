@@ -25,10 +25,11 @@ QQ交流：[122680593](https://jq.qq.com/?_wv=1027&k=lhxRkibY)
 - 分组管理
 - rua图
 - 日本语
+- 文转图
 
 ## 下载
 
-链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.9/raian-bot-0.9.0.zip)
+链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.12/raian-bot-0.12.0.zip)
 
 ## 安装
 

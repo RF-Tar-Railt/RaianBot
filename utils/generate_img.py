@@ -1,14 +1,15 @@
-from typing import Union, List, Tuple
-
+from typing import Union, List, Tuple, Literal
+from graiax.text2img.playwright.builtin import md2img
+from graiax.text2img.playwright.types import NewPageParms, ScreenshotParms
 from graia.ariadne.util.async_exec import ParallelExecutor
 from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw
 
 
 def cut_text(
-    origin: str,
-    font: ImageFont.FreeTypeFont,
-    chars_per_line: int,
+        origin: str,
+        font: ImageFont.FreeTypeFont,
+        chars_per_line: int,
 ):
     target = ''
     start_symbol = '[{<(【《（〈〖［〔“‘『「〝'
@@ -37,6 +38,21 @@ def cut_text(
             target += i[j:ind] + '\n'
             j = ind
     return target.rstrip()
+
+
+async def create_md(
+        md: str,
+        width: int = 840,
+        height: int = 1200,
+        factor: float = 1.5,
+        itype: Literal["jpeg", "png"] = 'jpeg',
+        quality: int = 80
+):
+    return await md2img(
+        md,
+        context_args=NewPageParms(viewport={"width": width, "height": height}, device_scale_factor=factor),
+        screenshot_args=ScreenshotParms(type=itype, quality=quality, scale="device")
+    )
 
 
 async def create_image(

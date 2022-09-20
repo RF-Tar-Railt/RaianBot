@@ -15,7 +15,7 @@ from graia.ariadne.event.mirai import (
     BotInvitedJoinGroupRequestEvent, BotJoinGroupEvent,
     BotLeaveEventDisband
 )
-from graia.ariadne.message.element import Image, At
+from graia.ariadne.message.element import Image, At, FlashImage
 from graia.ariadne.event.lifecycle import ApplicationLaunched, ApplicationShutdowned
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.chain import MessageChain
@@ -31,12 +31,13 @@ from graia.ariadne.app import Ariadne
 from graia.saya import Saya
 from graia.scheduler import GraiaScheduler
 from graia.scheduler.timers import every_hours
-from arclet.alconna import Alconna
+from arclet.alconna import Alconna, namespace
+from arclet.alconna.tools.formatter import MarkdownTextFormatter
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, MatchPrefix
 from graiax.playwright import PlaywrightService
 
-from utils.generate_img import create_image
-from utils.exception_report import generate_reports
+from utils.generate_img import create_md
+from utils.exception_report import reports_md
 from app.control import require_function
 from .data import BotDataManager
 from .config import BotConfig
@@ -46,7 +47,12 @@ BotInstance: Ctx['RaianMain'] = Ctx("raian_bot")
 
 
 async def handler(output: str):
-    return MessageChain(Image(data_bytes=await create_image(output)))
+    length = (output.count("\n") + 5) * 16
+    if not output.startswith("#"):
+        output = f"# {output}"
+        output = output.replace("\n\n", "\n").replace(
+            "\n", "\n\n").replace("#", "##").replace("<", "&lt;").replace(">", "&gt;")
+    return MessageChain(Image(data_bytes=await create_md(output, height=length)))
 
 
 AlconnaDispatcher.default_send_handler = handler
@@ -73,7 +79,9 @@ class RaianMain:
         self.exit = asyncio.Event()
         self.config = config
         self.data = BotDataManager(config)
-        Alconna.config(headers=self.config.command_prefix)
+        with namespace("Alconna") as np:
+            np.headers = self.config.command_prefix
+        Alconna.config(formatter_type=MarkdownTextFormatter)
         set_output('DEBUG' if debug_log else 'INFO')
         self.app = Ariadne(
             connection=conn_cfg(
@@ -146,10 +154,9 @@ class RaianMain:
                 return await app.send_friend_message(self.config.master_id, MessageChain(
                     f"检测到在 {member.group} 中被禁言，已退出该群聊"
                 ))
-            tb = generate_reports(event.exception)
-            tb.insert(0, f"在处理 {event.event} 时出现如下问题:")
-            bts = await create_image('\n'.join(tb))
-            await app.send_friend_message(self.config.master_id, MessageChain(Image(data_bytes=bts)))
+            tb = reports_md(event.exception)
+            tb = f"## 概览\n\n在处理 {event.event} 时出现如下问题:\n{tb}"
+            await app.send_friend_message(self.config.master_id, MessageChain(Image(data_bytes=await create_md(tb))))
 
     @classmethod
     def current(cls):
@@ -242,6 +249,18 @@ class RaianMain:
                 f"\n群号：{event.group.id}",
                 f"\n群名：{event.group.name}"
             ))
+
+    def init_fetch_flash(self):
+        """配置机器人截获闪图功能"""
+
+        @self.broadcast.receiver(FriendMessage)
+        @self.broadcast.receiver(GroupMessage)
+        async def _flash(message: MessageChain):
+            if not message.has(FlashImage):
+                return
+            await self.app.send_friend_message(
+                self.config.master_id, MessageChain(message.get_first(FlashImage).to_image())
+            )
 
     def init_start_report(self, init_for_new_group: bool = True):
         """配置机器人启动事件"""

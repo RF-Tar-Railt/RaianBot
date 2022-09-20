@@ -1,9 +1,10 @@
 from app import RaianMain, load_config
 
-bot = RaianMain(load_config('bot_config.yml'), debug_log=True)
+bot = RaianMain(load_config('my_config.yml'), debug_log=True)
 
 if __name__ == '__main__':
     bot.load_plugins()
+    bot.init_fetch_flash()
     bot.init_group_report()
     bot.init_announcement()
     bot.init_member_change_report()

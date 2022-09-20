@@ -109,6 +109,7 @@ class WeiboAPI:
             target: Union[str, int, WeiboUser],
             keyword: Literal["profile", "weibo", "video", "album"] = 'weibo',
             index: int = -1,
+            page: int = 1,
             save: bool = False,
             cache: bool = False,
     ) -> Optional[WeiboDynamic]:
@@ -118,7 +119,8 @@ class WeiboAPI:
         params = {
             'type': 'uid',
             'value': target.id,
-            'containerid': target.contain_id(keyword)
+            'containerid': target.contain_id(keyword),
+            'page': page,
         }
         if not (d_data := await self._call(params)):
             return

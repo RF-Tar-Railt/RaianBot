@@ -11,8 +11,10 @@ from app import RaianMain, record
 from modules.petpet import PetGenerator
 
 rua = Alconna(
-    "摸", Args["target", AtID, ArgField(completion=lambda: "可以不输入东西的")],
-    headers=[''], meta=CommandMeta("rua别人  注意: 该命令不需要 “渊白” 开头", example="摸@123456")
+    [''],
+    "摸",
+    Args["target", AtID, ArgField(completion=lambda: "可以不输入东西的")],
+    meta=CommandMeta("rua别人", usage="注意: 该命令不需要 “渊白” 开头", example="摸@123456")
 )
 
 pet = PetGenerator("assets/image/rua")

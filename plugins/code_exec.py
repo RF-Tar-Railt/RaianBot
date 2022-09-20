@@ -13,13 +13,13 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.util.saya import listen
 
 from app import Sender, admin, master
-from utils.generate_img import create_image
-from utils.exception_report import generate_reports
+from utils.generate_img import create_image, create_md
+from utils.exception_report import reports_md
 
 code = Alconna(
     "执行",
     Args["code;S", str, ArgField(completion=lambda: "试试 print(1+1)")],
-    options=[Option("out", Args["name;O", str, "res"])],
+    Option("out", Args["name", str, "res"]),
     meta=CommandMeta(description="执行简易代码", example="$执行 print(1+1)", hide=True),
 )
 
@@ -60,7 +60,7 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
             {**glb, **locals()},
             lcs,
         )
-        code_res = await asyncio.wait_for(lcs["rc"](), 10)
+        code_res = await asyncio.wait_for(lcs["rc"](output), 10)
         sys.stdout = _to
         if code_res is not None:
             return await app.send_message(
@@ -84,7 +84,7 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
         sys.stdout = _to
         return await app.send_message(
             sender,
-            MessageChain(Image(data_bytes=(await create_image(generate_reports(e))))),
+            MessageChain(Image(data_bytes=(await create_md(reports_md(e), 1200)))),
         )
     finally:
         sys.stdout = _to
@@ -109,7 +109,18 @@ async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
             res = data.decode("utf-8")
         except UnicodeDecodeError:
             res = data.decode("gbk")
+        md = f"""\
+```sh
+{res}
+```
+"""
         return await app.send_message(
-            sender, MessageChain(Image(data_bytes=(await create_image(res, cut=120))))
+            sender, MessageChain(Image(data_bytes=(
+                await create_md(
+                    md,
+                    width=max(len(i.strip()) for i in md.splitlines()) * 14,
+                    height=(md.count("\n") + 5) * 14
+                )
+            )))
         )
     return
