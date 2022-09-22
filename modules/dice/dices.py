@@ -3,7 +3,6 @@ import contextlib
 import random
 from typing import Optional
 import diro
-from .messages import help_en, help_r
 
 
 def dhr(t, o):
@@ -63,16 +62,13 @@ def expr(d: diro.Diro, anum: Optional[int]) -> str:
 
 def rd0(pattern: str, anum: Optional[int] = None):
     d_str = pattern.lower().split("#")
-    try:
-        d = diro.parse(d_str.pop(0))
-        time = 1
-        if d_str:
-            with contextlib.suppress(ValueError):
-                time = int(d_str[0])
-        r = expr(d, anum)
-        for _ in range(time - 1):
-            r += "\n"
-            r += expr(d, anum)
-        return r
-    except ValueError:
-        return help_r
+    d = diro.parse(d_str.pop(0))
+    time = 1
+    if d_str:
+        with contextlib.suppress(ValueError):
+            time = int(d_str[0])
+    r = expr(d, anum)
+    for _ in range(time - 1):
+        r += "\n"
+        r += expr(d, anum)
+    return r

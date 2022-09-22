@@ -1,11 +1,12 @@
 from typing import Tuple
 from nepattern import BasePattern, Bind
-from arclet.alconna import Args, Arpamar, CommandMeta, namespace
+from arclet.alconna import Args, Arpamar, CommandMeta, namespace, Empty
 from arclet.alconna.graia import Alconna, alcommand, AtID, Match
 from graia.ariadne.event.lifecycle import ApplicationShutdown
 from graia.ariadne.util.saya import listen
 from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
+from contextlib import suppress
 
 from app import Sender, RaianMain, record, Target
 from modules.dice import *
@@ -66,8 +67,7 @@ with namespace("coc") as np:
     )
     set_c = Alconna(
         "set",
-        Args["name;O#属性名称，如name、名字、str、力量", str],
-        Args["val;O#属性值", str],
+        Args["name#属性名称，如name、名字、str、力量", str, Empty]["val;O#属性值", str],
         meta=CommandMeta(
             "角色卡设定", usage="可以单独输入set指令，将自动读取最近一次coc指令结果进行保存", example=".set name HEH"
         ),
@@ -89,7 +89,7 @@ with namespace("coc") as np:
     )
     del_c = Alconna(
         "del",
-        Args["data;S#", Bind[str, "c|card|xxx"]],
+        Args["data;S", Bind[str, "c|card|xxx"]],
         meta=CommandMeta(
             "删除数据",
             usage="data可以有以下值\n"
@@ -113,7 +113,13 @@ async def rd_handle(
 ):
     """coc骰娘功能"""
     pat = result.header["dabp"]
-    return await app.send_message(sender, rd0(pat, a_number.result if a_number.available else None))
+    if "h" in pat:
+        return
+    if pat.strip() == "a":
+        pat = "1d100"
+    with suppress(ValueError):
+        return await app.send_message(sender, rd0(pat, a_number.result if a_number.available else None))
+    return await app.send_message(sender, "出错了！")
 
 
 @record("coc")
@@ -125,7 +131,9 @@ async def rhd_handle(
     if not app.get_friend(target.id):
         return await app.send_message(sender, "请先加bot 为好友")
     pat = result.header["dabp"]
-    return await app.send_message(sender, rd0(pat, a_number.result if a_number.available else None))
+    with suppress(ValueError):
+        return await app.send_friend_message(target.id, rd0(pat, a_number.result if a_number.available else None))
+    return await app.send_friend_message(target.id, "出错了！")
 
 
 @record("coc")
@@ -178,17 +186,17 @@ async def sc_handle(app: Ariadne, sender: Sender, target: Target, sf: Match[str]
 
 @record("coc")
 @alcommand(set_c)
-async def set_handle(app: Ariadne, sender: Sender, target: Target, name: Match[str], val: Match[str]):
+async def set_handle(app: Ariadne, sender: Sender, target: Target, result: Arpamar):
     if isinstance(sender, Group):
         res = cards.set_handler(
-            name.result.lower() if name.available else None,
-            val.result.lower() if val.available else None,
+            result.all_matched_args.get("name"),
+            result.all_matched_args.get("val"),
             f"g{sender.id}", target.id
         )
     else:
         res = cards.set_handler(
-            name.result.lower() if name.available else None,
-            val.result.lower() if val.available else None,
+            result.all_matched_args.get("name"),
+            result.all_matched_args.get("val"),
             f"f{sender.id}"
         )
     return await app.send_message(sender, res)
@@ -201,7 +209,7 @@ async def show_handle(app: Ariadne, sender: Sender, target: Target, uid: Match[i
         res = cards.show_handler(f"g{sender.id}", uid.result if uid.available else target.id)
     else:
         res = cards.show_handler(f"f{sender.id}")
-    return await app.send_message(sender, res)
+    return await app.send_message(sender, '\n'.join(res))
 
 
 @record("coc")

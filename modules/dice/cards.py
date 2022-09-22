@@ -80,7 +80,7 @@ class Cards:
         data.update({uid: inv_dict})
 
     def cache_get(self, level: str = '0', uid: int = 0) -> Optional[Dict[str, dict]]:
-        return data.get(str(uid)) if (data := self.cache.get(level)) else None
+        return cache.get(str(uid)) if (cache := self.cache.get(level)) else None
 
     def cache_delete(self, level: str = '0', uid: int = 0) -> bool:
         if inv := self.cache_get(level, uid):
