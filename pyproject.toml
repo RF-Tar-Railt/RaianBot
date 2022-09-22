@@ -1,6 +1,6 @@
 [project]
 name = "raian-bot"
-version = "0.12.1"
+version = "0.12.2"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
@@ -30,6 +30,7 @@ dependencies = [
     "graiax-silkcoder[ffmpeg]>=0.3.4",
     "graiax-text2img-playwright>=0.1.0b5",
     "diro-py>=0.1.1",
+    "httpx>=0.23.0",
 ]
 requires-python = ">=3.8"
 readme = "README.md"

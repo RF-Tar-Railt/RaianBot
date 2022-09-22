@@ -95,7 +95,7 @@ async def image(string: str, target: Target):
                 f"https://q1.qlogo.cn/g?b=qq&nk={target.id}&s=640"
         ) as resp:
             base = Img.open(BytesIO(await resp.content.read())).resize(
-                size, Img.ANTIALIAS
+                size, Img.Resampling.LANCZOS
             )
         cover.thumbnail(size)
         base.paste(cover, (0, 0), cover)
