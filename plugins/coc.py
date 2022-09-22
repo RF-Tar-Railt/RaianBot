@@ -2,6 +2,8 @@ from typing import Tuple
 from nepattern import BasePattern, Bind
 from arclet.alconna import Args, Arpamar, CommandMeta, namespace
 from arclet.alconna.graia import Alconna, alcommand, AtID, Match
+from graia.ariadne.event.lifecycle import ApplicationShutdown
+from graia.ariadne.util.saya import listen
 from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
 
@@ -12,7 +14,7 @@ with namespace("coc") as np:
     np.headers = [".", "。"]
 
     rd_c = Alconna(
-        "r( )?{da#bp}",
+        "r( )?{dabp}",
         Args["a_number;O#ra指令使用的数值", int],
         meta=CommandMeta(
             "投掷指令",
@@ -25,7 +27,7 @@ with namespace("coc") as np:
     )
 
     rhd_c = Alconna(
-        "rh( )?{da#bp}",
+        "rh( )?{dabp}",
         Args["a_number;O#ra指令使用的数值", int],
         meta=CommandMeta(
             "投暗掷指令",
@@ -100,6 +102,7 @@ with namespace("coc") as np:
 
 bot = RaianMain.current()
 cards = Cards(f"{bot.config.cache_dir}/plugins/coc_cards.json")
+cards.load()
 
 
 @record("coc")
@@ -109,7 +112,7 @@ async def rd_handle(
     result: Arpamar, a_number: Match[int]
 ):
     """coc骰娘功能"""
-    pat = result.header["da#bp"]
+    pat = result.header["dabp"]
     return await app.send_message(sender, rd0(pat, a_number.result if a_number.available else None))
 
 
@@ -121,7 +124,7 @@ async def rhd_handle(
 ):
     if not app.get_friend(target.id):
         return await app.send_message(sender, "请先加bot 为好友")
-    pat = result.header["da#bp"]
+    pat = result.header["dabp"]
     return await app.send_message(sender, rd0(pat, a_number.result if a_number.available else None))
 
 
@@ -229,3 +232,8 @@ async def del_handle(app: Ariadne, sender: Sender, target: Target, data: Match[T
     else:
         res = cards.del_handler([i.lower() for i in data.result], f"f{sender.id}")
     return await app.send_message(sender, "\n".join(res))
+
+
+@listen(ApplicationShutdown)
+async def _save():
+    cards.save()

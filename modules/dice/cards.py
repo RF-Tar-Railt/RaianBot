@@ -38,7 +38,7 @@ class Cards:
 
     def load(self) -> None:
         if not self.path.exists():
-            self.path.mkdir(parents=True, exist_ok=True)
+            self.path.parent.mkdir(parents=True, exist_ok=True)
             with self.path.open("w+", encoding="utf-8") as f:
                 self.data = {}
                 ujson.dump({}, f, ensure_ascii=False, indent=2)
