@@ -217,7 +217,7 @@ async def _f_list(app: Ariadne, sender: Group, bot: RaianMain):
 
 # {bot.config.bot_name} 功能概览
 
-## f"{sender.name} / {sender.id} 统计情况
+## {sender.name} / {sender.id} 统计情况
 
 | 名称 | 状态 | 功能备注 |
 | ----- | ------- | --- |

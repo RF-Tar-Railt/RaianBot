@@ -6,7 +6,8 @@ from pathlib import Path
 from io import BytesIO
 from PIL import Image as Img
 from contextlib import suppress
-from arclet.alconna.graia import success_record, startswith
+from arclet.alconna.graia import startswith, endswith
+from arclet.alconna import command_manager
 from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face, Quote
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
@@ -54,6 +55,9 @@ aiml = AIML(
 aiml_files = "assets/data/alice"
 aiml_brain = f"{bot.config.cache_dir}/plugins/aiml_brain.brn"
 aiml.load_aiml(aiml_files, aiml_brain)
+nickname = bot.config.plugin['dialog']['nickname'].strip()
+if not nickname:
+    nickname = bot.config.bot_name
 
 
 async def voice(string: str):
@@ -106,16 +110,47 @@ async def image(string: str, target: Target):
 
 @record("dialog")
 @priority(17)
-@startswith(bot.config.command_prefix, bind="message")
+@startswith(nickname, bind="message")
 @listen(GroupMessage, FriendMessage)
-async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
+async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
+    cmds = [i.name for i in command_manager.get_commands()]
     if msg := str(message.include(Plain)).strip():
-        if len(success_record):
-            success_record.clear()
-            raise PropagationCancelled
+        for n in cmds:
+            if re.search(f'.*{n}.*', msg):
+                raise PropagationCancelled
         for key, value in dialog_templates['content'].items():
             if re.match(f".*?{key}$", msg):
+                rand_str = random.sample(value, 1)[0]
+                if rand_str.startswith("#voice"):
+                    rand_str = await voice(rand_str)
+                elif rand_str.startswith("#image"):
+                    rand_str = await image(rand_str, target)
+                break
+        else:
+            if random.randint(1, 100) > 50 and (ai_url := bot.config.plugin['dialog']['ai_url']):
+                async with app.service.client_session.get(
+                    ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{target.id}"}
+                ) as resp:
+                    rand_str = ''.join((await resp.json())["result"])
+            else:
+                rand_str = await aiml.chat(message=msg, session_id=target.id)
+    else:
+        rand_str = random.sample(dialog_templates['default'], 1)[0]
+    if rand_str:  # noqa
+        await app.send_message(sender, MessageChain(rand_str))  # noqa
+        raise PropagationCancelled
+
+
+@record("dialog")
+@priority(17)
+@endswith(nickname, bind="message")
+@listen(GroupMessage, FriendMessage)
+async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
+    """依据语料进行匹配回复"""
+    if msg := str(message.include(Plain)).strip():
+        for key, value in dialog_templates['content'].items():
+            if re.match(f"^{key}.*?", msg):
                 rand_str = random.sample(value, 1)[0]
                 if rand_str.startswith("#voice"):
                     rand_str = await voice(rand_str)
@@ -141,11 +176,12 @@ async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageCh
 @priority(18)
 @dispatch(CoolDown(0.1))
 @listen(GroupMessage, FriendMessage)
-async def test2(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
+async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
     """真AI对话功能"""
-    if len(success_record):
-        success_record.clear()
-        raise PropagationCancelled
+    cmds = [i.name for i in command_manager.get_commands()]
+    for n in cmds:
+        if re.search(f'.*{n}.*', str(message)):
+            raise PropagationCancelled
     if not (ai_url := bot.config.plugin['dialog']['ai_url']):
         return
     if isinstance(target, Friend) or (message.has(At) and message.get_first(At).target == bot.config.account) or (

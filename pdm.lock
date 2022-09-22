@@ -157,6 +157,11 @@ requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 summary = "cssselect parses CSS3 Selectors and translates them to XPath 1.0"
 
 [[package]]
+name = "diro-py"
+version = "0.1.1"
+summary = "A Dice expression parser"
+
+[[package]]
 name = "frozenlist"
 version = "1.3.1"
 requires_python = ">=3.7"
@@ -565,7 +570,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:6138b41ffd683f0d3f7e7fa7b72d98226ee6d28d924e5e720070b18d5a1b87e7"
+content_hash = "sha256:1358ad9c81345a27fac646f777467a11a450f74d81b47b54f2df824270ce2788"
 
 [metadata.files]
 "aiodns 3.0.0" = [
@@ -653,10 +658,6 @@ content_hash = "sha256:6138b41ffd683f0d3f7e7fa7b72d98226ee6d28d924e5e720070b18d5
 "arclet-alconna 1.3.1" = [
     {url = "https://files.pythonhosted.org/packages/0b/50/63cbd60821a390a9ba24f6b8e863a893cf7615cc07efa8f16d5d391233cb/arclet_alconna-1.3.1-py3-none-any.whl", hash = "sha256:5157d75745f34beb0a3ed1bf0da62115d1f1675a134c76d8c1757f5049d4c066"},
     {url = "https://files.pythonhosted.org/packages/0e/31/842b869a75361378b8c9c6d2500b8e7e26711e0196618d9b68b90563e2d2/arclet-alconna-1.3.1.tar.gz", hash = "sha256:774702032669c868f64c911717b38162f15d0a4c79cb49d57549dc76b227474e"},
-]
-"arclet-alconna-graia 0.7.3" = [
-    {url = "https://files.pythonhosted.org/packages/17/d7/592402f14245ff0a63f6f0810d345220b586b6fd396a3ee2a9825ea51f66/arclet_alconna_graia-0.7.3-py3-none-any.whl", hash = "sha256:e506370940a5be3362f35c899f0bc5910baab9f7cfae23737e8536b2d47dbef9"},
-    {url = "https://files.pythonhosted.org/packages/b1/7a/a73f27658056b4937e497cefc4edc8ddc44afe304e81cd2ec583c055f660/arclet-alconna-graia-0.7.3.tar.gz", hash = "sha256:8584ca266ab68403efc2c4d5098889fdc5f4e8eab5efd98d58e2618d20959336"},
 ]
 "arclet-alconna-tools 0.1.4" = [
     {url = "https://files.pythonhosted.org/packages/9a/b2/f5d725910d33d0f495239345fddf19a9b36b2879f65b3b96f2506edb86cc/arclet-alconna-tools-0.1.4.tar.gz", hash = "sha256:9e09353948eb157a30f2bf98d40519cf4e01c2f106bf4f9bbe1be2223c96eed5"},
@@ -854,6 +855,16 @@ content_hash = "sha256:6138b41ffd683f0d3f7e7fa7b72d98226ee6d28d924e5e720070b18d5
 "cssselect 1.1.0" = [
     {url = "https://files.pythonhosted.org/packages/3b/d4/3b5c17f00cce85b9a1e6f91096e1cc8e8ede2e1be8e96b87ce1ed09e92c5/cssselect-1.1.0-py2.py3-none-any.whl", hash = "sha256:f612ee47b749c877ebae5bb77035d8f4202c6ad0f0fc1271b3c18ad6c4468ecf"},
     {url = "https://files.pythonhosted.org/packages/70/54/37630f6eb2c214cdee2ae56b7287394c8aa2f3bafb8b4eb8c3791aae7a14/cssselect-1.1.0.tar.gz", hash = "sha256:f95f8dedd925fd8f54edb3d2dfb44c190d9d18512377d3c1e2388d16126879bc"},
+]
+"diro-py 0.1.1" = [
+    {url = "https://files.pythonhosted.org/packages/02/ff/34bdb4bbe54f5c1a53645ebf6887e66a6f51ac5db1a1ed9decc3e4a90ed3/diro_py-0.1.1-cp39-cp39-manylinux_2_28_x86_64.whl", hash = "sha256:f20aca59ff76c15f053e6a105ebab64bb787d40485d9332937b67786ad4be410"},
+    {url = "https://files.pythonhosted.org/packages/22/08/ccd445deca74c6f90cac809a6e2cb85e189372e5639ab93950aea17e4550/diro_py-0.1.1-cp39-none-win_amd64.whl", hash = "sha256:b769e3683b35b23a65c3f84947cb0298f3b787f93099cdf72656688b7e0de409"},
+    {url = "https://files.pythonhosted.org/packages/37/e8/fd0fbd4b3303ab86c55af38ef44572568ea4656abcebc217e8ebe8fdb84f/diro_py-0.1.1-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:62d5d89150e65178dc06e0da7c9367582fbba6e17bdcb23d27b36688858513f6"},
+    {url = "https://files.pythonhosted.org/packages/46/91/dbb9df8a2e47b6dedad6ebcbbda78a45600520ef65bbaf868a10069020c1/diro_py-0.1.1-cp38-none-win_amd64.whl", hash = "sha256:5ecfd9b110158316179ff254c5044349001ac50fae753a20e688d0ec5d48efb4"},
+    {url = "https://files.pythonhosted.org/packages/63/87/73545af3534055feb3c75aecc158146feedf6c21eccadb970c0d93d36f15/diro_py-0.1.1-cp37-none-win_amd64.whl", hash = "sha256:c43bc10a2498b44c4ad0b3509a52825c8bc83fba439f3b17f1b9b67cecd0927c"},
+    {url = "https://files.pythonhosted.org/packages/69/3c/c6cd8baf25f9525cf902d5176004a59645dba47563b327c773ce2cd8b07f/diro_py-0.1.1-cp37-cp37m-manylinux_2_28_x86_64.whl", hash = "sha256:23195138167fbd58aea49b35a57b674fb59436d6344d0c3ed559fd8ba8d284a3"},
+    {url = "https://files.pythonhosted.org/packages/87/ab/5625ffd83ec1bdfbca057d761b3e0fc9a8efa072f7f40fb79fa34d608b4a/diro_py-0.1.1-cp310-none-win_amd64.whl", hash = "sha256:6d974420a88c8e119d919b5839aed825d5a59f0e438c312ab2b464a36d745430"},
+    {url = "https://files.pythonhosted.org/packages/bc/5a/1d5c75e67ae9b36ac207d804e38f704ab4da3fbd0c30be6a0e99a4a772c7/diro_py-0.1.1-cp38-cp38-manylinux_2_28_x86_64.whl", hash = "sha256:699e7d2d2673a41d1cdbcbdaf25196ea8850d7e1a2934bc7efed92e66440460f"},
 ]
 "frozenlist 1.3.1" = [
     {url = "https://files.pythonhosted.org/packages/04/a6/7d83ee70d9e4d5e4423fae9d0d6821359df0313f754eb4db4c79f779c624/frozenlist-1.3.1-cp39-cp39-win_amd64.whl", hash = "sha256:625d8472c67f2d96f9a4302a947f92a7adbc1e20bedb6aff8dbc8ff039ca6189"},

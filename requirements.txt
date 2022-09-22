@@ -21,3 +21,4 @@ creart~=0.2.1
 graiax-playwright>=0.2.0.post1
 graiax-silkcoder[ffmpeg]>=0.3.4
 graiax-text2img-playwright>=0.1.0b5
+diro-py>=0.1.1

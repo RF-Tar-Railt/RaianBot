@@ -25,6 +25,8 @@ plugin:
   gacha: "assets/data/gacha_arknights.json"
   ## ai 对话
   dialog:
+    ## 触发词
+    nickname: "莱安"
     ## 是否使用腾讯云翻译, 是则需要填写腾讯云接口的secret-id secret-key
     tencent: true
     id: "xxxxxxxxxxxxxxxxxxxx"

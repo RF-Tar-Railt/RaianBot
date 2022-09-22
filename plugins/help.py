@@ -37,7 +37,10 @@ async def send_help(app: Ariadne, sender: Sender, index: Match[int], bot: RaianM
 """
         cmds = list(filter(lambda x: not x.meta.hide, command_manager.get_commands()))
         command_string = "\n".join(
-            f"| {index} | {slot.name.replace('|', '&#124;').replace('[', '&#91;')} | {slot.meta.description} | {slot.meta.usage} |"
+            (
+                f"| {index} | {slot.name.replace('|', '&#124;').replace('[', '&#91;')} | "
+                f"{slot.meta.description} | {slot.meta.usage.splitlines()[0]} |"
+            )
             for index, slot in enumerate(cmds)
         )
         md += command_string
