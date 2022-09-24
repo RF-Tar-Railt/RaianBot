@@ -361,9 +361,4 @@ if __name__ == '__main__':
     # data = gacha.gacha(30)
     io = BytesIO(data)
     Image.open(io, "r").show("test")
-    gacha = ArknightsGacha()
-    ten = gacha.generate_rank(10)[0]
-    data = simulate_ten_generate(ten)
-    # data = gacha.gacha(30)
-    io = BytesIO(data)
-    Image.open(io, "r").show("test")
+

@@ -108,6 +108,7 @@ async def image(string: str, target: Target):
         return Image(data_bytes=path.read_bytes()) if path.exists() else name
 
 
+@record("dialog_tts", require=False, disable=True)
 @record("dialog")
 @priority(17)
 @startswith(nickname, bind="message")
@@ -142,6 +143,7 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
         raise PropagationCancelled
 
 
+@record("dialog_tts", require=False, disable=True)
 @record("dialog")
 @priority(17)
 @endswith(nickname, bind="message")

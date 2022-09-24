@@ -66,12 +66,21 @@ async def fetch(app: Ariadne, sender: Group, result: Arpamar):
                 name = (await app.get_member(sender, _value['id'])).name
             except (UnknownTarget, UnknownError):
                 name = str(_value['id'])
+            content = _value['content']
+            if _value.get("json"):
+                send = MessageChain.parse_obj(ujson.loads(content))
+            else:
+                send = MessageChain.from_persistent_string(content)
+                _value['content'] = send.json()
+                _value['json'] = True
+                with this_file.open("w+", encoding='utf-8') as fo:
+                    ujson.dump(_data, fo, ensure_ascii=False, indent=2)
             forwards.append(
                 ForwardNode(
                     target=_value['id'],
                     name=name,
                     time=now,
-                    message=MessageChain(f"{key}:\n") + MessageChain.from_persistent_string(_value['content'])
+                    message=MessageChain(f"{key}:\n") + send
                 )
             )
         if not forwards:

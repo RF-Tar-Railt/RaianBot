@@ -1,5 +1,5 @@
 from arclet.alconna import Args, command_manager, ArgField, CommandMeta, config
-from arclet.alconna.graia import Alconna, Match, alcommand, shortcuts
+from arclet.alconna.graia import Alconna, Match, alcommand, shortcuts, AlconnaDispatcher
 from graia.ariadne.message.element import Image
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
@@ -7,7 +7,6 @@ from graiax.text2img.playwright.builtin import md2img
 import random
 
 from app import Sender, RaianMain
-from utils.generate_img import create_image
 
 
 @shortcuts(帮助=MessageChain("渊白帮助"))
@@ -15,8 +14,8 @@ from utils.generate_img import create_image
     Alconna(
         "帮助",
         Args[
-            "index#选择某条命令的id查看具体帮助",
-            int,
+            "query;OH#选择某条命令的id或者名称查看具体帮助",
+            str,
             ArgField(
                 -1,
                 completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands()))}",
@@ -25,9 +24,9 @@ from utils.generate_img import create_image
         meta=CommandMeta("查看帮助"),
     )
 )
-async def send_help(app: Ariadne, sender: Sender, index: Match[int], bot: RaianMain):
+async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianMain):
 
-    if index.result < 0:
+    if not query.available:
         md = f"""\
 # {bot.config.bot_name} 帮助菜单
 #{config.lang.manager_help_header}
@@ -56,10 +55,14 @@ async def send_help(app: Ariadne, sender: Sender, index: Match[int], bot: RaianM
             sender, MessageChain(Image(data_bytes=await md2img(md)))
         )
     try:
-        cmds = list(command_manager.all_command_raw_help().keys())
-        text = command_manager.get_command(cmds[index.result]).get_help()
+        if query.result.isdigit():
+            cmds = list(command_manager.all_command_raw_help().keys())
+            text = command_manager.get_command(cmds[int(query.result)]).get_help()
+        else:
+            cmds = list(filter(lambda x: query.result in x, command_manager.all_command_raw_help().keys()))
+            text = command_manager.get_command(cmds[0]).get_help()
         return await app.send_message(
-            sender, MessageChain(Image(data_bytes=await create_image(text, cut=120)))
+            sender, MessageChain(Image(data_bytes=await AlconnaDispatcher.default_send_handler(text)))
         )
     except (IndexError, TypeError):
-        return await app.send_message(sender, MessageChain("ID错误！"))
+        return await app.send_message(sender, MessageChain("查询失败！"))
