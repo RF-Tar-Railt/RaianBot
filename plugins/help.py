@@ -62,7 +62,7 @@ async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianM
             cmds = list(filter(lambda x: query.result in x, command_manager.all_command_raw_help().keys()))
             text = command_manager.get_command(cmds[0]).get_help()
         return await app.send_message(
-            sender, MessageChain(Image(data_bytes=await AlconnaDispatcher.default_send_handler(text)))
+            sender, await AlconnaDispatcher.default_send_handler(text)
         )
     except (IndexError, TypeError):
         return await app.send_message(sender, MessageChain("查询失败！"))

@@ -19,6 +19,8 @@ prefix:
   - "At:123456789"
 ## 插件需要的数据
 plugin:
+  ## 信赖最大值
+  sign_max: 200
   ## 请自行前往 https://saucenao.com 中获取
   saucenao: 'xxxxxxxxxxxxxxxxxxxxxx'
   ## 卡池的文件路径
@@ -46,6 +48,7 @@ group_meta:
 user_meta:
   - gacha_proba
   - draw_info
+  - sign_info
 ## 缓存数据存放的文件夹, 默认为 cache
 cache_dir: 'cache'
 ...

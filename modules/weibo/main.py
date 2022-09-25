@@ -130,7 +130,7 @@ class WeiboAPI:
             return
         if index < 0:
             if len(d_data['cards']) > 1:
-                ids = [int(i['mblog']['id']) for i in d_data['cards']]
+                ids = [int(i['mblog']['id']) for i in d_data['cards'] if i['card_type'] == 9]
                 index = ids.index(max(ids))
             else:
                 index = 0

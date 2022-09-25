@@ -20,10 +20,7 @@ def is_chinese(c):
 
 
 def is_include_chinese(s: str):
-    for c in s:
-        if is_chinese(c):
-            return True
-    return False
+    return any(is_chinese(c) for c in s)
 
 
 def split_chinese(s):

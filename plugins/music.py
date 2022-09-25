@@ -32,7 +32,8 @@ async def song(app: Ariadne, sender: Sender, result: Arpamar):
         return await app.send_message(sender, MessageChain("没有搜索到呐~换一首歌试试吧！"))
     song_ = data["result"]["songs"][0]
     song_id = song_["id"]
-    picture = song_["album"]["artist"]["img1v1Url"]
+    async with app.service.client_session.get(f"http://localhost:4000/song/detail?ids={song_id}", timeout=20) as resp:
+        picture = (await resp.json())["songs"][0]["al"]["picUrl"]
     song_summary = (
         f"{song_['name']}--{', '.join(artist['name'] for artist in song_['artists'])}"
     )

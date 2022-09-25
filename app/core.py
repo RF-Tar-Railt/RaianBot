@@ -2,7 +2,7 @@ import asyncio
 import time
 import traceback
 import random
-from creart import it, add_creator
+from creart import it
 from typing import Optional, List
 from loguru import logger
 from pathlib import Path
@@ -45,7 +45,6 @@ from .config import BotConfig
 from .logger import set_output
 
 BotInstance: Ctx['RaianMain'] = Ctx("raian_bot")
-add_creator(AlconnaBehaviorCreator)
 
 
 async def handler(output: str):
@@ -201,22 +200,25 @@ class RaianMain:
         """配置公告功能"""
         title = title or "来自管理者的公告"
 
+        @self.data.record("broadcast")
         @self.broadcast.receiver(FriendMessage)
         async def announcement(app: Ariadne, friend: Friend, message: MessageChain = MatchPrefix("公告:")):
+            """公告广播功能"""
             msg = message.as_sendable()
             if friend.id != self.config.master_id:
                 return
             ft = time.time()
             group_list = await app.get_group_list()
             for group in group_list:
+                if self.data.exist(group.id) and "broadcast" in self.data.get_group(group.id).disabled:
+                    continue
                 try:
                     await app.send_group_message(group.id, MessageChain(f'{title}\n') + msg)
                 except Exception as err:
                     await app.send_friend_message(friend, MessageChain(f"{group.id} 的公告发送失败\n{err}"))
                 await asyncio.sleep(random.uniform(2, 3))
             tt = time.time()
-            times = str(tt - ft)
-            await app.send_friend_message(friend, MessageChain(f"群发已完成，耗时 {times} 秒"))
+            await app.send_friend_message(friend, MessageChain(f"群发已完成，耗时 {tt - ft:.6f} 秒"))
 
     def init_group_report(self):
         """配置群组相关功能"""
@@ -232,8 +234,10 @@ class RaianMain:
 
         @self.broadcast.receiver(BotLeaveEventKick)
         async def get_kicked(app: Ariadne, event: BotLeaveEventKick):
-            self.data.cache['all_joined_group'].remove(event.group.id)
-            self.data.remove_group(event.group.id)
+            if event.group.id in self.data.cache['all_joined_group']:
+                self.data.cache['all_joined_group'].remove(event.group.id)
+            if self.data.exist(event.group.id):
+                self.data.remove_group(event.group.id)
             self.data.cache['blacklist'].append(event.group.id)
             await app.send_friend_message(self.config.master_id, MessageChain(
                 "收到被踢出群聊事件",
