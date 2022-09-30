@@ -63,3 +63,12 @@ async def simulate(app: Ariadne, sender: Sender, target: Target, bot: RaianMain)
         ops = gacha.generate_rank(10)
         data = simulate_ten_generate(ops[0])
     return await app.send_message(sender, MessageChain(Image(data_bytes=data)))
+
+
+@record("抽卡")
+@alcommand(Alconna("卡池更新", meta=CommandMeta("更换卡池")))
+async def change(app: Ariadne, sender: Sender, bot: RaianMain):
+    file = bot.config.plugin.get("gacha", "assets/data/gacha_arknights.json")
+    gacha = ArknightsGacha(file=file)
+    if new := gacha.update():
+        return await app.send_message(sender, f"卡池已更新至: {new}")

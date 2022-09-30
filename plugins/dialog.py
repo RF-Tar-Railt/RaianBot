@@ -6,7 +6,7 @@ from pathlib import Path
 from io import BytesIO
 from PIL import Image as Img
 from contextlib import suppress
-from arclet.alconna.graia import startswith, endswith
+from arclet.alconna.graia import startswith, endswith, success_record
 from arclet.alconna import command_manager
 from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face, Quote
 from graia.ariadne.message.chain import MessageChain
@@ -116,6 +116,9 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
     """依据语料进行匹配回复"""
     cmds = [i.name for i in command_manager.get_commands()]
     if msg := str(message.include(Plain)).strip():
+        if len(success_record):
+            success_record.clear()
+            raise PropagationCancelled
         for n in cmds:
             if re.search(f'.*{n}.*', msg):
                 raise PropagationCancelled

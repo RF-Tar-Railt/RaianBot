@@ -133,8 +133,10 @@ class RaianMain:
         async def report(app: Ariadne, event: ExceptionThrowed):
             member: Optional[Member]
             if isinstance(event.exception, AccountMuted) and (member := getattr(
-                    event.event, 'sender', getattr(event.event, 'member', None)
+                event.event, 'sender', getattr(event.event, 'member', None)
             )):
+                if not isinstance(member, Member):
+                    return
                 group = self.data.get_group(member.group.id)
                 if not (count := group.additional.get('mute')):
                     count = 5

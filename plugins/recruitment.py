@@ -28,7 +28,7 @@ async def recruit(app: Ariadne, sender: Sender, source: Source, result: Arpamar)
         not result.find('detail')
     )
     try:
-        async with browser.page(context=True) as page:
+        async with browser.page() as page:
             await page.goto(
                 url, timeout=60000,
                 wait_until='networkidle' if result.find('detail') else 'load'  # type: ignore
