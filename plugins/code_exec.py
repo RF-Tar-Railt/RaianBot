@@ -118,8 +118,8 @@ async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
             sender, MessageChain(Image(data_bytes=(
                 await create_md(
                     md,
-                    width=max(len(i.strip()) for i in md.splitlines()) * 14,
-                    height=(md.count("\n") + 5) * 14
+                    width=max(max(len(i.strip()) for i in md.splitlines()) * 14, 240),
+                    height=(md.count("\n") + 7) * 14
                 )
             )))
         )

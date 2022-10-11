@@ -32,7 +32,7 @@ class TencentTrans(BaseTrans):
 
 class YoudaoTrans(BaseTrans):
     @classmethod
-    async def trans(cls, content, lang):
+    async def trans(cls, content, lang) -> str:
         url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=true'
         data = {'i': content, 'from': 'AUTO', 'to': lang, 'smartresult': 'dict', 'client': 'fanyideskweb',
                 'doctype': 'json', 'version': '2.1', 'keyfrom': 'fanyi.web', 'action': 'FY_BY_CLICKBUTTON',

@@ -1,7 +1,10 @@
 import asyncio
-from typing import Union
+from typing import Union, Optional
 from contextlib import suppress
 from PicImageSearch import Ascii2D, SauceNAO, Network, Iqdb
+from PicImageSearch.saucenao import SauceNAOResponse
+from PicImageSearch.ascii2d import Ascii2DResponse
+from PicImageSearch.iqdb import IqdbResponse
 from arclet.alconna import Args, CommandMeta
 from arclet.alconna.graia import Alconna, Match, ImgOrUrl, alcommand
 from graia.ariadne.message.chain import MessageChain
@@ -89,17 +92,17 @@ async def saucenao(
             iqdb = Iqdb(client=client)
 
             try:
-                sauce_result = await asyncio.wait_for(sauce.search(image_url), timeout=20)
+                sauce_result: Optional[SauceNAOResponse] = await asyncio.wait_for(sauce.search(image_url), timeout=20)
             except Exception as e:
                 logger.warning(e)
                 sauce_result = None
             try:
-                ascii2_result = await asyncio.wait_for(ascii2.search(image_url), timeout=20)
+                ascii2_result: Optional[Ascii2DResponse] = await asyncio.wait_for(ascii2.search(image_url), timeout=20)
             except Exception as e:
                 logger.warning(e)
                 ascii2_result = None
             try:
-                iqdb_result = await asyncio.wait_for(iqdb.search(image_url), timeout=20)
+                iqdb_result: Optional[IqdbResponse] = await asyncio.wait_for(iqdb.search(image_url), timeout=20)
             except Exception as e:
                 logger.warning(e)
                 iqdb_result = None

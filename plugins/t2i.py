@@ -3,7 +3,7 @@ from arclet.alconna.graia import Alconna, alcommand, assign, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, AtAll, Image, Plain
 from graia.ariadne.app import Ariadne
-from graiax.text2img.playwright.builtin import html2img, NewPageParms
+from graiax.text2img.playwright.builtin import html2img, PageParms
 
 from app import Sender, record
 from utils.generate_img import create_md
@@ -60,7 +60,7 @@ async def html(app: Ariadne, sender: Sender, message: MessageChain, width: Match
     return app.send_message(sender, MessageChain(
         Image(data_bytes=await html2img(
             '\n'.join((str(message).split("\n")[1:])),
-            new_page_args=NewPageParms(viewport={"width": width.result, "height": height.result})
+            page_parms=PageParms(viewport={"width": width.result, "height": height.result})
         ))))
 
 

@@ -96,7 +96,7 @@
       ".*结婚": [
         "#image^cover$marry.png"
       ],
-      "档案": [
+      "你的档案": [
         "#image$dashboard.png",
         "#image$document.png"
       ]

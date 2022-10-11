@@ -4,9 +4,9 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, At
 from graia.ariadne.util.saya import decorate
 from graia.ariadne.app import Ariadne
+from arknights_toolkit.random_operator import RandomOperator
 
 from app import Sender, record
-from modules.arknights.random import RandomOperator
 from utils.generate_img import create_image
 
 

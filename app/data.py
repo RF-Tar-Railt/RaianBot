@@ -68,7 +68,7 @@ class BotDataManager(metaclass=Singleton):
             if k not in self.config.group_meta:
                 raise ValueError
         self.__group_profiles[str(gid)] = GroupProfile(
-            id=gid, additional=kwargs, in_blacklist=(gid in self.__cache_data['blacklist']),
+            id=gid, additional=kwargs, in_blacklist=(gid in self.__cache_data.get('blacklist', {})),
             disabled=list(self.disable_functions)
         )
 

@@ -8,6 +8,7 @@ from graia.ariadne.app import Ariadne
 from graia.scheduler.timers import every_minute
 from graiax.playwright import PlaywrightBrowser
 from graiax.playwright.interface import Page
+from playwright.async_api import TimeoutError
 
 from app import RaianMain, Sender, Target, record, schedule
 from modules.weibo import WeiboAPI, WeiboDynamic
@@ -37,17 +38,22 @@ async def _handle_dynamic(
         target: int,
         name: str
 ):
-    await page.click("html")
-    await page.goto(data.url, timeout=60000, wait_until='networkidle')
-    elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']"))
-    elem1 = page.locator("//article[@class='weibo-main']")
-    bounding = await elem.bounding_box()
-    bounding1 = await elem1.bounding_box()
-    bounding['height'] += bounding1['height']
-    first = MessageChain(Image(data_bytes=await page.screenshot(full_page=True, clip=bounding)))
+    try:
+        await page.click("html")
+        await page.goto(data.url, timeout=60000, wait_until='networkidle')
+        elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
+        elem1 = page.locator("//article[@class='weibo-main']").first
+        bounding = await elem.bounding_box()
+        bounding1 = await elem1.bounding_box()
+        bounding['height'] += bounding1['height']
+        first = MessageChain(Image(data_bytes=await page.screenshot(full_page=True, clip=bounding)))
+    except (TimeoutError, TypeError):
+        first = None
     text = MessageChain(data.text, *(Image(url=i) for i in data.img_urls))
     url = MessageChain(data.url)
-    nodes = [first, text, url]
+    nodes = [text, url]
+    if first:
+        nodes.insert(0, first)
     if data.video_url:
         nodes.append(MessageChain(f"视频链接: {data.video_url}"))
     if data.retweet:
@@ -184,18 +190,24 @@ async def update():
             if not (followers := prof.additional.get("weibo_followers")):
                 continue
             for uid in followers:
-                now = datetime.now()
-                if uid in dynamics:
-                    data, name = dynamics[uid]
-                elif res := await api.update(int(uid)):
-                    dynamics[uid] = (
-                        data := await _handle_dynamic(page, res, now, bot.config.account, bot.config.bot_name),
-                        name := res.user.name
-                    )
-                else:
+                wp = (await api.get_profile(int(uid))).copy()
+                try:
+                    now = datetime.now()
+                    if uid in dynamics:
+                        data, name = dynamics[uid]
+                    elif res := await api.update(int(uid)):
+                        dynamics[uid] = (
+                            data := await _handle_dynamic(page, res, now, bot.config.account, bot.config.bot_name),
+                            name := res.user.name
+                        )
+                    else:
+                        continue
+                    await bot.app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
+                    await bot.app.send_group_message(prof.id, MessageChain(
+                        Forward(*data)
+                    ))
+                except (ValueError, TypeError, IndexError, KeyError):
+                    api.data.followers[uid] = wp
+                    await api.data.save()
                     continue
-                await bot.app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
-                await bot.app.send_group_message(prof.id, MessageChain(
-                    Forward(*data)
-                ))
     dynamics.clear()

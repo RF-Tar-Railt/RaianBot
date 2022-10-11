@@ -4,9 +4,9 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Source
 from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
+from arknights_toolkit.recruit import recruitment
 
 from app import Sender
-from modules.arknights.recruiment import recruitment
 
 recruit = Alconna(
     "公招", Args["tags;S", str, ArgField(..., completion=lambda: "高资")],

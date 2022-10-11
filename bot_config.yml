@@ -25,6 +25,8 @@ plugin:
   saucenao: 'xxxxxxxxxxxxxxxxxxxxxx'
   ## 卡池的文件路径
   gacha: "assets/data/gacha_arknights.json"
+  ## stable-diffusion-webui-api的接口地址
+  txt2img: "xxxxxxxxxxx"
   ## ai 对话
   dialog:
     ## 触发词

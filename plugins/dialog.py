@@ -12,7 +12,7 @@ from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face,
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.app import Ariadne
-from graia.ariadne.model import Friend
+from graia.ariadne.model import Friend, Group
 from graia.ariadne.util.saya import listen, priority, dispatch
 from graia.ariadne.util.cooldown import CoolDown
 from graia.broadcast.exceptions import PropagationCancelled
@@ -27,14 +27,14 @@ bot = RaianMain.current()
 json_filename = "assets/data/dialog_templates.json"
 with open(json_filename, 'r', encoding='UTF-8') as f_obj:
     dialog_templates = ujson.load(f_obj)['templates']
-
+trans = (
+    TencentTrans(
+        bot.config.plugin['dialog']['id'], bot.config.plugin['dialog']['key']
+    ) if bot.config.plugin['dialog']['tencent'] else
+    YoudaoTrans()
+)
 aiml = AIML(
-    (
-        TencentTrans(
-            bot.config.plugin['dialog']['id'], bot.config.plugin['dialog']['key']
-        ) if bot.config.plugin['dialog']['tencent'] else
-        YoudaoTrans()
-    ),
+    trans,
     name=f" {bot.config.bot_name}",
     gender=" girl",
     mother=" Arclet",
@@ -114,6 +114,8 @@ async def image(string: str, target: Target):
 @listen(GroupMessage, FriendMessage)
 async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
+    if not isinstance(sender, Group) and sender.id == bot.config.account:
+        return
     cmds = [i.name for i in command_manager.get_commands()]
     if msg := str(message.include(Plain)).strip():
         if len(success_record):
@@ -151,6 +153,8 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 @listen(GroupMessage, FriendMessage)
 async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
+    if not isinstance(sender, Group) and sender.id == bot.config.account:
+        return
     if msg := str(message.include(Plain)).strip():
         for key, value in dialog_templates['content'].items():
             if re.match(f"^{key}.*?", msg):
@@ -180,7 +184,9 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 @dispatch(CoolDown(0.1))
 @listen(GroupMessage, FriendMessage)
 async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
-    """真AI对话功能"""
+    """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
+    if not isinstance(sender, Group) and sender.id == bot.config.account:
+        return
     cmds = [i.name for i in command_manager.get_commands()]
     for n in cmds:
         if re.search(f'.*{n}.*', str(message)):
@@ -196,8 +202,22 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
                     "session": f"{bot.config.bot_name}/{target.id}"
                 }
         ) as resp:
-            reply = (await resp.json())["result"]
-        return await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
+            reply = "".join((await resp.json())["result"])
+        await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
+        voices = None
+        with suppress(Exception):
+            if jp := await trans.trans(reply, "jp"):
+                async with Ariadne.current().service.client_session.get(
+                    f"https://moegoe.azurewebsites.net/api/speak?text={jp}&id={random.randint(0, 6)}",
+                    timeout=120,
+                ) as resp:
+                    data = await resp.read()
+                if data[:3] != b"400":
+                    res = await async_encode(data, ios_adaptive=True)
+                    voices = Voice(data_bytes=res)
+        if voices:
+            await app.send_message(sender, MessageChain(voices))
+        return
     for elem in bot.config.command_prefix:
         message = message.replace(elem, "")
     msg = str(message.include(Plain, Face))

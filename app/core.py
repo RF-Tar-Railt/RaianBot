@@ -33,7 +33,6 @@ from graia.scheduler import GraiaScheduler
 from graia.scheduler.timers import every_hours
 from arclet.alconna import Alconna, namespace
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
-from arclet.alconna.graia.create import AlconnaBehaviorCreator
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, MatchPrefix
 from graiax.playwright import PlaywrightService
 
@@ -97,7 +96,7 @@ class RaianMain:
         self.saya = it(Saya)
         it(AlconnaBehaviour)
         scheduler = it(GraiaScheduler)
-        self.app.launch_manager.add_launchable(PlaywrightService("chromium"))
+        self.app.launch_manager.add_launchable(PlaywrightService("chromium", headless=True))
         logger.success("------------------机器人初始化完毕--------------------")
 
         @self.broadcast.finale_dispatchers.append
@@ -412,7 +411,7 @@ class RaianMain:
                     ))
                 await event.accept('')
                 return await app.send_friend_message(event.supplicant, MessageChain(
-                    f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in self.data.cache['blacklist'] else 'accepted.'}"
+                    f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in self.data.cache.setdefault('blacklist', {}) else 'accepted.'}"
                 ))
             return await event.reject("请先加机器人好友")
 

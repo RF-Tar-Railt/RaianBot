@@ -1,6 +1,6 @@
 from typing import Union, List, Tuple, Literal
 from graiax.text2img.playwright.builtin import md2img
-from graiax.text2img.playwright.types import NewPageParms, ScreenshotParms
+from graiax.text2img.playwright.types import PageParms, ScreenshotParms
 from graia.ariadne.util.async_exec import ParallelExecutor
 from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw
@@ -50,8 +50,8 @@ async def create_md(
 ):
     return await md2img(
         md,
-        context_args=NewPageParms(viewport={"width": width, "height": height}, device_scale_factor=factor),
-        screenshot_args=ScreenshotParms(type=itype, quality=quality, scale="device")
+        page_parms=PageParms(viewport={"width": width, "height": height}, device_scale_factor=factor),
+        screenshot_parms=ScreenshotParms(type=itype, quality=quality, scale="device")
     )
 
 
