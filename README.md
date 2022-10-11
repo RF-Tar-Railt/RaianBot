@@ -33,7 +33,7 @@ QQ交流：[122680593](https://jq.qq.com/?_wv=1027&k=lhxRkibY)
 
 ## 下载
 
-链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.12/raian-bot-0.12.0.zip)
+链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.13/raian-bot-0.13.0.zip)
 
 ## 安装
 
