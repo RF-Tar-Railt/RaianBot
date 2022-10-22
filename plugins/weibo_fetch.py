@@ -92,8 +92,8 @@ async def fetch(app: Ariadne, sender: Sender, user: Match[str]):
 
 
 @route.route(["GET"], "/weibo/get", response_model=WeiboDynamic)
-async def get_fetch(user: str, index: int = -1, page: int = 1, url: bool = False):
-    if url:
+async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = False):
+    if jump:
         return RedirectResponse((await api.get_dynamic(user, index=index, page=page)).url)
     return JSONResponse(
         (await api.get_dynamic(user, index=index, page=page)).dict(),
