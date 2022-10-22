@@ -17,6 +17,10 @@ bot_name: "Raian"
 prefix:
   - "莱安"
   - "At:123456789"
+## Api服务的运行地址
+api_host: 'localhost'
+## Api服务的运行端口
+api_port: 8000
 ## 插件需要的数据
 plugin:
   ## 信赖最大值

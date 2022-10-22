@@ -134,8 +134,9 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
                 break
         else:
             if random.randint(1, 100) > 50 and (ai_url := bot.config.plugin['dialog']['ai_url']):
+                id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
                 async with app.service.client_session.get(
-                    ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{target.id}"}
+                    ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{id_}"}
                 ) as resp:
                     rand_str = ''.join((await resp.json())["result"])
             else:
@@ -166,8 +167,9 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
                 break
         else:
             if random.randint(1, 100) > 50 and (ai_url := bot.config.plugin['dialog']['ai_url']):
+                id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
                 async with app.service.client_session.get(
-                    ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{target.id}"}
+                    ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{id_}"}
                 ) as resp:
                     rand_str = ''.join((await resp.json())["result"])
             else:
@@ -187,6 +189,7 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
     if not isinstance(sender, Group) and sender.id == bot.config.account:
         return
+    id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
     cmds = [i.name for i in command_manager.get_commands()]
     for n in cmds:
         if re.search(f'.*{n}.*', str(message)):
@@ -199,14 +202,14 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         async with app.service.client_session.get(
                 ai_url, params={
                     "text": str(message.include(Plain, Face)),
-                    "session": f"{bot.config.bot_name}/{target.id}"
+                    "session": f"{bot.config.bot_name}/{id_}"
                 }
         ) as resp:
             reply = "".join((await resp.json())["result"])
         await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
         voices = None
         with suppress(Exception):
-            if jp := await trans.trans(reply, "jp"):
+            if jp := await trans.trans(reply, "jp") and random.randint(0, 99) > 90:
                 async with Ariadne.current().service.client_session.get(
                     f"https://moegoe.azurewebsites.net/api/speak?text={jp}&id={random.randint(0, 6)}",
                     timeout=120,
@@ -225,7 +228,7 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         return
     if random.randint(0, 2000) == datetime.now().microsecond // 5000:
         async with app.service.client_session.get(
-                ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{target.id}"}
+                ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{id_}"}
         ) as resp:
             reply = (await resp.json())["result"]
         return await app.send_message(sender, reply, quote=source)

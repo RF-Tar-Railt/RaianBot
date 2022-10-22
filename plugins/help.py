@@ -1,12 +1,11 @@
-from arclet.alconna import Args, command_manager, ArgField, CommandMeta, config
-from arclet.alconna.graia import Alconna, Match, alcommand, shortcuts, AlconnaDispatcher
-from graia.ariadne.message.element import Image
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.app import Ariadne
-from graiax.text2img.playwright.builtin import md2img
 import random
-
-from app import Sender, RaianMain
+from app import RaianMain, Sender
+from arclet.alconna import ArgField, Args, CommandMeta, command_manager, config
+from arclet.alconna.graia import Alconna, AlconnaDispatcher, Match, alcommand, shortcuts
+from graia.ariadne.app import Ariadne
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Image
+from graiax.text2img.playwright.builtin import md2img
 
 
 @shortcuts(帮助=MessageChain("渊白帮助"))
@@ -25,7 +24,6 @@ from app import Sender, RaianMain
     )
 )
 async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianMain):
-
     if not query.available:
         md = f"""\
 # {bot.config.bot_name} 帮助菜单
@@ -59,7 +57,12 @@ async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianM
             cmds = list(command_manager.all_command_raw_help().keys())
             text = command_manager.get_command(cmds[int(query.result)]).get_help()
         else:
-            cmds = list(filter(lambda x: query.result in x, command_manager.all_command_raw_help().keys()))
+            cmds = list(
+                filter(
+                    lambda x: query.result in x,
+                    command_manager.all_command_raw_help().keys(),
+                )
+            )
             text = command_manager.get_command(cmds[0]).get_help()
         return await app.send_message(
             sender, await AlconnaDispatcher.default_send_handler(text)

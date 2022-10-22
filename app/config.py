@@ -18,6 +18,8 @@ class BotConfig(BaseModel):
     master_name: str
     bot_name: str
     prefix: List[str]
+    api_host: str = Field(default="localhost")
+    api_port: int = Field(default=8000)
     plugin: Dict[str, Union[str, Any]]
     plugin_path: str
     disabled_plugins: List[str]

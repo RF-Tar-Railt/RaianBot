@@ -1,4 +1,5 @@
 from datetime import datetime
+from fastapi.responses import RedirectResponse, JSONResponse
 from arclet.alconna import Args, Option, ArgField, CommandMeta
 from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from graia.ariadne.message.chain import MessageChain
@@ -8,10 +9,12 @@ from graia.ariadne.app import Ariadne
 from graia.scheduler.timers import every_minute
 from graiax.playwright import PlaywrightBrowser
 from graiax.playwright.interface import Page
+from graiax.fastapi import route
 from playwright.async_api import TimeoutError
 
 from app import RaianMain, Sender, Target, record, schedule
-from modules.weibo import WeiboAPI, WeiboDynamic
+from modules.weibo import WeiboAPI, WeiboDynamic, WeiboUser
+
 bot = RaianMain.current()
 
 weibo_fetch = Alconna(
@@ -61,6 +64,14 @@ async def _handle_dynamic(
     return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
 
 
+@route.route(["GET"], "/weibo/check", response_model=WeiboUser)
+async def get_check(user: str):
+    return JSONResponse(
+        (await api.get_profile(user, save=False, cache=False)).dict(),
+        headers={"charset": "utf-8"}
+    )
+
+
 @record("微博功能")
 @assign("$main")
 @alcommand(weibo_fetch)
@@ -80,6 +91,16 @@ async def fetch(app: Ariadne, sender: Sender, user: Match[str]):
     return await app.send_message(sender, MessageChain("获取失败啦"))
 
 
+@route.route(["GET"], "/weibo/get", response_model=WeiboDynamic)
+async def get_fetch(user: str, index: int = -1, page: int = 1, url: bool = False):
+    if url:
+        return RedirectResponse((await api.get_dynamic(user, index=index, page=page)).url)
+    return JSONResponse(
+        (await api.get_dynamic(user, index=index, page=page)).dict(),
+        headers={"charset": "utf-8"}
+    )
+
+
 @record("微博功能")
 @assign("动态")
 @alcommand(weibo_fetch)
@@ -93,9 +114,9 @@ async def fetch(
             return await app.send_message(
                 sender,
                 MessageChain(Forward(*(await _handle_dynamic(
-                        page, dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
-                    ))
+                    page, dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
                 ))
+                                     ))
             )
     return await app.send_message(sender, MessageChain("获取失败啦"))
 

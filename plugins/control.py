@@ -1,25 +1,26 @@
 import asyncio
 import re
-from typing import List
 from datetime import datetime
-from arclet.alconna import Args, Option, CommandMeta, ArgField
+from typing import List
+
+from app import RaianMain, Sender, admin, master
+from arclet.alconna import ArgField, Args, CommandMeta, Option
 from arclet.alconna.graia import (
     Alconna,
+    AlconnaDispatcher,
     Match,
     alcommand,
     assign,
-    AlconnaDispatcher,
     endswith,
 )
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Image, Forward, ForwardNode
-from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
-from loguru import logger
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Forward, ForwardNode, Image
+from graia.ariadne.model import Group
 from graiax.text2img.playwright.builtin import md2img
-from app import RaianMain, Sender, admin, master
-from utils.generate_img import create_md
+from loguru import logger
 from modules.aiml.lang_support import is_chinese
+from utils.generate_img import create_md
 
 module_control = Alconna(
     "模块",
@@ -346,7 +347,9 @@ async def _g_list(app: Ariadne, sender: Sender, bot: RaianMain):
         forwards = []
         now = datetime.now()
         for gp in select:
-            async with app.service.client_session.get(f"https://p.qlogo.cn/gh/{gp.id}/{gp.id}/") as resp:
+            async with app.service.client_session.get(
+                f"https://p.qlogo.cn/gh/{gp.id}/{gp.id}/"
+            ) as resp:
                 data = await resp.read()
             gp_name = "".join(i for i in gp.name if is_chinese(i) or 31 < ord(i) < 127)
             gp_name = re.sub(r"<\$[^<>]*?>", "", gp_name)
@@ -355,9 +358,8 @@ async def _g_list(app: Ariadne, sender: Sender, bot: RaianMain):
                     target=bot.config.account,
                     name=bot.config.bot_name,
                     time=now,
-                    message=
-                    MessageChain(Image(data_bytes=data)) +
-                    MessageChain(f"\n{gp_name}({gp.id})")
+                    message=MessageChain(Image(data_bytes=data))
+                    + MessageChain(f"\n{gp_name}({gp.id})"),
                 )
             )
         if not forwards:

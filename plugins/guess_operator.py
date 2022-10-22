@@ -1,16 +1,17 @@
-from typing import Tuple, Union
-from pathlib import Path
 from contextlib import suppress
-from arclet.alconna import CommandMeta, Args, Option
-from arclet.alconna.graia import Alconna, alcommand, Match, assign
+from pathlib import Path
+from typing import Tuple, Union
+
+from app import RaianMain, Sender, record
+from arclet.alconna import Args, CommandMeta, Option
+from arclet.alconna.graia import Alconna, Match, alcommand, assign
+from arknights_toolkit.wordle import Guess, OperatorWordle, update
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.event.message import FriendMessage, GroupMessage
-from graia.ariadne.util.interrupt import FunctionWaiter
 from graia.ariadne.model import Friend, Group
-from graia.ariadne.app import Ariadne
-from app import Sender, record, RaianMain
-from arknights_toolkit.wordle import OperatorWordle, update, Guess
+from graia.ariadne.util.interrupt import FunctionWaiter
 
 alc = Alconna(
     "猜干员",
@@ -82,14 +83,17 @@ async def guess(
 
     while True:
         res: Union[bool, Guess, None] = await FunctionWaiter(
-            waiter, [GroupMessage, FriendMessage]
+            waiter,
+            [GroupMessage, FriendMessage],
+            block_propagation=isinstance(sender, Friend),
         ).wait(timeout=120, default=False)
         if res is None:
             continue
         if not res:
             wordle.restart(id_)
             return await app.send_message(
-                sender, f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！"
+                sender,
+                f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！",
             )
         if simple.result:
             await app.send_message(sender, MessageChain(wordle.draw(res, simple=True)))
@@ -101,5 +105,5 @@ async def guess(
             break
     return await app.send_message(
         sender,
-        f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！\n答案为{res.select}"
+        f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！\n答案为{res.select}",
     )

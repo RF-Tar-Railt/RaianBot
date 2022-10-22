@@ -1,21 +1,45 @@
 from app import RaianMain, Sender, Target, record
-from arclet.alconna import Args, CommandMeta, ArgField
+from arclet.alconna import ArgField, Args, CommandMeta
 from arclet.alconna.graia import Alconna, Match, alcommand
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
+from fastapi.responses import JSONResponse, Response
 from graia.ariadne.app import Ariadne
+from graia.ariadne.event.lifecycle import ApplicationLaunch
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.util.saya import dispatch, listen
 from graia.ariadne.util.cooldown import CoolDown
-from graia.ariadne.event.lifecycle import ApplicationLaunch
+from graia.ariadne.util.saya import dispatch, listen
+from graiax.fastapi import route
 
 bot = RaianMain.current()
-gacha = ArknightsGacha(bot.config.plugin.get("gacha", "assets/data/gacha_arknights.json"))
+gacha = ArknightsGacha(
+    bot.config.plugin.get("gacha", "assets/data/gacha_arknights.json")
+)
 
 
 @listen(ApplicationLaunch)
 async def gacha_init():
     await gacha.initialize()
+
+
+@route.route(["GET"], "/gacha")
+async def get_gacha(count: int = 10, per: int = 2, status: int = 0, img: bool = False):
+    guser = GachaUser(per, status)
+    if img:
+        return Response(gacha.gacha_with_img(guser, count), media_type="image/png")
+    data = gacha.gacha(guser, count)
+    return JSONResponse(
+        [[i._asdict() for i in line] for line in data], headers={"charset": "utf-8"}
+    )
+
+
+@route.route(["GET"], "/gacha/sim")
+async def get_gacha(per: int = 2, status: int = 0):
+    from arknights_toolkit.gacha import simulate_image
+
+    guser = GachaUser(per, status)
+    data = gacha.gacha(guser, 10)
+    return Response(await simulate_image(data[0]), media_type="image/png")
 
 
 @alcommand(
@@ -52,6 +76,7 @@ async def gacha_(app: Ariadne, sender: Sender, target: Target, count: Match[int]
 @alcommand(Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="有1.5s的时间限制")))
 async def simulate(app: Ariadne, sender: Sender, target: Target):
     from arknights_toolkit.gacha import simulate_image
+
     if bot.data.exist(target.id):
         user = bot.data.get_user(target.id)
         if not user.additional.get("gacha_proba"):
@@ -75,5 +100,7 @@ async def simulate(app: Ariadne, sender: Sender, target: Target):
 @alcommand(Alconna("卡池更新", meta=CommandMeta("更换卡池")))
 async def change(app: Ariadne, sender: Sender):
     if new := (await gacha.update()):
-        return await app.send_message(sender, MessageChain(f"卡池已更新至: {new.title}", Image(url=new.pool)))
+        return await app.send_message(
+            sender, MessageChain(f"卡池已更新至: {new.title}", Image(url=new.pool))
+        )
     return await app.send_message(sender, "卡池已经是最新状态！")
