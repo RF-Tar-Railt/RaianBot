@@ -1,199 +1,68 @@
-import asyncio
-import random
-import time
+import sys
 import traceback
-from contextlib import ExitStack, suppress
-from datetime import datetime
+from contextlib import ExitStack
 from pathlib import Path
-from typing import List, Optional
+from typing import Literal, Set, Type, Union
 
-from app.control import require_function
 from arclet.alconna import Alconna, namespace
-from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, MatchPrefix
+from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
 from creart import it
 from fastapi import FastAPI
+from graia.broadcast import Broadcast
 from graia.amnesia.builtins.uvicorn import UvicornService
 from graia.ariadne.app import Ariadne
 from graia.ariadne.connection.config import HttpClientConfig, WebsocketClientConfig
 from graia.ariadne.connection.config import config as conn_cfg
-from graia.ariadne.event.lifecycle import ApplicationLaunched, ApplicationShutdowned
-from graia.ariadne.event.message import FriendMessage, GroupMessage
-from graia.ariadne.event.mirai import (
-    BotInvitedJoinGroupRequestEvent,
-    BotJoinGroupEvent,
-    BotLeaveEventDisband,
-    BotLeaveEventKick,
-    MemberJoinEvent,
-    MemberLeaveEventQuit,
-    NewFriendRequestEvent,
-)
-from graia.ariadne.exception import AccountMuted, AccountNotFound, InvalidArgument
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import At, FlashImage, Image
-from graia.ariadne.model import Friend, Group, Member, MemberPerm
-from graia.broadcast import Broadcast
-from graia.broadcast.builtin.event import ExceptionThrowed
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-from graia.broadcast.utilles import Ctx
 from graia.saya import Saya
 from graia.scheduler import GraiaScheduler
-from graia.scheduler.timers import every_hours
 from graiax.fastapi import FastAPIBehaviour, FastAPIService
 from graiax.playwright import PlaywrightService
+from launart import ExportInterface, Service, Launart
 from loguru import logger
-from utils.exception_report import reports_md
-from utils.generate_img import create_md
 
-from .config import BotConfig
+from .config import BotConfig, extract_plugin_config
+from .context import BotInstance, ConfigInstance, DataInstance
 from .data import BotDataManager
 from .logger import set_output
+from .utils import send_handler
 
-BotInstance: Ctx["RaianMain"] = Ctx("raian_bot")
-
-
-async def handler(output: str):
-    length = (output.count("\n") + 5) * 16
-    if not output.startswith("#"):
-        output = f"# {output}"
-        output = (
-            output.replace("\n\n", "\n")
-            .replace("\n", "\n\n")
-            .replace("#", "##")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-        )
-    return MessageChain(Image(data_bytes=await create_md(output, height=length)))
+AlconnaDispatcher.default_send_handler = send_handler
 
 
-AlconnaDispatcher.default_send_handler = handler
+class RaianBotInterface(ExportInterface):
+    @property
+    def data(self) -> BotDataManager:
+        return DataInstance.get(None)
+
+    @property
+    def config(self) -> BotConfig:
+        return ConfigInstance.get(None)
 
 
-class RaianMain:
-    broadcast: Broadcast
-    app: Ariadne
-    config: BotConfig
+class RaianBotService(Service):
+    id = "raian.core.service"
+    supported_interface_types = {RaianBotInterface}
     data: BotDataManager
-    saya: Saya
-    fastapi: FastAPI
-    exit: asyncio.Event
+    config: BotConfig
 
-    __slots__ = ("broadcast", "app", "config", "data", "saya", "exit", "fastapi")
-
-    def __init__(self, config: BotConfig, debug_log: bool = True):
-        """
-        配置机器人参数
-
-        Args:
-            config: 机器人配置,
-            debug_log: 是否记录 debug 日志
-        """
-        self.exit = asyncio.Event()
+    def __init__(self, config: BotConfig):
+        super().__init__()
         self.config = config
-        self.data = BotDataManager(config)
-        with namespace("Alconna") as np:
-            np.headers = self.config.command_prefix
-        Alconna.config(formatter_type=MarkdownTextFormatter)
-        set_output("DEBUG" if debug_log else "INFO")
-        self.app = Ariadne(
-            connection=conn_cfg(
-                config.account,
-                config.verify_key,
-                HttpClientConfig(config.url),
-                WebsocketClientConfig(config.url),
-            ),
-            # log_config=LogConfig('DEBUG' if debug_log else 'INFO')
-        )
-        self.broadcast = self.app.broadcast
-        self.saya = it(Saya)
-        it(AlconnaBehaviour)
-        scheduler = it(GraiaScheduler)
-        self.fastapi = FastAPI()
-        self.saya.install_behaviours(FastAPIBehaviour(self.fastapi))
-        self.app.launch_manager.add_launchable(
-            PlaywrightService("chromium", headless=True)
-        )
-        self.app.launch_manager.add_service(FastAPIService(self.fastapi))
-        self.app.launch_manager.add_service(UvicornService(self.config.api_host, self.config.api_port))
-        logger.success("------------------机器人初始化完毕--------------------")
+        self.data = DataInstance.get(None) or BotDataManager()
 
-        @self.fastapi.get("/")
-        async def root():
-            return {"code": 200, "content": f"这里是{self.config.bot_name}!"}
+    def get_interface(self, _: Type[RaianBotInterface]) -> RaianBotInterface:
+        return RaianBotInterface()
 
-        @self.broadcast.finale_dispatchers.append
-        class BotDispatcher(BaseDispatcher):
-            @staticmethod
-            async def catch(interface: "DispatcherInterface"):  # noqa
-                if interface.annotation is RaianMain:
-                    return self
-                if interface.annotation is BotConfig:
-                    return self.config
-                if interface.annotation is BotDataManager:
-                    return self.data
+    @property
+    def required(self) -> Set[Union[str, Type[ExportInterface]]]:
+        return {"elizabeth.service"}
 
-        @scheduler.schedule(every_hours())
-        async def save():
-            self.data.save()
-            await asyncio.sleep(0)
-
-        @self.broadcast.receiver(FriendMessage)
-        async def discard_mute(app: Ariadne, friend: Friend, message: MessageChain):
-            msg = message.as_sendable()
-            if friend.id != self.config.master_id or not msg.startswith("解除群限制:"):
-                return
-            target = int(str(msg).replace("解除群限制:", ""))
-            if not self.data.exist(target):
-                return
-            prof = self.data.get_group(target)
-            prof.additional["mute"] = 5
-            self.data.update_group(prof)
-            return await app.send_friend_message(friend, MessageChain("该群限制解除成功"))
-
-        @self.broadcast.receiver(ExceptionThrowed)
-        async def report(app: Ariadne, event: ExceptionThrowed):
-            member: Optional[Member]
-            if isinstance(event.exception, AccountMuted) and (
-                member := getattr(
-                    event.event, "sender", getattr(event.event, "member", None)
-                )
-            ):
-                if not isinstance(member, Member):
-                    return
-                group = self.data.get_group(member.group.id)
-                if not (count := group.additional.get("mute")):
-                    count = 5
-                if count > 0:
-                    await app.quit_group(member.group)
-                    count -= 1
-                group.additional["mute"] = count
-                self.data.update_group(group)
-                members = await app.get_member_list(member.group)
-                friend_ids = [f.id for f in (await app.get_friend_list())]
-                for ad in filter(
-                    lambda x: x.id in friend_ids and x.permission > MemberPerm.Member,
-                    members,
-                ):
-                    with suppress(AccountNotFound, InvalidArgument):
-                        await app.send_friend_message(
-                            ad.id,
-                            MessageChain(
-                                f"因机器人被禁言, 机器人将自动退出该群聊\n"
-                                f"再禁言 {count} 次后机器人将不再自动接受该群的邀请入群申请\n"
-                                f"到达 5次后需要群主或管理员向机器人报备禁言理由后才可接受邀请"
-                            ),
-                        )
-                return await app.send_friend_message(
-                    self.config.master_id,
-                    MessageChain(f"检测到在 {member.group} 中被禁言，已退出该群聊"),
-                )
-            tb = reports_md(event.exception)
-            tb = f"## 概览\n\n在处理 {event.event} 时出现如下问题:\n{tb}"
-            await app.send_friend_message(
-                self.config.master_id,
-                MessageChain(Image(data_bytes=await create_md(tb))),
-            )
+    @property
+    def stages(self) -> Set[Literal["preparing", "blocking", "cleanup"]]:
+        return {"preparing", "cleanup"}
 
     @classmethod
     def current(cls):
@@ -204,401 +73,98 @@ class RaianMain:
     def context(self):
         return BotInstance
 
-    def load_plugins(self, path: Optional[str] = None):
-        """从插件存放的文件夹中统一导入插件"""
-        plugin_path = Path(path or self.config.plugin_path)
-        if not plugin_path.is_dir():
-            logger.error("插件路径应该为一存在的文件夹")
-            return
-        with ExitStack() as stack:
-            stack.enter_context(BotInstance.use(self))
-            stack.enter_context(self.saya.module_context())
-            for file in plugin_path.iterdir():
-                if file.is_file():
-                    name = file.name.split(".")[0]
-                    if name in self.config.disabled_plugins:
-                        continue
-                else:
-                    name = file.name
-                if name.startswith("_"):
-                    continue
-                try:
-                    self.saya.require(f"{plugin_path.name}.{name}")
-                except BaseException as e:
-                    logger.warning(
-                        f"fail to load {plugin_path.name}.{name}, caused by "
-                        f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
-                    )
-                    self.stop()
-                    raise e
+    async def launch(self, manager: Launart):
+        async with self.stage("preparing"):
+            try:
+                self.data.load()
+                logger.debug("机器人数据加载完毕")
+                for path in self.config.plugin.paths:
+                    plugin_path = Path(path)
+                    if not plugin_path.is_dir():
+                        logger.error("插件路径应该为一存在的文件夹")
+                        return
+                    with ExitStack() as stack:
+                        stack.enter_context(BotInstance.use(self))
+                        stack.enter_context(it(Saya).module_context())
+                        for file in plugin_path.iterdir():
+                            name = file.stem if file.is_file() else file.name
+                            if (
+                                name == "config"
+                                or name.startswith("_")
+                                or f"{plugin_path.name}.{name}" in self.config.plugin.disabled
+                            ):
+                                continue
+                            try:
+                                if model := extract_plugin_config(plugin_path.name, name):
+                                    self.config.plugin.data[type(model)] = model
+                                export_meta = it(Saya).require(f"{plugin_path.name}.{name}")
+                                if isinstance(export_meta, dict):
+                                    DataInstance.get().add_meta(**export_meta)
+                            except BaseException as e:
+                                logger.warning(
+                                    f"fail to load {plugin_path.name}.{name}, caused by "
+                                    f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
+                                )
+                                manager.status.exiting = True
+                                traceback.print_exc()
+                                break
+            except RuntimeError:
+                manager.status.exiting = True
 
-    def init_announcement(self, title: Optional[str] = None):
-        """配置公告功能"""
-        title = title or "来自管理者的公告"
-
-        @self.data.record("broadcast")
-        @self.broadcast.receiver(FriendMessage)
-        async def announcement(
-            app: Ariadne, friend: Friend, message: MessageChain = MatchPrefix("公告:")
-        ):
-            """公告广播功能"""
-            msg = message.as_sendable()
-            if friend.id != self.config.master_id:
-                return
-            ft = time.time()
-            group_list = await app.get_group_list()
-            for group in group_list:
-                if (
-                    self.data.exist(group.id)
-                    and "broadcast" in self.data.get_group(group.id).disabled
-                ):
-                    continue
-                try:
-                    await app.send_group_message(
-                        group.id, MessageChain(f"{title}\n") + msg
-                    )
-                except Exception as err:
-                    await app.send_friend_message(
-                        friend, MessageChain(f"{group.id} 的公告发送失败\n{err}")
-                    )
-                await asyncio.sleep(random.uniform(2, 3))
-            tt = time.time()
-            await app.send_friend_message(
-                friend, MessageChain(f"群发已完成，耗时 {tt - ft:.6f} 秒")
-            )
-
-    def init_group_report(self):
-        """配置群组相关功能"""
-
-        @self.broadcast.receiver(GroupMessage, priority=7)  # 防止可能的入群事件异常
-        async def _init_g(app: Ariadne, group: Group):
-            if not self.data.exist(group.id):
-                self.data.add_group(group.id)
-                self.data.cache["all_joined_group"].append(group.id)
-                return await app.send_friend_message(
-                    self.config.master_id, MessageChain(f"{group.name} 初始配置化完成")
-                )
-
-        @self.broadcast.receiver(BotLeaveEventKick)
-        async def get_kicked(app: Ariadne, event: BotLeaveEventKick):
-            if event.group.id in self.data.cache["all_joined_group"]:
-                self.data.cache["all_joined_group"].remove(event.group.id)
-            if self.data.exist(event.group.id):
-                self.data.remove_group(event.group.id)
-            self.data.cache["blacklist"].append(event.group.id)
-            await app.send_friend_message(
-                self.config.master_id,
-                MessageChain(
-                    "收到被踢出群聊事件",
-                    f"\n群号：{event.group.id}",
-                    f"\n群名：{event.group.name}",
-                    f"\n已添加至黑名单",
-                ),
-            )
-
-        @self.broadcast.receiver(BotLeaveEventDisband)
-        async def handle_disband(app: Ariadne, event: BotLeaveEventDisband):
-            self.data.cache["all_joined_group"].remove(event.group.id)
-            self.data.remove_group(event.group.id)
-            await app.send_friend_message(
-                self.config.master_id,
-                MessageChain(
-                    "收到群聊解散事件", f"\n群号：{event.group.id}", f"\n群名：{event.group.name}"
-                ),
-            )
-
-    def init_fetch_flash(self):
-        """配置机器人截获闪图功能"""
-
-        @self.broadcast.receiver(FriendMessage)
-        @self.broadcast.receiver(GroupMessage)
-        async def _flash(message: MessageChain):
-            if not message.has(FlashImage):
-                return
-            await self.app.send_friend_message(
-                self.config.master_id,
-                MessageChain(message.get_first(FlashImage).to_image()),
-            )
-
-    def init_start_report(self, init_for_new_group: bool = True):
-        """配置机器人启动事件"""
-
-        @self.broadcast.receiver(ApplicationLaunched)
-        async def _report(app: Ariadne):
-            group_list: List[Group] = await app.get_group_list()
-            groups = len(group_list)
-            await app.send_friend_message(
-                self.config.master_id,
-                MessageChain(
-                    f"机器人成功启动。\n",
-                    f"当前共加入了 {groups} 个群 \n",
-                    f"当前共有 {len(self.data.users)} 人参与签到",
-                ),
-            )
-            if not init_for_new_group:
-                return
-            gp_list = {i.id for i in group_list}
-            joined_set = {int(i) for i in self.data.groups}
-            count = 0
-            for gp in joined_set.copy():
-                if gp not in gp_list:
-                    if self.data.exist(gp):
-                        prof = self.data.get_group(gp)
-                        if prof.additional.get("mute", 6) != 6:
-                            continue
-                        self.data.remove_group(gp)
-                    joined_set.remove(gp)
-                    logger.debug(f"发现失效群组: {gp}")
-            for gp in group_list:
-                if not self.data.exist(gp.id):
-                    logger.debug(f"发现新增群组: {gp.name}")
-                    self.data.add_group(gp.id)
-                    joined_set.add(gp.id)
-                    count += 1
-                    logger.debug(f"{gp.name} 初始化配置完成")
-            self.data.cache["all_joined_group"] = list(joined_set)
-            await app.send_friend_message(
-                self.config.master_id, MessageChain(f"共完成 {count} 个群组的初始化配置")
-            )
-
-    def init_stop_report(self):
-        """配置机器人关闭事件"""
-
-        @self.broadcast.receiver(ApplicationShutdowned)
-        async def _report(app: Ariadne):
-            await app.send_friend_message(
-                self.config.master_id, MessageChain("机器人关闭中。。。")
-            )
-
-    def init_member_change_report(self, welcome: Optional[str] = None):
-        """配置用户相关事件"""
-        welcome = welcome or (
-            "欢迎新人！进群了就别想跑哦~\n来个star吧球球惹QAQ\n",
-            "项目地址：https://github.com/RF-Tar-Railt/RaianBot",
-        )
-
-        @self.data.record("member_leave")
-        @self.broadcast.receiver(
-            MemberLeaveEventQuit, decorators=[require_function("member_leave")]
-        )
-        async def member_leave_tell(app: Ariadne, group: Group, member: Member):
-            """用户离群提醒"""
-            await app.send_group_message(
-                group,
-                MessageChain("可惜了！\n" + member.name + "(" + str(member.id) + ")退群了！"),
-            )
-
-        @self.data.record("member_join")
-        @self.broadcast.receiver(
-            MemberJoinEvent, decorators=[require_function("member_join")]
-        )
-        async def member_join_tell(app: Ariadne, group: Group, member: Member):
-            """用户入群提醒"""
-            await app.send_group_message(group, MessageChain(At(member.id), welcome))
-
-    def init_mute_change_report(self):
-        """配置禁言相关事件"""
-
-        @self.data.record("member_mute")
-        @self.broadcast.receiver(
-            "MemberMuteEvent", decorators=[require_function("member_mute")]
-        )
-        async def member_mute_tell(app: Ariadne, group: Group, target: Member):
-            """用户被禁言提醒"""
-            await app.send_group_message(
-                group, MessageChain("哎呀，", At(target.id), " 没法说话了！")
-            )
-
-        @self.data.record("member_unmute")
-        @self.broadcast.receiver(
-            "MemberUnmuteEvent", decorators=[require_function("member_unmute")]
-        )
-        async def member_unmute_tell(
-            app: Ariadne, group: Group, target: Member, operator: Member
-        ):
-            """用户被解除禁言提醒, 注意是手动解禁"""
-            if operator is not None:
-                await app.send_group_message(
-                    group,
-                    MessageChain(
-                        "太好了!\n", At(target.id), " 被", At(operator.id), " 解救了！"
-                    ),
-                )
-
-    def init_request_report(self):
-        """配置好友或群组申请响应"""
-
-        @self.broadcast.receiver(NewFriendRequestEvent)
-        async def get_friend_accept(app: Ariadne, event: NewFriendRequestEvent):
-            """
-            收到好友申请
-            """
-            if str(event.supplicant) in self.data.users:
-                await event.accept()
-                await app.send_friend_message(
-                    self.config.master_id,
-                    MessageChain(
-                        "收到添加好友事件",
-                        f"\nQQ：{event.supplicant}",
-                        f"\n昵称：{event.nickname}",
-                        f"\n状态：已通过申请\n\n{event.message.upper()}",
-                    ),
-                )
-            else:
-                await event.reject("请先签到")
-                await app.send_friend_message(
-                    self.config.master_id,
-                    MessageChain(
-                        "收到添加好友事件",
-                        f"\nQQ：{event.supplicant}",
-                        f"\n昵称：{event.nickname}",
-                        f"\n状态：已拒绝申请\n\n{event.message.upper()}",
-                    ),
-                )
-
-        @self.broadcast.receiver(BotInvitedJoinGroupRequestEvent)
-        async def bot_invite(app: Ariadne, event: BotInvitedJoinGroupRequestEvent):
-            """
-            被邀请入群
-            """
-            friend_list = await app.get_friend_list()
-            if event.supplicant in map(lambda x: x.id, friend_list):
-                await app.send_friend_message(
-                    self.config.master_id,
-                    MessageChain(
-                        "收到邀请入群事件",
-                        f"\n邀请者：{event.supplicant} | {event.nickname}",
-                        f"\n群号：{event.source_group}",
-                        f"\n群名：{event.group_name}",
-                    ),
-                )
-                if (
-                    self.data.exist(event.source_group)
-                    and self.data.get_group(event.source_group).additional.get(
-                        "mute", 1
-                    )
-                    < 1
-                ):
-                    await event.reject("")
-                    return await app.send_friend_message(
-                        event.supplicant,
-                        MessageChain(f"该群被禁言次数达到上限, 已拒绝申请\n" f"请联系群主或管理员向机器人报备禁言理由"),
-                    )
-                await event.accept("")
-                return await app.send_friend_message(
-                    event.supplicant,
-                    MessageChain(
-                        f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in self.data.cache.setdefault('blacklist', {}) else 'accepted.'}"
-                    ),
-                )
-            return await event.reject("请先加机器人好友")
-
-        @self.broadcast.receiver(BotJoinGroupEvent)
-        async def get_join_group(app: Ariadne, group: Group):
-            """
-            收到入群事件
-            """
-            member_count = len(await app.get_member_list(group))
-            await app.send_friend_message(
-                self.config.master_id,
-                MessageChain(
-                    "收到加入群聊事件",
-                    f"\n群号：{group.id}",
-                    f"\n群名：{group.name}",
-                    f"\n群人数：{member_count}",
-                ),
-            )
-            await app.send_group_message(
-                group.id,
-                MessageChain(
-                    f"我是 {self.config.master_name} 的机器人 {(await app.get_bot_profile()).nickname}\n",
-                    f"如果有需要可以联系主人{self.config.master_name}({self.config.master_id})，\n",
-                    f"尝试发送 {self.config.command_prefix[0]}帮助 以查看功能列表\n",
-                    "项目地址：https://github.com/RF-Tar-Railt/RaianBot\n",
-                    "机器人交流群：122680593",
-                ),
-            )
-            if self.data.exist(group.id) and (
-                count := self.data.get_group(group.id).additional.get("mute")
-            ):
-                await app.send_group_message(
-                    group.id,
-                    MessageChain(
-                        f"检测到机器人曾在该群被禁言 {5 - count}次\n"
-                        f"达到5次后机器人将不再接收入群申请\n"
-                        f"5次以上后群主或管理员需要将禁言理由发送给机器人, 经过审核后可继续使用机器人\n"
-                    ),
-                )
-
-    def init_greet(self):
-        @self.data.record("greet")
-        @self.broadcast.receiver(
-            GroupMessage, priority=7, decorators=[require_function("greet")]
-        )
-        async def _init_g(
-            app: Ariadne, group: Group, message: MessageChain, member: Member
-        ):
-            """简单的问好"""
-            msg = message.display
-            now = datetime.now()
-            if (
-                msg.startswith("早上好")
-                or msg.startswith("早安")
-                or msg.startswith("中午好")
-                or msg.startswith("下午好")
-                or msg.startswith("晚上好")
-            ):
-                if 6 <= now.hour < 11:
-                    reply = "\t早上好~"
-                elif 11 <= now.hour < 13:
-                    reply = "\t中午好~"
-                elif 13 <= now.hour < 18:
-                    reply = "\t下午好~"
-                elif 18 <= now.hour < 24:
-                    reply = "\t晚上好~"
-                else:
-                    reply = "\t时候不早了，睡觉吧"
-                await app.send_group_message(group, MessageChain(At(member.id), reply))
-
-            if msg.startswith("晚安"):
-                # if str(member.id) in sign_info:
-                #     sign_info[str(member.id)]['trust'] += 1 if sign_info[str(member.id)]['trust'] < 200 else 0
-                #     sign_info[str(member.id)]['interactive'] += 1
-                if 0 <= now.hour < 6:
-                    reply = "\t时候不早了，睡觉吧~(￣o￣) . z Z"
-                elif 20 < now.hour < 24:
-                    reply = "\t快睡觉~(￣▽￣)"
-                else:
-                    reply = "\t喂，现在可不是休息的时候╰（‵□′）╯"
-                await app.send_group_message(group, MessageChain(At(member.id), reply))
-
-    def start(self):
-        if self.exit.is_set():
-            logger.warning("机器人已经关闭！")
-            return
-        self.app.launch_blocking()
-
-    def stop(self):
-        """机器人结束运行方法"""
-        if not self.exit.is_set():
-            self.app.stop()
+        async with self.stage("cleanup"):
             self.data.save()
             logger.debug("机器人数据保存完毕")
-            logger.success("机器人关闭成功. 晚安")
-            self.exit.set()
-
-    async def running(self):
-        """异步启动机器人"""
-        self.start()
-        self.stop()
-        await self.exit.wait()
-
-    def running_sync(self):
-        """同步启动机器人"""
-        try:
-            self.start()
-        finally:
-            self.stop()
 
 
-__all__ = ["RaianMain"]
+class RaianBotDispatcher(BaseDispatcher):
+    async def catch(self, interface: DispatcherInterface):
+        if isinstance(interface.annotation, type):
+            if interface.annotation is Launart:
+                return Launart.current()
+            if interface.annotation is BotConfig:
+                return ConfigInstance.get()
+            if interface.annotation is BotDataManager:
+                return DataInstance.get()
+            if issubclass(interface.annotation, ExportInterface):
+                return Launart.current().get_interface(interface.annotation)
+
+
+def launch(debug_log: bool = True):
+    """启动机器人"""
+    if not (config := ConfigInstance.get(None)):
+        logger.critical("请先加载配置，再初始化机器人！")
+        sys.exit(1)
+    with namespace("Alconna") as np:
+        np.headers = config.command_prefix
+    Alconna.config(formatter_type=MarkdownTextFormatter)
+    saya = it(Saya)
+    bcc = it(Broadcast)
+    bcc.prelude_dispatchers.append(RaianBotDispatcher())
+    manager = Launart()
+    it(AlconnaBehaviour)
+    it(GraiaScheduler)
+    fastapi = FastAPI()
+    saya.install_behaviours(FastAPIBehaviour(fastapi))
+    manager.add_service(RaianBotService(config))
+    manager.add_service(PlaywrightService("chromium", headless=True, auto_download_browser=False, channel="msedge"))
+    manager.add_service(FastAPIService(fastapi))
+    manager.add_service(UvicornService(config.api.host, config.api.port))
+    Ariadne.config(launch_manager=manager, inject_bypass_listener=True)
+    set_output("DEBUG" if debug_log else "INFO")
+    Ariadne(
+        connection=conn_cfg(
+            config.mirai.account,
+            config.mirai.verify_key,
+            HttpClientConfig(config.url),
+            WebsocketClientConfig(config.url),
+        )
+    )
+    logger.success("------------------机器人初始化完毕--------------------")
+    try:
+        Ariadne.launch_blocking()
+    finally:
+        Ariadne.stop()
+        logger.success("机器人关闭成功. 晚安")
+
+
+__all__ = ["RaianBotService", "send_handler", "launch", "RaianBotInterface"]

@@ -105,7 +105,7 @@ RaianBot
 ├─── logs                        机器人日志目录
 │   ├─── latest.log
 │   └─── ...
-├─── modules                     插件依赖的功能库，但没有上传到 pypi等中
+├─── library                     插件依赖的功能库，但没有上传到 pypi等中
 │   ├─── gacha                   抽卡功能库
 │   ├─── weibo                   微博 api 功能库
 │   ├─── rand                    存放随机函数

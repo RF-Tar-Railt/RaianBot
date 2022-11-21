@@ -7,8 +7,8 @@ from graia.ariadne.model import Group, Member
 from graia.ariadne.app import Ariadne
 from graia.ariadne.util.saya import listen
 
-from app import RaianMain, record
-from modules.petpet import PetGenerator
+from app import RaianBotInterface, record
+from library.petpet import PetGenerator
 
 rua = Alconna(
     [''],
@@ -34,10 +34,10 @@ async def draw(
     return await app.send_group_message(sender, MessageChain(Image(data_bytes=image.getvalue())))
 
 
-@record("rua")
 @listen(NudgeEvent)
-async def draw(app: Ariadne, event: NudgeEvent, bot: RaianMain):
-    if event.supplicant == bot.config.account or event.target != bot.config.account:
+@record("rua")
+async def draw(app: Ariadne, event: NudgeEvent, bot: RaianBotInterface):
+    if event.supplicant == bot.config.mirai.account or event.target != bot.config.mirai.account:
         return
     async with app.service.client_session.get(
             f"https://q1.qlogo.cn/g?b=qq&nk={event.supplicant}&s=640"

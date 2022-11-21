@@ -5,7 +5,7 @@ from arclet.alconna.graia import Alconna, alcommand, fetch_name
 from graia.ariadne.message.element import At
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
-from graia.ariadne.util.saya import decorate
+from graiax.shortcut.saya import decorate
 
 from app import Sender, record
 

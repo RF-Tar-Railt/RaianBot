@@ -1,5 +1,6 @@
+import asyncio
+import re
 from typing import Optional
-
 from arknights_toolkit.info import *
 from arclet.alconna import Args, Arpamar, ArgField, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand, Match
@@ -8,16 +9,16 @@ from graia.ariadne.message.element import Image, Source
 from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
 from playwright.async_api import Page, TimeoutError
-from app import Sender, RaianMain
+from app import Sender, RaianBotService
 from pathlib import Path
 from hashlib import md5
 from functools import partial
-import re
 from contextlib import suppress
 
-bot = RaianMain.current()
+bot = RaianBotService.current()
 cache = Path(f"{bot.config.cache_dir}/plugins/op_query")
 cache.mkdir(parents=True, exist_ok=True)
+running = asyncio.Event()
 
 _table = {
     "总览": full_page,
@@ -55,6 +56,8 @@ def _handle(content: Optional[str] = None):
 )
 async def weather(app: Ariadne, sender: Sender, content: Match[str], result: Arpamar, source: Source):
     name = result.header["operator"] or "艾雅法拉"
+    if running.is_set():
+        return await app.send_message(sender, "请耐心排队~")
     browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
     async with browser.page(viewport={'width': 1920, 'height': 1080}) as page:
         page: Page
@@ -68,11 +71,13 @@ async def weather(app: Ariadne, sender: Sender, content: Match[str], result: Arp
                 if await page.locator("text=需要登录").count():
                     return await app.send_message(sender, MessageChain("不对劲。。。"))
             try:
+                running.set()
                 func = _handle(content.result)
                 data = await func(page, name)
                 with path.open("wb+") as f:
                     f.write(data)
             except TimeoutError:
                 return await app.send_message(sender, MessageChain("prts超时，请重试！"))
-
+            finally:
+                running.clear()
     return await app.send_message(sender, MessageChain(Image(data_bytes=data)), quote=source)

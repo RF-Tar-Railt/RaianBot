@@ -1,14 +1,14 @@
 import random
-from app import RaianMain, Sender
+from app import RaianBotInterface, Sender, send_handler
 from arclet.alconna import ArgField, Args, CommandMeta, command_manager, config
-from arclet.alconna.graia import Alconna, AlconnaDispatcher, Match, alcommand, shortcuts
+from arclet.alconna.graia import Alconna, Match, alcommand, shortcuts
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graiax.text2img.playwright.builtin import md2img
+from graiax.text2img.playwright.builtin import MarkdownToImg
 
 
-@shortcuts(帮助=MessageChain("渊白帮助"))
+@shortcuts(菜单=MessageChain("渊白帮助"))
 @alcommand(
     Alconna(
         "帮助",
@@ -23,7 +23,7 @@ from graiax.text2img.playwright.builtin import md2img
         meta=CommandMeta("查看帮助"),
     )
 )
-async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianMain):
+async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianBotInterface):
     if not query.available:
         md = f"""\
 # {bot.config.bot_name} 帮助菜单
@@ -50,7 +50,7 @@ async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianM
             "\n\n* 更多功能待开发，如有特殊需求可以向 3165388245 询问, 或前往 122680593 交流"
         )
         return await app.send_message(
-            sender, MessageChain(Image(data_bytes=await md2img(md)))
+            sender, MessageChain(Image(data_bytes=await MarkdownToImg().render(md)))
         )
     try:
         if query.result.isdigit():
@@ -65,7 +65,7 @@ async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianM
             )
             text = command_manager.get_command(cmds[0]).get_help()
         return await app.send_message(
-            sender, await AlconnaDispatcher.default_send_handler(text)
+            sender, await send_handler(text)
         )
     except (IndexError, TypeError):
         return await app.send_message(sender, MessageChain("查询失败！"))

@@ -33,7 +33,7 @@ class Investigator(object):
         for i, j in build_dict.items():
             if build <= i:
                 return j
-        return
+        return -2
 
     def db(self) -> str:
         return db_dict[self.body_build()]
@@ -131,7 +131,7 @@ class Investigator(object):
             self.sum_down(40)
             self.edu_ups(4)
             return "外貌-20，力量、体型、敏捷合计降低40，教育增强判定四次"
-        elif age < 90:
+        else:
             self.app -= 25
             self.sum_down(80)
             self.edu_ups(4)

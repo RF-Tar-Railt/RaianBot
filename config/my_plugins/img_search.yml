@@ -1,0 +1,6 @@
+## saucenao的token, 请自行前往 https://saucenao.com 中获取
+saucenao: "580212823a8fa2aeb0a809da18f21618d73190e6"
+## 是否使用 ascii2d
+ascii2d: true
+## 是否使用 iqdb
+iqdb: true

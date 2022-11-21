@@ -1,3 +1,4 @@
+import asyncio
 from arclet.alconna import Args, Arpamar, Option, ArgField, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand
 from graia.ariadne.message.chain import MessageChain
@@ -13,12 +14,15 @@ recruit = Alconna(
     Option("详细|--d", dest='detail'),
     meta=CommandMeta("自助访问 prts 的公招计算器并截图", usage="标签之间用空格分隔", example="$公招 高资 生存")
 )
+running = asyncio.Event()
 
 
 @alcommand(recruit, send_error=True)
 async def recruit(app: Ariadne, sender: Sender, source: Source, result: Arpamar):
     if result.tags is None:
         return await app.send_message(sender, MessageChain('不对劲...'))
+    if running.is_set():
+        return await app.send_message(sender, "请耐心排队~")
     await app.send_message(sender, MessageChain('正在获取，请稍等。。。'), quote=source.id)
     # Click html
     browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
@@ -28,6 +32,7 @@ async def recruit(app: Ariadne, sender: Sender, source: Source, result: Arpamar)
         not result.find('detail')
     )
     try:
+        running.set()
         async with browser.page() as page:
             await page.goto(
                 url, timeout=60000,
@@ -39,3 +44,5 @@ async def recruit(app: Ariadne, sender: Sender, source: Source, result: Arpamar)
     except Exception:
         await app.send_message(sender, MessageChain('prts超时，获取失败'), quote=source.id)
         await app.send_message(sender, MessageChain(url), quote=source.id)
+    finally:
+        running.clear()

@@ -8,8 +8,8 @@ from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
 from contextlib import suppress
 
-from app import Sender, RaianMain, record, Target
-from modules.dice import *
+from app import Sender, RaianBotService, record, Target
+from library.dice import *
 
 with namespace("coc") as np:
     np.headers = [".", "。"]
@@ -100,13 +100,13 @@ with namespace("coc") as np:
         )
     )
 
-bot = RaianMain.current()
-cards = Cards(f"{bot.config.cache_dir}/plugins/coc_cards.json")
-cards.load()
+bot = RaianBotService.current()
+card = Cards(f"{bot.config.cache_dir}/plugins/coc_cards.json")
+card.load()
 
 
-@record("coc")
 @alcommand(rd_c)
+@record("coc")
 async def rd_handle(
     app: Ariadne, sender: Sender,
     result: Arpamar, a_number: Match[int]
@@ -122,8 +122,8 @@ async def rd_handle(
     return await app.send_message(sender, "出错了！")
 
 
-@record("coc")
 @alcommand(rhd_c, private=False)
+@record("coc")
 async def rhd_handle(
     app: Ariadne, sender: Sender, target: Target,
     result: Arpamar, a_number: Match[int]
@@ -136,65 +136,65 @@ async def rhd_handle(
     return await app.send_friend_message(target.id, "出错了！")
 
 
-@record("coc")
 @alcommand(st_c)
+@record("coc")
 async def st_handle(app: Ariadne, sender: Sender):
     return await app.send_message(sender, st())
 
 
-@record("coc")
 @alcommand(ti_c)
+@record("coc")
 async def ti_handle(app: Ariadne, sender: Sender):
     return await app.send_message(sender, ti())
 
 
-@record("coc")
 @alcommand(li_c)
+@record("coc")
 async def li_handle(app: Ariadne, sender: Sender):
     return await app.send_message(sender, li())
 
 
-@record("coc")
 @alcommand(en_c)
+@record("coc")
 async def en_handle(app: Ariadne, sender: Sender, skill_level: Match[int]):
     return await app.send_message(sender, en(skill_level.result))
 
 
-@record("coc")
 @alcommand(coc_c)
+@record("coc")
 async def coc_handle(app: Ariadne, sender: Sender, target: Target, val: Match[int]):
     arg = val.result if val.available else 20
     inv = Investigator()
     await app.send_message(sender, inv.age_change(arg))
     if 15 <= arg <= 90:
         if isinstance(sender, Group):
-            cards.cache_update(inv.dump(), f"g{sender.id}", target.id)
+            card.cache_update(inv.dump(), f"g{sender.id}", target.id)
         else:
-            cards.cache_update(inv.dump(), f"f{sender.id}")
+            card.cache_update(inv.dump(), f"f{sender.id}")
         await app.send_message(sender, inv.output())
 
 
-@record("coc")
 @alcommand(sc_c)
+@record("coc")
 async def sc_handle(app: Ariadne, sender: Sender, target: Target, sf: Match[str], san: Match[int]):
     if isinstance(sender, Group):
-        res = cards.sc_handler(sf.result.lower(), san.result if san.available else None, f"g{sender.id}", target.id)
+        res = card.sc_handler(sf.result.lower(), san.result if san.available else None, f"g{sender.id}", target.id)
     else:
-        res = cards.sc_handler(sf.result.lower(), san.result if san.available else None, f"f{sender.id}")
+        res = card.sc_handler(sf.result.lower(), san.result if san.available else None, f"f{sender.id}")
     return await app.send_message(sender, res)
 
 
-@record("coc")
 @alcommand(set_c)
+@record("coc")
 async def set_handle(app: Ariadne, sender: Sender, target: Target, result: Arpamar):
     if isinstance(sender, Group):
-        res = cards.set_handler(
+        res = card.set_handler(
             result.all_matched_args.get("name"),
             result.all_matched_args.get("val"),
             f"g{sender.id}", target.id
         )
     else:
-        res = cards.set_handler(
+        res = card.set_handler(
             result.all_matched_args.get("name"),
             result.all_matched_args.get("val"),
             f"f{sender.id}"
@@ -202,46 +202,46 @@ async def set_handle(app: Ariadne, sender: Sender, target: Target, result: Arpam
     return await app.send_message(sender, res)
 
 
-@record("coc")
 @alcommand(show_c)
+@record("coc")
 async def show_handle(app: Ariadne, sender: Sender, target: Target, uid: Match[int]):
     if isinstance(sender, Group):
-        res = cards.show_handler(f"g{sender.id}", uid.result if uid.available else target.id)
+        res = card.show_handler(f"g{sender.id}", uid.result if uid.available else target.id)
     else:
-        res = cards.show_handler(f"f{sender.id}")
+        res = card.show_handler(f"f{sender.id}")
     return await app.send_message(sender, '\n'.join(res))
 
 
-@record("coc")
 @alcommand(shows_c)
+@record("coc")
 async def shows_handle(app: Ariadne, sender: Sender, target: Target, uid: Match[int]):
     if isinstance(sender, Group):
-        res = cards.show_skill_handler(f"g{sender.id}", uid.result if uid.available else target.id)
+        res = card.show_skill_handler(f"g{sender.id}", uid.result if uid.available else target.id)
     else:
-        res = cards.show_skill_handler(f"f{sender.id}")
+        res = card.show_skill_handler(f"f{sender.id}")
     return await app.send_message(sender, res)
 
 
-@record("coc")
 @alcommand(sa_c)
+@record("coc")
 async def sa_handle(app: Ariadne, sender: Sender, target: Target, name: Match[str]):
     if isinstance(sender, Group):
-        res = cards.sa_handler(name.result.lower(), f"g{sender.id}", target.id)
+        res = card.sa_handler(name.result.lower(), f"g{sender.id}", target.id)
     else:
-        res = cards.sa_handler(name.result.lower(), f"f{sender.id}")
+        res = card.sa_handler(name.result.lower(), f"f{sender.id}")
     return await app.send_message(sender, res)
 
 
-@record("coc")
 @alcommand(del_c)
+@record("coc")
 async def del_handle(app: Ariadne, sender: Sender, target: Target, data: Match[Tuple[str]]):
     if isinstance(sender, Group):
-        res = cards.del_handler([i.lower() for i in data.result], f"g{sender.id}", target.id)
+        res = card.del_handler([i.lower() for i in data.result], f"g{sender.id}", target.id)
     else:
-        res = cards.del_handler([i.lower() for i in data.result], f"f{sender.id}")
+        res = card.del_handler([i.lower() for i in data.result], f"f{sender.id}")
     return await app.send_message(sender, "\n".join(res))
 
 
 @listen(ApplicationShutdown)
 async def _save():
-    cards.save()
+    card.save()

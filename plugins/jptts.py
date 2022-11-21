@@ -49,8 +49,8 @@ jp = Alconna(
 )
 
 
-@assign("$main")
 @alcommand(jp)
+@assign("$main")
 async def tts(app: Ariadne, sender: Sender, jptext: Match[Tuple[str]]):
     sentence = " ".join(jptext.result)
     if not sentence.strip() or re.search(r"[\d_+=\-/@#$%^&*(){}\[\]|\\]", sentence):
@@ -78,8 +78,8 @@ async def tts(app: Ariadne, sender: Sender, jptext: Match[Tuple[str]]):
             return await app.send_message(sender, "未知错误")
 
 
-@assign("moe")
 @alcommand(jp)
+@assign("moe")
 async def tts1(
     app: Ariadne, sender: Sender, jptext: Match[Tuple[str]], char: Match[int]
 ):

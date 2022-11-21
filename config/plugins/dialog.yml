@@ -1,0 +1,6 @@
+## 对话的触发词前缀
+nickname: "莱安"
+## 是否使用腾讯云的翻译服务
+tencent: false
+## gpt-api对话的链接
+gpt_url: null

@@ -452,7 +452,7 @@ city_ids = {
     "黔江": "101041100",
     "黔阳": "101251301",
     "齐齐哈尔": "101050201",
-    "龙岩": "101230701"
+    "龙岩": "101230701",
 }
 times = {"今天": 1, "明天": 2, "后天": 3, "大后天": 4, "老后天": 5}
 
@@ -482,8 +482,7 @@ async def weather(app: Ariadne, sender: Sender, time: Match[int], result: Arpama
         bounding1 = await elem1.bounding_box()
         bounding2 = await elem2.bounding_box()
         # print(bounding1)
-        bounding['height'] += bounding1['height']
-        bounding['height'] += bounding2['height']
+        bounding["height"] += bounding1["height"]
+        bounding["height"] += bounding2["height"]
         res = MessageChain(Image(data_bytes=await page.screenshot(full_page=True, clip=bounding)))
     return await app.send_message(sender, res)
-

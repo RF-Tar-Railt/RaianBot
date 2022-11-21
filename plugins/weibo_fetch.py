@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import NamedTuple, List
 from fastapi.responses import RedirectResponse, JSONResponse
 from arclet.alconna import Args, Option, ArgField, CommandMeta
 from arclet.alconna.graia import Alconna, Match, alcommand, assign
@@ -6,16 +7,16 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Source, Image
 from graia.ariadne.model import Friend
 from graia.ariadne.app import Ariadne
-from graia.scheduler.timers import every_minute
 from graiax.playwright import PlaywrightBrowser
 from graiax.playwright.interface import Page
 from graiax.fastapi import route
+from graiax.shortcut.saya import every
 from playwright.async_api import TimeoutError
 
-from app import RaianMain, Sender, Target, record, schedule
-from modules.weibo import WeiboAPI, WeiboDynamic, WeiboUser
+from app import RaianBotService, Sender, Target, record, meta_export
+from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser
 
-bot = RaianMain.current()
+bot = RaianBotService.current()
 
 weibo_fetch = Alconna(
     "微博",
@@ -32,6 +33,13 @@ weibo_fetch = Alconna(
 )
 
 api = WeiboAPI(f"{bot.config.cache_dir}/plugins/weibo_data.json")
+
+
+class weibo_followers(NamedTuple):
+    data: List[int]
+
+
+meta_export(group_meta=[weibo_followers])
 
 
 async def _handle_dynamic(
@@ -72,9 +80,9 @@ async def get_check(user: str):
     )
 
 
+@alcommand(weibo_fetch)
 @record("微博功能")
 @assign("$main")
-@alcommand(weibo_fetch)
 async def fetch(app: Ariadne, sender: Sender, user: Match[str]):
     if not user.available or not user.result:
         return await app.send_message(sender, MessageChain("不对劲。。。"))
@@ -198,8 +206,8 @@ async def fetch(app: Ariadne, target: Target, sender: Sender, source: Source):
         await app.send_group_message(sender, notice)
 
 
+@every(1, "minute")
 @record("微博动态自动获取", False)
-@schedule(every_minute())
 async def update():
     dynamics = {}
     browser: PlaywrightBrowser = bot.app.launch_manager.get_interface(PlaywrightBrowser)

@@ -3,10 +3,9 @@ from arclet.alconna.graia import Alconna, alcommand, assign, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, AtAll, Image, Plain
 from graia.ariadne.app import Ariadne
-from graiax.text2img.playwright.builtin import html2img, PageParms
+from graiax.text2img.playwright.builtin import html2img, PageParams
 
-from app import Sender, record
-from utils.generate_img import create_md
+from app import Sender, record, create_md
 
 m2i = Alconna(
     "文转图",
@@ -19,9 +18,9 @@ m2i = Alconna(
 )
 
 
+@alcommand(m2i)
 @record("t2i")
 @assign("mode", "chain", True)
-@alcommand(m2i)
 async def chain(app: Ariadne, sender: Sender, message: MessageChain, width: Match[int]):
     message = message.as_sendable()
     if isinstance((text := message.content[0]), Plain):
@@ -53,20 +52,20 @@ async def chain(app: Ariadne, sender: Sender, message: MessageChain, width: Matc
     ))))
 
 
+@alcommand(m2i)
 @record("t2i")
 @assign("mode", "html")
-@alcommand(m2i)
 async def html(app: Ariadne, sender: Sender, message: MessageChain, width: Match[int], height: Match[int]):
     return app.send_message(sender, MessageChain(
         Image(data_bytes=await html2img(
             '\n'.join((str(message).split("\n")[1:])),
-            page_parms=PageParms(viewport={"width": width.result, "height": height.result})
+            page_params=PageParams(viewport={"width": width.result, "height": height.result})
         ))))
 
 
+@alcommand(m2i)
 @record("t2i")
 @assign("mode", "md")
-@alcommand(m2i)
 async def mad(app: Ariadne, sender: Sender, message: MessageChain, width: Match[int]):
     return app.send_message(sender, MessageChain(
         Image(data_bytes=await create_md(

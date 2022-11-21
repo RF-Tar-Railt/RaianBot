@@ -10,23 +10,26 @@ from graia.ariadne.app import Ariadne
 
 
 def require_admin(only: bool = False):
-    from .core import RaianMain
-
     async def __wrapper__(
-        bot: RaianMain,
+        app: Ariadne,
         sender: Union[Friend, Group],
         target: Union[Member, Friend],
         event: Optional[MessageEvent],
     ):
+        from .core import RaianBotInterface
+
+        bot = app.launch_manager.get_interface(RaianBotInterface)
         id_ = id(event) if event else 0
         cache = bot.data.cache.setdefault("$admin", set())
-        if target.id == bot.config.master_id:
+        if target.id == bot.config.admin.master_id:
             bot.data.cache.pop("$admin", None)
             return True
-        if (
-            not only
-            and isinstance(target, Member)
-            and target.permission in (MemberPerm.Administrator, MemberPerm.Owner)
+        if not only and (
+            (
+                isinstance(target, Member)
+                and target.permission in (MemberPerm.Administrator, MemberPerm.Owner)
+            )
+            or target.id in bot.config.admin.admins
         ):
             bot.data.cache.pop("$admin", None)
             return True
@@ -43,10 +46,10 @@ def require_admin(only: bool = False):
 
 
 def require_function(name: str):
-    from .core import RaianMain
+    def __wrapper__(app: Ariadne, sender: Union[Friend, Group]):
+        from .core import RaianBotInterface
 
-    def __wrapper__(bot: RaianMain, sender: Union[Friend, Group]):
-        data = bot.data
+        data = app.launch_manager.get_interface(RaianBotInterface).data
         if isinstance(sender, Friend):
             return True
         if name not in data.funcs:

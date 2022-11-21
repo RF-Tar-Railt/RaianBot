@@ -1,13 +1,14 @@
 from typing import List, Dict, Optional
 from pydantic import BaseModel
 from graiax.fastapi import route
-from app import RaianMain
-from app.model import UserProfile, GroupProfile
+from graia.saya import Saya
+from creart import it
+from app import UserProfile, GroupProfile, RaianBotService
 from arclet.alconna import command_manager, CommandMeta
 from fastapi.responses import JSONResponse, PlainTextResponse
 from dataclasses import asdict
 
-bot = RaianMain.current()
+bot = RaianBotService.current()
 
 
 class GroupsResp(BaseModel):
@@ -28,6 +29,11 @@ class UserFindResp(BaseModel):
 class GroupFindResp(BaseModel):
     founded: bool
     group: Optional[GroupProfile]
+
+
+@route.route(["GET"], "/")
+async def root():
+    return {"code": 200, "content": f"这里是{bot.config.bot_name}!"}
 
 
 @route.route(["GET"], "/users", response_model=UsersResp)
@@ -98,10 +104,10 @@ class DebugResp(BaseModel):
 async def get_debug():
     return JSONResponse(
         content={
-            "channels": len(bot.saya.channels),
+            "channels": len(it(Saya).channels),
             "groups": len(bot.data.groups),
             "users": len(bot.data.users),
-            "disabled_plugins": bot.config.disabled_plugins,
+            "disabled_plugins": bot.config.plugin.disabled,
         },
         headers={"charset": "utf-8"},
     )

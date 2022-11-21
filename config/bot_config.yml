@@ -1,0 +1,53 @@
+## 机器人名字, 请尽量不要与 prefix 重合
+bot_name: "Raian"
+## 命令前缀
+## At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)
+prefix:
+  - "莱安"
+  - "At:123456789"
+## 缓存数据存放的文件夹, 默认为 cache
+cache_dir: 'cache'
+## mirai-api-http 相关配置
+mirai:
+  ## bot 登录账号
+  account: 123456789
+  ## mirai-api-http 的链接
+  host: "localhost"
+  ## mirai-api-http 的端口
+  port: 8080
+  ## mirai-api-http 的验证码
+  verify_key: "INITKEYWylsVdbr"
+## bot 权限相关配置
+admin:
+  ## bot 的控制者的账号
+  master_id: 987654321
+  ## bot 的控制者的名字
+  master_name: "admin"
+  ## bot 的管理者(除开控制者)的账号
+  admins:
+    - 111111111
+## bot 模块相关配置
+plugin:
+  ## 模块配置文件的根路径
+  root: "plugins"
+  ## 模块存放的路径
+  paths:
+    - "plugins"
+  ## 全局初始禁用的模块名称
+  disabled:
+    - 'plugins.setu'
+    - 'plugins.ill'
+    - 'plugins.img_search'
+    - 'plugins.aidraw'
+## bot 对外接口相关配置
+api:
+  ## FastAPI 服务的运行地址
+  host: 'localhost'
+  ## FastAPI 服务的运行端口
+  port: 8000
+## 腾讯云相关配置
+tencent:
+  ## 腾讯云API 的 secret-id
+  secret_id: "xxxxxxxxxxxxxxxxxxxxxxxxx"
+  ## 腾讯云API 的 secret-key
+  secret_key: "xxxxxxxxxxxxxxxxxxxxxxxxx"

@@ -2,7 +2,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Tuple, Union
 
-from app import RaianMain, Sender, record
+from app import RaianBotInterface, Sender, record
 from arclet.alconna import Args, CommandMeta, Option
 from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from arknights_toolkit.wordle import Guess, OperatorWordle, update
@@ -24,29 +24,29 @@ alc = Alconna(
 )
 
 
+@alcommand(alc)
 @record("猜干员")
 @assign("提示")
-@alcommand(alc)
-async def guess(app: Ariadne, sender: Sender):
+async def guess_info(app: Ariadne, sender: Sender):
     image = Path("assets/image/guess.png").open("rb").read()
     return await app.send_message(sender, MessageChain(Image(data_bytes=image)))
 
 
+@alcommand(alc)
 @record("猜干员")
 @assign("更新")
-@alcommand(alc)
-async def guess(app: Ariadne, sender: Sender, name: Match[Tuple[str, ...]]):
+async def guess_update(app: Ariadne, sender: Sender, name: Match[Tuple[str, ...]]):
     update(*name.result)
     return await app.send_message(sender, "更新完毕")
 
 
+@alcommand(alc)
 @record("猜干员")
 @assign("重置")
-@alcommand(alc)
-async def guess(
-    app: Ariadne,
-    sender: Sender,
-    bot: RaianMain,
+async def guess_reset(
+        app: Ariadne,
+        sender: Sender,
+        bot: RaianBotInterface,
 ):
     if (path := Path(f"{bot.config.cache_dir}/plugins/guess")).exists():
         for file in path.iterdir():
@@ -54,15 +54,15 @@ async def guess(
     return await app.send_message(sender, "重置完毕")
 
 
+@alcommand(alc)
 @record("猜干员")
 @assign("$main")
-@alcommand(alc)
 async def guess(
-    app: Ariadne,
-    sender: Sender,
-    bot: RaianMain,
-    max_guess: Match[int],
-    simple: Match[bool],
+        app: Ariadne,
+        sender: Sender,
+        bot: RaianBotInterface,
+        max_guess: Match[int],
+        simple: Match[bool],
 ):
     id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
     if (Path(f"{bot.config.cache_dir}/plugins/guess") / f"{id_}.json").exists():

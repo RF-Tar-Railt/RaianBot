@@ -18,9 +18,7 @@ def set_output(level='INFO'):
     log_format = debug_format if level == 'DEBUG' else info_format
     logger.remove()
     logger.add(
-        os.path.join(
-            os.getcwd(), 'logs', 'latest.log'
-        ),
+        "./logs/latest.log",
         format=log_format,
         level=level,
         enqueue=True,

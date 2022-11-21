@@ -9,8 +9,7 @@ from graia.ariadne.message.element import Image
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.util.saya import listen
 
-from app import admin, Sender
-from utils.generate_img import create_image
+from app import permission, Sender, create_image
 
 python_version = platform.python_version()
 if platform.uname().system == 'Windows':
@@ -21,9 +20,9 @@ total_memory = '%.1f' % (psutil.virtual_memory().total / 1073741824)
 pid = os.getpid()
 
 
-@admin
-@startswith("/状态|/设备信息|/status")
 @listen(GroupMessage, FriendMessage)
+@startswith("/状态|/设备信息|/status")
+@permission("admin")
 async def status(app: Ariadne, sender: Sender):
     p = psutil.Process(pid)
     started_time = time.localtime(p.create_time())

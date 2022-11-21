@@ -1,20 +1,25 @@
 # coding: utf-8
-import sys
-import subprocess
 import asyncio
 import contextlib
+import subprocess
+import sys
 from io import StringIO
-from arclet.alconna import Args, Option, Alconna, Arpamar, CommandMeta, ArgField
-from arclet.alconna.graia import alcommand, shortcuts, startswith
-from graia.ariadne.message.element import Image
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.app import Ariadne
-from graia.ariadne.util.saya import listen
 
-from app import Sender, admin, master
-from utils.generate_img import create_image, create_md
-from utils.exception_report import reports_md
+from app import (
+    RaianBotInterface,
+    Sender,
+    create_image,
+    create_md,
+    permission,
+    reports_md,
+)
+from arclet.alconna import Alconna, ArgField, Args, Arpamar, CommandMeta, Option
+from arclet.alconna.graia import alcommand, shortcuts, startswith
+from graia.ariadne.app import Ariadne
+from graia.ariadne.event.message import FriendMessage, GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Image
+from graia.ariadne.util.saya import listen
 
 code = Alconna(
     "执行",
@@ -24,24 +29,18 @@ code = Alconna(
 )
 
 
-@admin
 @shortcuts(
     命令概览=MessageChain("渊白执行\nfrom arclet.alconna import command_manager\nprint(command_manager)"),  # type: ignore
 )
 @alcommand(code, send_error=True)
-async def execc(app: Ariadne, sender: Sender, result: Arpamar):
+@permission("admin")
+async def execc(app: Ariadne, sender: Sender, result: Arpamar, interface: RaianBotInterface):
     codes = str(result.origin).split("\n")
     output = result.query("out.name", "res")
     if len(codes) == 1:
         return
     for _code in codes[1:]:
-        if (
-            "exit(" in _code
-            or "os." in _code
-            or "system(" in _code
-            or "while" in _code
-            or "attr" in _code
-        ):
+        if "exit(" in _code or "os." in _code or "system(" in _code or "while" in _code or "attr" in _code:
             return await app.send_message(sender, MessageChain("Execution terminated"))
     lcs = {}
     _stdout = StringIO()
@@ -52,6 +51,8 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
         glb.pop("open", None)
         glb.pop("eval", None)
         glb.pop("exec", None)
+        glb["config"] = interface.config
+        glb["data"] = interface.data
         exec(
             "async def rc(__out: str):\n    "
             + "    ".join(_code + "\n" for _code in codes[1:])
@@ -65,20 +66,12 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
         if code_res is not None:
             return await app.send_message(
                 sender,
-                MessageChain(
-                    Image(
-                        data_bytes=(
-                            await create_image(f"{output}: {code_res}", cut=120)
-                        )
-                    )
-                ),
+                MessageChain(Image(data_bytes=(await create_image(f"{output}: {code_res}", cut=120)))),
             )
         _out = _stdout.getvalue()
         return await app.send_message(
             sender,
-            MessageChain(
-                Image(data_bytes=(await create_image(f"output: {_out}", cut=120)))
-            ),
+            MessageChain(Image(data_bytes=(await create_image(f"output: {_out}", cut=120)))),
         )
     except Exception as e:
         sys.stdout = _to
@@ -90,9 +83,9 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar):
         sys.stdout = _to
 
 
-@master
-@startswith("shell", bind="echos")
 @listen(GroupMessage, FriendMessage)
+@permission("master")
+@startswith("shell", bind="echos")
 async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
     with contextlib.suppress(asyncio.TimeoutError):
         process = await asyncio.wait_for(
@@ -115,12 +108,17 @@ async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
 ```
 """
         return await app.send_message(
-            sender, MessageChain(Image(data_bytes=(
-                await create_md(
-                    md,
-                    width=max(max(len(i.strip()) for i in md.splitlines()) * 14, 240),
-                    height=(md.count("\n") + 7) * 14
+            sender,
+            MessageChain(
+                Image(
+                    data_bytes=(
+                        await create_md(
+                            md,
+                            width=max(max(len(i.strip()) for i in md.splitlines()) * 14, 240),
+                            height=(md.count("\n") + 7) * 14,
+                        )
+                    )
                 )
-            )))
+            ),
         )
     return

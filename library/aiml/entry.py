@@ -1,8 +1,8 @@
-from modules.aiml import Kernel
+from library.aiml import Kernel
 from pathlib import Path
 from typing import Optional
-from modules.translate import BaseTrans
-from modules.aiml.lang_support import is_include_chinese
+from library.translate import BaseTrans
+from library.aiml.lang_support import is_include_chinese
 
 
 class AIML:

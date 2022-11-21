@@ -5,7 +5,6 @@ from datetime import datetime
 from pathlib import Path
 from io import BytesIO
 from PIL import Image as Img
-from contextlib import suppress
 from arclet.alconna.graia import startswith, endswith, success_record
 from arclet.alconna import command_manager
 from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face, Quote
@@ -16,21 +15,21 @@ from graia.ariadne.model import Friend, Group
 from graia.ariadne.util.saya import listen, priority, dispatch
 from graia.ariadne.util.cooldown import CoolDown
 from graia.broadcast.exceptions import PropagationCancelled
-from graiax.silkcoder import async_encode
 
-from app import RaianMain, record, Sender, Target
-from modules.aiml.entry import AIML
-from modules.translate import TencentTrans, YoudaoTrans
+from app import RaianBotService, record, Sender, Target
+from library.aiml.entry import AIML
+from library.translate import TencentTrans, YoudaoTrans
+from plugins.config.dialog import DialogConfig
 
-bot = RaianMain.current()
+bot = RaianBotService.current()
 
 json_filename = "assets/data/dialog_templates.json"
 with open(json_filename, 'r', encoding='UTF-8') as f_obj:
     dialog_templates = ujson.load(f_obj)['templates']
 trans = (
     TencentTrans(
-        bot.config.plugin['dialog']['id'], bot.config.plugin['dialog']['key']
-    ) if bot.config.plugin['dialog']['tencent'] else
+        bot.config.tencent.secret_id, bot.config.tencent.secret_key
+    ) if bot.config.plugin.get(DialogConfig).tencent else
     YoudaoTrans()
 )
 aiml = AIML(
@@ -40,7 +39,7 @@ aiml = AIML(
     mother=" Arclet",
     father=" RF-Tar-Railt",
     phylum=" Robot",
-    master=f" {bot.config.master_name}",
+    master=f" {bot.config.admin.master_name}",
     botmaster=" Master",
     birth=" 2004-02-02",
     birthplace=" Terra",
@@ -55,7 +54,7 @@ aiml = AIML(
 aiml_files = "assets/data/alice"
 aiml_brain = f"{bot.config.cache_dir}/plugins/aiml_brain.brn"
 aiml.load_aiml(aiml_files, aiml_brain)
-nickname = bot.config.plugin['dialog']['nickname'].strip()
+nickname = bot.config.plugin.get(DialogConfig).nickname.strip()
 if not nickname:
     nickname = bot.config.bot_name
 
@@ -64,18 +63,19 @@ async def voice(string: str):
     rand_str = string.replace("#voice", "")
     if rand_str.startswith("^"):
         mode, sentence = rand_str.lstrip("^").split("$", 1)
-        if mode != 'jp':
-            return sentence
-        with suppress(Exception):
-            async with Ariadne.current().service.client_session.get(
-                f"https://moegoe.azurewebsites.net/api/speak?text={sentence}&id={random.randint(0, 6)}",
-                timeout=120,
-            ) as resp:
-                data = await resp.read()
-            if data[:3] == b"400":
-                return sentence
-            res = await async_encode(data, ios_adaptive=True)
-            return Voice(data_bytes=res)
+        # if mode != 'jp':
+        #     return sentence
+        # with suppress(Exception):
+        #     async with Ariadne.current().service.client_session.get(
+        #         f"https://moegoe.azurewebsites.net/api/speak?text={sentence}&id={random.randint(0, 6)}",
+        #         timeout=120,
+        #     ) as resp:
+        #         data = await resp.read()
+        #     if data[:3] == b"400":
+        #         return sentence
+        #     res = await async_encode(data, ios_adaptive=True)
+        #     return Voice(data_bytes=res)
+        # return sentence
         return sentence
     else:
         name = rand_str.split('$')[-1]
@@ -108,13 +108,13 @@ async def image(string: str, target: Target):
         return Image(data_bytes=path.read_bytes()) if path.exists() else name
 
 
-@record("dialog")
-@priority(17)
-@startswith(nickname, bind="message")
 @listen(GroupMessage, FriendMessage)
+@startswith(nickname, bind="message")
+@priority(17)
+@record("dialog")
 async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
-    if not isinstance(sender, Group) and sender.id == bot.config.account:
+    if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
         return
     cmds = [i.name for i in command_manager.get_commands()]
     if msg := str(message.include(Plain)).strip():
@@ -133,10 +133,10 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
                     rand_str = await image(rand_str, target)
                 break
         else:
-            if random.randint(1, 100) > 50 and (ai_url := bot.config.plugin['dialog']['ai_url']):
+            if random.randint(1, 100) > 50 and (ai_url := bot.config.plugin.get(DialogConfig).gpt_api):
                 id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
                 async with app.service.client_session.get(
-                    ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{id_}"}
+                        ai_url, params={"text": msg[:120], "session": f"{bot.config.bot_name}/{id_}"}
                 ) as resp:
                     rand_str = ''.join((await resp.json())["result"])
             else:
@@ -148,13 +148,13 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
         raise PropagationCancelled
 
 
-@record("dialog")
-@priority(17)
-@endswith(nickname, bind="message")
 @listen(GroupMessage, FriendMessage)
+@endswith(nickname, bind="message")
+@priority(17)
+@record("dialog")
 async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
-    if not isinstance(sender, Group) and sender.id == bot.config.account:
+    if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
         return
     if msg := str(message.include(Plain)).strip():
         for key, value in dialog_templates['content'].items():
@@ -166,10 +166,10 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
                     rand_str = await image(rand_str, target)
                 break
         else:
-            if random.randint(1, 100) > 50 and (ai_url := bot.config.plugin['dialog']['ai_url']):
+            if random.randint(1, 100) > 50 and (ai_url := bot.config.plugin.get(DialogConfig).gpt_api):
                 id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
                 async with app.service.client_session.get(
-                    ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{id_}"}
+                        ai_url, params={"text": msg[:120], "session": f"{bot.config.bot_name}/{id_}"}
                 ) as resp:
                     rand_str = ''.join((await resp.json())["result"])
             else:
@@ -181,45 +181,32 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
         raise PropagationCancelled
 
 
-@record("ai", disable=True)
+@listen(GroupMessage, FriendMessage)
 @priority(18)
 @dispatch(CoolDown(0.1))
-@listen(GroupMessage, FriendMessage)
+@record("ai")
 async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
-    if not isinstance(sender, Group) and sender.id == bot.config.account:
+    if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
         return
     id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
     cmds = [i.name for i in command_manager.get_commands()]
     for n in cmds:
         if re.search(f'.*{n}.*', str(message)):
             raise PropagationCancelled
-    if not (ai_url := bot.config.plugin['dialog']['ai_url']):
+    if not (ai_url := bot.config.plugin.get(DialogConfig).gpt_api):
         return
-    if isinstance(target, Friend) or (message.has(At) and message.get_first(At).target == bot.config.account) or (
-            message.has(Quote) and message.get_first(Quote).sender_id == bot.config.account
+    if isinstance(target, Friend) or (message.has(At) and message.get_first(At).target == bot.config.mirai.account) or (
+            message.has(Quote) and message.get_first(Quote).sender_id == bot.config.mirai.account
     ):
         async with app.service.client_session.get(
                 ai_url, params={
-                    "text": str(message.include(Plain, Face)),
+                    "text": str(message.include(Plain, Face))[:120],
                     "session": f"{bot.config.bot_name}/{id_}"
                 }
         ) as resp:
             reply = "".join((await resp.json())["result"])
         await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
-        voices = None
-        with suppress(Exception):
-            if jp := await trans.trans(reply, "jp") and random.randint(0, 99) > 90:
-                async with Ariadne.current().service.client_session.get(
-                    f"https://moegoe.azurewebsites.net/api/speak?text={jp}&id={random.randint(0, 6)}",
-                    timeout=120,
-                ) as resp:
-                    data = await resp.read()
-                if data[:3] != b"400":
-                    res = await async_encode(data, ios_adaptive=True)
-                    voices = Voice(data_bytes=res)
-        if voices:
-            await app.send_message(sender, MessageChain(voices))
         return
     for elem in bot.config.command_prefix:
         message = message.replace(elem, "")
@@ -228,7 +215,7 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         return
     if random.randint(0, 2000) == datetime.now().microsecond // 5000:
         async with app.service.client_session.get(
-                ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{id_}"}
+                ai_url, params={"text": msg[:120], "session": f"{bot.config.bot_name}/{id_}"}
         ) as resp:
             reply = (await resp.json())["result"]
         return await app.send_message(sender, reply, quote=source)
