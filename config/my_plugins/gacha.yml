@@ -1,4 +1,0 @@
-## 卡池的文件路径
-file: "assets/data/gacha_arknights.json"
-## 抽卡的冷却时间
-cooldown: 1.5
