@@ -8,10 +8,9 @@ from graia.ariadne.message.element import Forward, ForwardNode, Source, Image
 from graia.ariadne.model import Friend
 from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
-from graiax.playwright.interface import Page
 from graiax.fastapi import route
 from graiax.shortcut.saya import every
-from playwright.async_api import TimeoutError
+from playwright.async_api import TimeoutError, Page
 
 from app import RaianBotService, Sender, Target, record, meta_export
 from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser
@@ -56,6 +55,8 @@ async def _handle_dynamic(
         elem1 = page.locator("//article[@class='weibo-main']").first
         bounding = await elem.bounding_box()
         bounding1 = await elem1.bounding_box()
+        assert bounding
+        assert bounding1
         bounding['height'] += bounding1['height']
         first = MessageChain(Image(data_bytes=await page.screenshot(full_page=True, clip=bounding)))
     except (TimeoutError, TypeError):
@@ -83,7 +84,7 @@ async def get_check(user: str):
 @alcommand(weibo_fetch)
 @record("微博功能")
 @assign("$main")
-async def fetch(app: Ariadne, sender: Sender, user: Match[str]):
+async def wget(app: Ariadne, sender: Sender, user: Match[str]):
     if not user.available or not user.result:
         return await app.send_message(sender, MessageChain("不对劲。。。"))
     if prof := await api.get_profile(user.result, save=False, cache=False):
@@ -112,17 +113,17 @@ async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = Fals
 @record("微博功能")
 @assign("动态")
 @alcommand(weibo_fetch)
-async def fetch(
+async def wfetch(
         app: Ariadne, target: Target, sender: Sender, source: Source,
         user: Match[str], index: Match[int], page: Match[int]
 ):
     if dynamic := await api.get_dynamic(user.result, index=index.result, page=page.result):
         browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
-        async with browser.page(viewport={"width": 800, "height": 2400}) as page:
+        async with browser.page(viewport={"width": 800, "height": 2400}) as _page:
             return await app.send_message(
                 sender,
                 MessageChain(Forward(*(await _handle_dynamic(
-                    page, dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
+                    _page, dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
                 ))
                                      ))
             )
@@ -132,19 +133,18 @@ async def fetch(
 @record("微博功能")
 @assign("follow")
 @alcommand(weibo_fetch)
-async def fetch(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
+async def wfollow(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
     if isinstance(sender, Friend):
         return
     if not bot.data.exist(sender.id):
         return
     prof = bot.data.get_group(sender.id)
     follower = await api.get_profile(user.result, save=True)
-    if not (followers := prof.additional.get("weibo_followers")):
-        followers = []
-    if int(follower.id) in followers:
+    followers = prof.get(weibo_followers, weibo_followers([]))
+    if int(follower.id) in followers.data:
         return await app.send_message(sender, MessageChain(f"该群已关注 {follower.name}！请不要重复关注"))
-    followers.append(int(follower.id))
-    prof.additional['weibo_followers'] = followers
+    followers.data.append(int(follower.id))
+    prof.set(followers)
     bot.data.update_group(prof)
     return await app.send_message(sender, MessageChain(f"关注 {follower.name} 成功！"), quote=source.id)
 
@@ -152,19 +152,18 @@ async def fetch(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
 @record("微博功能")
 @assign("unfollow")
 @alcommand(weibo_fetch)
-async def fetch(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
+async def wunfollow(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
     if isinstance(sender, Friend):
         return
     if not bot.data.exist(sender.id):
         return
     prof = bot.data.get_group(sender.id)
     follower = await api.get_profile(user.result, save=False)
-    if not (followers := prof.additional.get("weibo_followers")):
-        followers = []
-    if int(follower.id) not in followers:
+    followers = prof.get(weibo_followers, weibo_followers([]))
+    if int(follower.id) not in followers.data:
         return await app.send_message(sender, MessageChain(f"该群未关注 {follower.name}！"))
-    followers.remove(int(follower.id))
-    prof.additional['weibo_followers'] = followers
+    followers.data.remove(int(follower.id))
+    prof.set(followers)
     bot.data.update_group(prof)
     return await app.send_message(sender, MessageChain(f"解除关注 {follower.name} 成功！"), quote=source.id)
 
@@ -172,19 +171,17 @@ async def fetch(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
 @record("微博功能")
 @assign("list")
 @alcommand(weibo_fetch)
-async def fetch(app: Ariadne, target: Target, sender: Sender, source: Source):
+async def wlist(app: Ariadne, target: Target, sender: Sender, source: Source):
     if isinstance(sender, Friend):
         return
     if not bot.data.exist(sender.id):
         return
     prof = bot.data.get_group(sender.id)
-    if not (followers := prof.additional.get("weibo_followers")):
-        followers = []
-    if not followers:
+    if not (followers := prof.get(weibo_followers)):
         return await app.send_message(sender, "当前群组不存在微博关注对象")
     nodes = []
     notice = None
-    for uid in followers:
+    for uid in followers.data:
         if prof := await api.get_profile(uid, save=False):
             nodes.append(
                 ForwardNode(
@@ -216,9 +213,9 @@ async def update():
             prof = bot.data.get_group(int(gid))
             if "微博动态自动获取" in prof.disabled:
                 continue
-            if not (followers := prof.additional.get("weibo_followers")):
+            if not (followers := prof.get(weibo_followers)):
                 continue
-            for uid in followers:
+            for uid in followers.data:
                 wp = (await api.get_profile(int(uid))).copy()
                 try:
                     now = datetime.now()
