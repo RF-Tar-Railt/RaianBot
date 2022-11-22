@@ -1,6 +1,5 @@
 import sys
 import traceback
-from contextlib import ExitStack
 from pathlib import Path
 from typing import Literal, Set, Type, Union
 
@@ -52,13 +51,14 @@ class RaianBotService(Service):
         super().__init__()
         self.config = config
         self.data = DataInstance.get(None) or BotDataManager()
+        BotInstance.set(self)
 
     def get_interface(self, _: Type[RaianBotInterface]) -> RaianBotInterface:
         return RaianBotInterface()
 
     @property
     def required(self) -> Set[Union[str, Type[ExportInterface]]]:
-        return {"elizabeth.service"}
+        return set()
 
     @property
     def stages(self) -> Set[Literal["preparing", "blocking", "cleanup"]]:
@@ -68,10 +68,6 @@ class RaianBotService(Service):
     def current(cls):
         """获取当前上下文的 Bot"""
         return BotInstance.get()
-
-    @property
-    def context(self):
-        return BotInstance
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
@@ -83,9 +79,7 @@ class RaianBotService(Service):
                     if not plugin_path.is_dir():
                         logger.error("插件路径应该为一存在的文件夹")
                         return
-                    with ExitStack() as stack:
-                        stack.enter_context(BotInstance.use(self))
-                        stack.enter_context(it(Saya).module_context())
+                    with it(Saya).module_context():
                         for file in plugin_path.iterdir():
                             name = file.stem if file.is_file() else file.name
                             if (
@@ -136,6 +130,10 @@ def launch(debug_log: bool = True):
         sys.exit(1)
     with namespace("Alconna") as np:
         np.headers = config.command_prefix
+        np.builtin_option_name['help'] = set(config.command.help)
+        np.builtin_option_name['shortcut'] = set(config.command.shortcut)
+        np.builtin_option_name['completion'] = set(config.command.completion)
+
     Alconna.config(formatter_type=MarkdownTextFormatter)
     saya = it(Saya)
     bcc = it(Broadcast)
@@ -145,11 +143,11 @@ def launch(debug_log: bool = True):
     it(GraiaScheduler)
     fastapi = FastAPI()
     saya.install_behaviours(FastAPIBehaviour(fastapi))
-    manager.add_service(RaianBotService(config))
     manager.add_service(PlaywrightService("chromium", headless=True, auto_download_browser=False, channel="msedge"))
     manager.add_service(FastAPIService(fastapi))
     manager.add_service(UvicornService(config.api.host, config.api.port))
-    Ariadne.config(launch_manager=manager, inject_bypass_listener=True)
+    manager.add_service(RaianBotService(config))
+    Ariadne.config(launch_manager=manager)
     set_output("DEBUG" if debug_log else "INFO")
     Ariadne(
         connection=conn_cfg(

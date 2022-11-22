@@ -7,7 +7,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.event.message import GroupMessage, FriendMessage
-from graia.ariadne.util.saya import listen
+from graiax.shortcut.saya import listen
 
 from app import permission, Sender, create_image
 
@@ -21,8 +21,8 @@ pid = os.getpid()
 
 
 @listen(GroupMessage, FriendMessage)
-@startswith("/状态|/设备信息|/status")
 @permission("admin")
+@startswith("/状态|/设备信息|/status")
 async def status(app: Ariadne, sender: Sender):
     p = psutil.Process(pid)
     started_time = time.localtime(p.create_time())

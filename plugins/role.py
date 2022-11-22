@@ -119,13 +119,13 @@ async def _r_remove(
     if _tag not in _roles.data:
         return await app.send_group_message(sender, MessageChain(f"分组 {_tag} 不存在"))
     if not targets.available or not targets.result:
-        del roles.data[_tag]
-        return await app.send_group_message(sender, MessageChain(f"分组 {_tag} 删除成功"))
-
-    data = _roles.data[_tag].copy()
-    for i in filter(lambda x: x.target in data, targets.result):
-        _roles.data[_tag].remove(i.target)
-    await app.send_group_message(sender, MessageChain(f"分组 {_tag} 清理成功"))
+        del _roles.data[_tag]
+        await app.send_group_message(sender, MessageChain(f"分组 {_tag} 删除成功"))
+    else:
+        data = _roles.data[_tag].copy()
+        for i in filter(lambda x: x.target in data, targets.result):
+            _roles.data[_tag].remove(i.target)
+        await app.send_group_message(sender, MessageChain(f"分组 {_tag} 清理成功"))
     group.set(_roles)
     bot.data.update_group(group)
 

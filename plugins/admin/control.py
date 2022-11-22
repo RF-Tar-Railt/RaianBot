@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from app import RaianBotInterface, Sender, permission, create_md, send_handler, RaianBotService
+from app import RaianBotInterface, Sender, permission, create_md, send_handler
 from arclet.alconna import ArgField, Args, CommandMeta, Option
 from arclet.alconna.graia import (
     Alconna,
@@ -150,7 +150,7 @@ async def _m_uninstall(app: Ariadne, sender: Sender, path: Match[str], bot: Raia
 @alcommand(module_control, send_error=True)
 @permission("master")
 @assign("安装")
-async def _m_install(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotService):
+async def _m_install(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotInterface):
     saya = it(Saya)
     channel_path = path.result if path.available else "admin"
     if channel_path.split(".")[-1] == "admin":
@@ -163,9 +163,8 @@ async def _m_install(app: Ariadne, sender: Sender, path: Match[str], bot: RaianB
     if channel_path in saya.channels and channel_path not in bot.config.plugin.disabled:
         return await app.send_message(sender, MessageChain("该模组已安装"))
     try:
-        with bot.context.use(bot):
-            with saya.module_context():
-                saya.require(channel_path)
+        with saya.module_context():
+            saya.require(channel_path)
     except Exception as e:
         await app.send_message(sender, MessageChain(f"安装 {channel_path} 失败！"))
         raise e
@@ -178,7 +177,7 @@ async def _m_install(app: Ariadne, sender: Sender, path: Match[str], bot: RaianB
 @alcommand(module_control, send_error=True)
 @permission("master")
 @assign("重载")
-async def _m_reload(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotService):
+async def _m_reload(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotInterface):
     saya = it(Saya)
     channel_path = path.result if path.available else "admin"
     if channel_path.split(".")[-1] == "admin":
@@ -196,9 +195,8 @@ async def _m_reload(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBo
         await app.send_message(sender, MessageChain(f"重载 {channel_path} 过程中卸载失败！"))
         raise e
     try:
-        with bot.context.use(bot):
-            with saya.module_context():
-                saya.require(channel_path)
+        with saya.module_context():
+            saya.require(channel_path)
     except Exception as e:
         await app.send_message(sender, MessageChain(f"重载 {channel_path} 过程中安装失败！"))
         raise e

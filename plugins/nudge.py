@@ -5,7 +5,7 @@ from graia.ariadne.message.element import Image
 from graia.ariadne.event.mirai import NudgeEvent
 from graia.ariadne.model import Group, Member
 from graia.ariadne.app import Ariadne
-from graia.ariadne.util.saya import listen
+from graiax.shortcut.saya import listen
 
 from app import RaianBotInterface, record
 from library.petpet import PetGenerator

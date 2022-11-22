@@ -64,7 +64,7 @@ class GroupProfile(BaseProfile):
 
 class UserProfile(BaseProfile):
     id: int
-    trust: int = Field(default=0)
+    trust: float = Field(default=0)
     interact_count: int = Field(default=0)
 
 

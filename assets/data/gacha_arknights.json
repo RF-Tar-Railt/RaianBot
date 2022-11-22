@@ -1,25 +1,23 @@
 {
-    "name": "前路回响",
-    "six_per": 1,
-    "five_per": 0.6,
+    "name": "限定寻访·庆典-斩荆辟路",
+    "six_per": 0.7,
+    "five_per": 0.5,
     "four_per": 0.45,
-    "up_limit": [],
-    "up_alert_limit": [],
+    "up_limit": [
+        "缄默德克萨斯"
+    ],
+    "up_alert_limit": [
+        "迷迭香",
+        "浊心斯卡蒂",
+        "耀骑士临光"
+    ],
     "up_five_list": [
-        "絮雨",
-        "桑葚",
-        "洛洛"
+        "子月"
     ],
     "up_six_list": [
-        "泥岩",
-        "琴柳",
-        "号角"
+        "斥罪"
     ],
-    "up_four_list": [
-        "杰克",
-        "罗比菈塔",
-        "褐果"
-    ],
+    "up_four_list": [],
     "operators": {
         "三": [
             "空爆",

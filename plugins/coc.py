@@ -2,8 +2,8 @@ from typing import Tuple
 from nepattern import BasePattern, Bind
 from arclet.alconna import Args, Arpamar, CommandMeta, namespace, Empty
 from arclet.alconna.graia import Alconna, alcommand, AtID, Match
-from graia.ariadne.event.lifecycle import ApplicationShutdown
-from graia.ariadne.util.saya import listen
+from graia.ariadne.event.lifecycle import AccountShutdown
+from graiax.shortcut.saya import listen
 from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
 from contextlib import suppress
@@ -242,6 +242,6 @@ async def del_handle(app: Ariadne, sender: Sender, target: Target, data: Match[T
     return await app.send_message(sender, "\n".join(res))
 
 
-@listen(ApplicationShutdown)
+@listen(AccountShutdown)
 async def _save():
     card.save()

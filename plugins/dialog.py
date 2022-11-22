@@ -12,7 +12,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.app import Ariadne
 from graia.ariadne.model import Friend, Group
-from graia.ariadne.util.saya import listen, priority, dispatch
+from graiax.shortcut.saya import listen, priority, dispatch
 from graia.ariadne.util.cooldown import CoolDown
 from graia.broadcast.exceptions import PropagationCancelled
 

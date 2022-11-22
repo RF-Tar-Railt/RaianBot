@@ -18,7 +18,7 @@ alc = Alconna(
     Args["max_guess", int, 8],
     Args["simple;K", bool, False],
     Option("更新", Args["name;S", str]),
-    Option("提示"),
+    Option("规则"),
     Option("重置"),
     meta=CommandMeta("明日方舟猜干员游戏", usage="可以指定最大猜测次数"),
 )
@@ -26,7 +26,7 @@ alc = Alconna(
 
 @alcommand(alc)
 @record("猜干员")
-@assign("提示")
+@assign("规则")
 async def guess_info(app: Ariadne, sender: Sender):
     image = Path("assets/image/guess.png").open("rb").read()
     return await app.send_message(sender, MessageChain(Image(data_bytes=image)))

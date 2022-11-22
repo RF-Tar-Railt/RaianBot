@@ -1,5 +1,5 @@
-from typing import Union, Optional
-
+from typing import Union, Optional, Any
+from loguru import logger
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
 from graia.ariadne.model import Friend, Member, Group, MemberPerm
@@ -9,7 +9,7 @@ from graia.ariadne.event.message import MessageEvent
 from graia.ariadne.app import Ariadne
 
 
-def require_admin(only: bool = False):
+def require_admin(only: bool = False, __record: Any = None):
     async def __wrapper__(
         app: Ariadne,
         sender: Union[Friend, Group],
@@ -19,8 +19,8 @@ def require_admin(only: bool = False):
         from .core import RaianBotInterface
 
         bot = app.launch_manager.get_interface(RaianBotInterface)
-        id_ = id(event) if event else 0
-        cache = bot.data.cache.setdefault("$admin", set())
+        id_ = f"{id(event)}" if event else "_"
+        cache = bot.data.cache.setdefault("$admin", {})
         if target.id == bot.config.admin.master_id:
             bot.data.cache.pop("$admin", None)
             return True
@@ -36,9 +36,10 @@ def require_admin(only: bool = False):
         text = (
             "权限不足！" if isinstance(sender, Friend) else [At(target.id), Plain("\n权限不足！")]
         )
+        logger.debug(f"permission denied for {sender.id} in {__record}")
         if id_ not in cache:
             cache.clear()
-            cache.add(id_)
+            cache[id_] = True
             await Ariadne.current().send_message(sender, MessageChain(text))
         raise ExecutionStop
 

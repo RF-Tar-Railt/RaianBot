@@ -110,9 +110,9 @@ async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = Fals
     )
 
 
+@alcommand(weibo_fetch)
 @record("微博功能")
 @assign("动态")
-@alcommand(weibo_fetch)
 async def wfetch(
         app: Ariadne, target: Target, sender: Sender, source: Source,
         user: Match[str], index: Match[int], page: Match[int]
@@ -130,9 +130,9 @@ async def wfetch(
     return await app.send_message(sender, MessageChain("获取失败啦"))
 
 
+@alcommand(weibo_fetch)
 @record("微博功能")
 @assign("follow")
-@alcommand(weibo_fetch)
 async def wfollow(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
     if isinstance(sender, Friend):
         return
@@ -149,9 +149,9 @@ async def wfollow(app: Ariadne, sender: Sender, source: Source, user: Match[str]
     return await app.send_message(sender, MessageChain(f"关注 {follower.name} 成功！"), quote=source.id)
 
 
+@alcommand(weibo_fetch)
 @record("微博功能")
 @assign("unfollow")
-@alcommand(weibo_fetch)
 async def wunfollow(app: Ariadne, sender: Sender, source: Source, user: Match[str]):
     if isinstance(sender, Friend):
         return
@@ -168,16 +168,16 @@ async def wunfollow(app: Ariadne, sender: Sender, source: Source, user: Match[st
     return await app.send_message(sender, MessageChain(f"解除关注 {follower.name} 成功！"), quote=source.id)
 
 
+@alcommand(weibo_fetch)
 @record("微博功能")
 @assign("list")
-@alcommand(weibo_fetch)
 async def wlist(app: Ariadne, target: Target, sender: Sender, source: Source):
     if isinstance(sender, Friend):
         return
     if not bot.data.exist(sender.id):
         return
     prof = bot.data.get_group(sender.id)
-    if not (followers := prof.get(weibo_followers)):
+    if not (followers := prof.get(weibo_followers)) or not followers.data:
         return await app.send_message(sender, "当前群组不存在微博关注对象")
     nodes = []
     notice = None
@@ -206,8 +206,9 @@ async def wlist(app: Ariadne, target: Target, sender: Sender, source: Source):
 @every(1, "minute")
 @record("微博动态自动获取", False)
 async def update():
+    app = Ariadne.current()
     dynamics = {}
-    browser: PlaywrightBrowser = bot.app.launch_manager.get_interface(PlaywrightBrowser)
+    browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
     async with browser.page(viewport={"width": 800, "height": 2400}) as page:
         for gid in bot.data.groups:
             prof = bot.data.get_group(int(gid))
@@ -223,13 +224,13 @@ async def update():
                         data, name = dynamics[uid]
                     elif res := await api.update(int(uid)):
                         dynamics[uid] = (
-                            data := await _handle_dynamic(page, res, now, bot.config.account, bot.config.bot_name),
+                            data := await _handle_dynamic(page, res, now, bot.config.qq, bot.config.bot_name),
                             name := res.user.name
                         )
                     else:
                         continue
-                    await bot.app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
-                    await bot.app.send_group_message(prof.id, MessageChain(
+                    await app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
+                    await app.send_group_message(prof.id, MessageChain(
                         Forward(*data)
                     ))
                 except (ValueError, TypeError, IndexError, KeyError):

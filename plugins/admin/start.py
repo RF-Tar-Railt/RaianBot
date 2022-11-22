@@ -2,7 +2,7 @@ from typing import List
 
 from app import RaianBotInterface
 from graia.ariadne import Ariadne
-from graia.ariadne.event.lifecycle import ApplicationLaunched
+from graia.ariadne.event.lifecycle import AccountLaunch
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.model.relationship import Group
 from graiax.shortcut.saya import listen
@@ -12,7 +12,7 @@ from loguru import logger
 from ..config.admin import AdminConfig
 
 
-@listen(ApplicationLaunched)
+@listen(AccountLaunch)
 async def _report(app: Ariadne, interface: RaianBotInterface):
     data = interface.data
     config = interface.config

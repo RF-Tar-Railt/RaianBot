@@ -1,10 +1,5 @@
 ## 机器人名字, 请尽量不要与 prefix 重合
 bot_name: "Raian"
-## 命令前缀
-## At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)
-prefix:
-  - "莱安"
-  - "At:123456789"
 ## 缓存数据存放的文件夹, 默认为 cache
 cache_dir: 'cache'
 ## mirai-api-http 相关配置
@@ -26,6 +21,25 @@ admin:
   ## bot 的管理者(除开控制者)的账号
   admins:
     - 111111111
+## bot 命令相关配置
+command:
+  ## 命令前缀
+  ## At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)
+  prefix:
+    - "莱安"
+    - "At:123456789"
+  ## 帮助选项的名称
+  help:
+    - "--help"
+    - "-h"
+  ## 快捷命令选项的名称
+  shortcut:
+    - "--shortcut"
+    - "-sct"
+  ## 补全选项的名称
+  completion:
+    - "--comp"
+    - "-cp"
 ## bot 模块相关配置
 plugin:
   ## 模块配置文件的根路径

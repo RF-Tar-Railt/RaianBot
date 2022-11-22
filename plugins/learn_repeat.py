@@ -11,7 +11,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, At, Source, Plain, Face, ForwardNode, Forward
 from graia.ariadne.model import Group, Member
 from graia.ariadne.exception import UnknownTarget, UnknownError
-from graia.ariadne.util.saya import listen, priority
+from graiax.shortcut.saya import listen, priority
 from graia.broadcast.exceptions import PropagationCancelled
 from contextlib import suppress
 

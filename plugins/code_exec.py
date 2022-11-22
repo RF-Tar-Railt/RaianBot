@@ -19,7 +19,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
-from graia.ariadne.util.saya import listen
+from graiax.shortcut.saya import listen
 
 code = Alconna(
     "执行",
@@ -30,7 +30,7 @@ code = Alconna(
 
 
 @shortcuts(
-    命令概览=MessageChain("渊白执行\nfrom arclet.alconna import command_manager\nprint(command_manager)"),  # type: ignore
+    命令概览=MessageChain(f"{code.headers[0]}执行\nfrom arclet.alconna import command_manager\nprint(command_manager)"),  # type: ignore
 )
 @alcommand(code, send_error=True)
 @permission("admin")

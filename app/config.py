@@ -44,8 +44,22 @@ class AdminConfig(BaseModel):
     master_name: str
     """bot 的控制者的名字"""
 
-    admins: List[str] = Field(default_factory=list)
+    admins: List[int] = Field(default_factory=list)
     """bot 的管理者(除开控制者)的账号"""
+
+
+class CommandConfig(BaseModel):
+    prefix: List[str] = Field(default_factory=lambda x: ["."])
+    """命令前缀; At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)"""
+
+    help: List[str] = Field(default_factory=lambda x: ["-h", "--help"])
+    """帮助选项的名称"""
+
+    shortcut: List[str] = Field(default_factory=lambda x: ["-sct", "--shortcut"])
+    """快捷命令选项的名称"""
+
+    completion: List[str] = Field(default_factory=lambda x: ["-cp", "--comp"])
+    """补全选项的名称"""
 
 
 class PluginConfig(BaseModel):
@@ -77,9 +91,6 @@ class BotConfig(BaseModel):
     bot_name: str
     """机器人名字, 请尽量不要与 prefix 重合"""
 
-    prefix: List[str] = Field(default_factory=lambda x: ["."])
-    """命令前缀; At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)"""
-
     cache_dir: str = Field(default="cache")
     """缓存数据存放的文件夹, 默认为 cache"""
 
@@ -88,6 +99,9 @@ class BotConfig(BaseModel):
 
     admin: AdminConfig
     """bot 权限相关配置"""
+
+    command: CommandConfig
+    """bot 命令相关配置"""
 
     plugin: PluginConfig
     """bot 模块相关配置"""
@@ -99,13 +113,17 @@ class BotConfig(BaseModel):
     """腾讯云相关配置"""
 
     @property
+    def qq(self) -> int:
+        return self.mirai.account
+
+    @property
     def url(self) -> str:
         return f"http://{self.mirai.host}:{self.mirai.port}"
 
     @property
     def command_prefix(self):
         res = []
-        for p in self.prefix:
+        for p in self.command.prefix:
             if mth := re.match(r"^At:(?P<target>\d+)$", p):
                 res.append(At(int(mth.groupdict()["target"])))
             elif mth := re.match(r"^Face:(?P<target>.+)$", p):

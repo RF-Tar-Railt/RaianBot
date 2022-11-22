@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from typing import NamedTuple
 from arclet.alconna import CommandMeta
@@ -42,7 +43,7 @@ async def sign_up(app: Ariadne, sender: Group, member: Member, source: Source, b
         )
     user.set(sign_info(today.month, today.day))
     if user.trust < int(bot.config.plugin.get(SignConfig).max):
-        user.trust += 1
+        user.trust += (random.randint(1, 10) / 6.25)
         await app.send_group_message(
             sender, MessageChain(f"签到成功！\n当前信赖值：{user.trust}"),
             quote=source.id

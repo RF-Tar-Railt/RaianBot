@@ -9,7 +9,7 @@ from graia.ariadne.event.lifecycle import ApplicationLaunch
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.util.cooldown import CoolDown
-from graia.ariadne.util.saya import dispatch, listen
+from graiax.shortcut.saya import dispatch, listen
 from graiax.fastapi import route
 from plugins.config.gacha import GachaConfig
 

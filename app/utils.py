@@ -48,11 +48,11 @@ def record(name: str, require: bool = True, disable: bool = False):
     return wrapper
 
 
-@buffer_modifier
-def permission(level: Literal["admin", "master"] = "admin") -> BufferModifier:
-    def wrapper(buffer: Dict[str, Any]) -> None:
-        buffer.setdefault("decorators", []).append(require_admin(level == "master"))
-
+def permission(level: Literal["admin", "master"] = "admin"):
+    def wrapper(func: T_Callable) -> T_Callable:
+        buffer = ensure_buffer(func)
+        buffer.setdefault("decorators", []).append(require_admin(level == "master", __record=func))
+        return func
     return wrapper
 
 
