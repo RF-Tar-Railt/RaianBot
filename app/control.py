@@ -21,7 +21,7 @@ def require_admin(only: bool = False, __record: Any = None):
         bot = app.launch_manager.get_interface(RaianBotInterface)
         id_ = f"{id(event)}" if event else "_"
         cache = bot.data.cache.setdefault("$admin", {})
-        if target.id == bot.config.admin.master_id:
+        if target.id in [bot.config.admin.master_id, bot.config.qq]:
             bot.data.cache.pop("$admin", None)
             return True
         if not only and (

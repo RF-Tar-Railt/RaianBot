@@ -2,6 +2,7 @@ from contextlib import suppress
 from typing import NamedTuple
 
 from app import RaianBotInterface, meta_export, permission
+from arclet.alconna.graia import startswith
 from graia.ariadne import Ariadne
 from graia.ariadne.event.message import FriendMessage
 from graia.ariadne.exception import AccountNotFound, InvalidArgument, UnknownTarget
@@ -22,14 +23,12 @@ meta_export(group_meta=[mute])
 
 @listen(FriendMessage)
 @permission("admin")
+@startswith("解除群限制:", bind="message")
 async def discard_mute(
     app: Ariadne, friend: Friend, message: MessageChain, interface: RaianBotInterface
 ):
     data = interface.data
-    msg = message.as_sendable()
-    if not msg.startswith("解除群限制:"):
-        return
-    target = int(str(msg).replace("解除群限制:", ""))
+    target = int(str(message))
     if not data.exist(target):
         return
     prof = data.get_group(target)

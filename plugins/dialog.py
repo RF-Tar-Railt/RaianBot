@@ -117,7 +117,7 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
     if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
         return
     cmds = [i.name for i in command_manager.get_commands()]
-    if msg := str(message.include(Plain)).strip():
+    if msg := str(message.include(Plain)).strip(" +"):
         if len(success_record):
             success_record.clear()
             raise PropagationCancelled
@@ -156,7 +156,7 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
     """依据语料进行匹配回复"""
     if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
         return
-    if msg := str(message.include(Plain)).strip():
+    if msg := str(message.include(Plain)).strip(" +"):
         for key, value in dialog_templates['content'].items():
             if re.match(f"^{key}.*?", msg):
                 rand_str = random.sample(value, 1)[0]
@@ -201,7 +201,7 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
     ):
         async with app.service.client_session.get(
                 ai_url, params={
-                    "text": str(message.include(Plain, Face))[:120],
+                    "text": str(message.include(Plain, Face)).strip(" +")[:120],
                     "session": f"{bot.config.bot_name}/{id_}"
                 }
         ) as resp:
@@ -210,9 +210,7 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         return
     for elem in bot.config.command_prefix:
         message = message.replace(elem, "")
-    msg = str(message.include(Plain, Face))
-    if len(msg) > 100:
-        return
+    msg = str(message.include(Plain, Face)).strip(" +")
     if random.randint(0, 2000) == datetime.now().microsecond // 5000:
         async with app.service.client_session.get(
                 ai_url, params={"text": msg[:120], "session": f"{bot.config.bot_name}/{id_}"}

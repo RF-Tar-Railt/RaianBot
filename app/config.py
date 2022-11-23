@@ -149,10 +149,7 @@ def extract_plugin_config(plugin_path: str, name: str) -> Optional[BaseModel]:
     with suppress(ModuleNotFoundError, FileNotFoundError, AttributeError):
         config_module = importlib.import_module(f"{plugin_path}.config.{name}")
         if (base_config := ConfigInstance.get(None)) and (
-                path := Path.cwd()
-                        / "config"
-                        / base_config.plugin.root
-                        / f"{name}.yml"
+            path := Path.cwd() / "config" / base_config.plugin.root / f"{name}.yml"
         ).exists():
             with path.open("r+", encoding="UTF-8") as f_obj:
                 data = yaml.safe_load(f_obj.read())

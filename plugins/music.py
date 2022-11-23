@@ -62,7 +62,7 @@ async def song(app: Ariadne, sender: Sender, name: Match[str], singer: Match[str
     song_ = data["result"]["songs"][index]
     song_id = song_["id"]
     async with app.service.client_session.get(f"{api}/song/detail?ids={song_id}", timeout=20) as resp:
-        picture = (await resp.json())["songs"][index]["al"]["picUrl"]
+        picture = (await resp.json())["songs"][0]["al"]["picUrl"]
     song_summary = f"{song_['name']}--{', '.join(artist['name'] for artist in song_['artists'])}"
     return await app.send_message(
         sender,

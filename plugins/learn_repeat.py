@@ -2,7 +2,7 @@ import ujson
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Optional, List
+from typing import Union, Optional
 from arclet.alconna import Args, Empty, Option, AllParam, Arpamar, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand, assign, Match
 from graia.ariadne.app import Ariadne
@@ -137,7 +137,7 @@ async def rremove(app: Ariadne, sender: Group, source: Source, target: Match[Uni
 @assign("增加")
 async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arpamar):
     this_file = base_path / f"record_{sender.id}.json"
-    content = result.query_with(List[str], "增加.content") or []
+    content = result.query_with(list, "增加.content") or []
     if name.result in {"(.+?)", ".+?", ".*?", "(.*?)", ".+", ".*", "."}:
         return await app.send_message(sender, MessageChain("内容过于宽泛！"))
     _name = name.result.replace("**", "*")
@@ -165,7 +165,7 @@ async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name
 @assign("修改")
 async def redit(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arpamar):
     this_file = base_path / f"record_{sender.id}.json"
-    content = result.query_with(List[str], "增加.content") or []
+    content = result.query_with(list, "增加.content") or []
     if name.result in {"(.+?)", ".+?", ".*?", "(.*?)", ".+", ".*", "."}:
         return await app.send_message(sender, MessageChain("内容过于宽泛！"))
     _name = name.result.replace("**", "*")
