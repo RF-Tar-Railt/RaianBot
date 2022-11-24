@@ -110,6 +110,21 @@ async def image(string: str, target: Target):
         return Image(data_bytes=path.read_bytes()) if path.exists() else name
 
 
+def error_handle(t):
+    return random.choice([
+        t, t, t,
+        "？",
+        "？？",
+        "6",
+        "好好好",
+        "是是是",
+        "我现在还不太明白你在说什么呢，但没关系，以后的我会变得更强呢！",
+        "我有点看不懂你的意思呀，可以跟我聊些简单的话题嘛",
+        "其实我不太明白你的意思...",
+        "抱歉哦，我现在的能力还不能够明白你在说什么，但我会加油的～",
+    ])
+
+
 async def random_ai(app: Ariadne, sender: Sender, msg: str, **kwargs: int):
     session = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
     ai_url = bot.config.plugin.get(DialogConfig).gpt_api
@@ -120,7 +135,10 @@ async def random_ai(app: Ariadne, sender: Sender, msg: str, **kwargs: int):
         ) as resp:
             return "".join((await resp.json())["result"])
     if rand > kwargs.get('tx', 20) and tcbot:
-        return tcbot.chat(msg)
+        if reply := tcbot.chat(msg):
+            return reply
+        if random.randint(1, 10) > 5:
+            return error_handle(msg)
     return await aiml.chat(message=msg, session_id=session)
 
 
