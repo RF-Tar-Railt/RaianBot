@@ -19,6 +19,7 @@ from graia.broadcast.exceptions import PropagationCancelled
 from app import RaianBotService, record, Sender, Target
 from library.aiml.entry import AIML
 from library.chat import TencentChatBot
+from library.rand import random_pick_small
 from library.translate import TencentTrans, YoudaoTrans
 from plugins.config.dialog import DialogConfig
 
@@ -125,16 +126,16 @@ def error_handle(t):
     ])
 
 
-async def random_ai(app: Ariadne, sender: Sender, msg: str, **kwargs: int):
+async def random_ai(app: Ariadne, sender: Sender, msg: str, **kwargs: float):
     session = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
     ai_url = bot.config.plugin.get(DialogConfig).gpt_api
-    rand = random.randint(1, 100)
-    if rand > kwargs.get('gpt', 50) and ai_url:
+    rand = random_pick_small([1, 2, 3], [0.2, kwargs.get('tx', 0.3), kwargs.get('gpt', 0.5)])
+    if rand == 3 and ai_url:
         async with app.service.client_session.get(
             ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{session}"}
         ) as resp:
             return "".join((await resp.json())["result"])
-    if rand > kwargs.get('tx', 20) and tcbot:
+    if rand == 2 and tcbot:
         if reply := tcbot.chat(msg):
             return reply
         if random.randint(1, 10) > 5:
@@ -219,7 +220,7 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         or (message.has(Quote) and message.get_first(Quote).sender_id == bot.config.mirai.account)
     ):
         reply = await random_ai(
-            app, sender, str(message.include(Plain, Face)).strip(" +")[:120], gpt=40, tx=10
+            app, sender, str(message.include(Plain, Face)).strip(" +")[:120], gpt=0.7, tx=0.1
         )
         await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
         return
@@ -227,6 +228,6 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         message = message.replace(elem, "")
     if random.randint(0, 2000) == datetime.now().microsecond // 5000:
         reply = await random_ai(
-            app, sender, str(message.include(Plain, Face)).strip(" +")[:120], gpt=40, tx=10
+            app, sender, str(message.include(Plain, Face)).strip(" +")[:120], gpt=0.4, tx=0.4
         )
         return await app.send_message(sender, reply, quote=source)
