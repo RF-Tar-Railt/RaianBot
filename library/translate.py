@@ -1,5 +1,5 @@
 from aiohttp import ClientSession
-from typing import Callable, Optional, Coroutine
+from typing import Optional
 from tencentcloud.common import credential
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.tmt.v20180321 import tmt_client, models

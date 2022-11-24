@@ -1,6 +1,5 @@
 import sys
 import traceback
-from pathlib import Path
 from typing import Literal, Set, Type, Union
 
 from arclet.alconna import Alconna, namespace
@@ -21,6 +20,7 @@ from graiax.fastapi import FastAPIBehaviour, FastAPIService
 from graiax.playwright import PlaywrightService
 from launart import ExportInterface, Service, Launart
 from loguru import logger
+import pkgutil
 
 from .config import BotConfig, extract_plugin_config
 from .context import BotInstance, ConfigInstance, DataInstance
@@ -74,34 +74,30 @@ class RaianBotService(Service):
             try:
                 self.data.load()
                 logger.debug("机器人数据加载完毕")
-                for path in self.config.plugin.paths:
-                    plugin_path = Path(path)
-                    if not plugin_path.is_dir():
-                        logger.error("插件路径应该为一存在的文件夹")
-                        return
-                    with it(Saya).module_context():
-                        for file in plugin_path.iterdir():
-                            name = file.stem if file.is_file() else file.name
-                            if (
-                                name == "config"
-                                or name.startswith("_")
-                                or f"{plugin_path.name}.{name}" in self.config.plugin.disabled
-                            ):
-                                continue
-                            try:
-                                if model := extract_plugin_config(plugin_path.name, name):
-                                    self.config.plugin.data[type(model)] = model
-                                export_meta = it(Saya).require(f"{plugin_path.name}.{name}")
-                                if isinstance(export_meta, dict):
-                                    DataInstance.get().add_meta(**export_meta)
-                            except BaseException as e:
-                                logger.warning(
-                                    f"fail to load {plugin_path.name}.{name}, caused by "
-                                    f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
-                                )
-                                manager.status.exiting = True
-                                traceback.print_exc()
-                                break
+                with it(Saya).module_context():
+                    for module_info in pkgutil.iter_modules(self.config.plugin.paths):
+                        path = module_info.module_finder.path  # noqa
+                        name = module_info.name
+                        if (
+                            name == "config"
+                            or name.startswith("_")
+                            or f"{path}.{name}" in self.config.plugin.disabled
+                        ):
+                            continue
+                        try:
+                            if model := extract_plugin_config(path, name):
+                                self.config.plugin.data[type(model)] = model
+                            export_meta = it(Saya).require(f"{path}.{name}")
+                            if isinstance(export_meta, dict):
+                                DataInstance.get().add_meta(**export_meta)
+                        except BaseException as e:
+                            logger.warning(
+                                f"fail to load {path.name}.{name}, caused by "
+                                f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
+                            )
+                            manager.status.exiting = True
+                            traceback.print_exc()
+                            break
             except RuntimeError:
                 manager.status.exiting = True
 
