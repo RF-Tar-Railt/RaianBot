@@ -74,22 +74,19 @@ class RaianBotService(Service):
             try:
                 self.data.load()
                 logger.debug("机器人数据加载完毕")
-                with it(Saya).module_context():
+                saya = it(Saya)
+                with saya.module_context():
                     for module_info in pkgutil.iter_modules(self.config.plugin.paths):
                         path = module_info.module_finder.path  # noqa
                         name = module_info.name
-                        if (
-                            name == "config"
-                            or name.startswith("_")
-                            or f"{path}.{name}" in self.config.plugin.disabled
-                        ):
+                        if name == "config" or name.startswith("_") or f"{path}.{name}" in self.config.plugin.disabled:
                             continue
                         try:
                             if model := extract_plugin_config(path, name):
                                 self.config.plugin.data[type(model)] = model
-                            export_meta = it(Saya).require(f"{path}.{name}")
+                            export_meta = saya.require(f"{path}.{name}")
                             if isinstance(export_meta, dict):
-                                DataInstance.get().add_meta(**export_meta)
+                                self.data.add_meta(**export_meta)
                         except BaseException as e:
                             logger.warning(
                                 f"fail to load {path.name}.{name}, caused by "
@@ -126,9 +123,9 @@ def launch(debug_log: bool = True):
         sys.exit(1)
     with namespace("Alconna") as np:
         np.headers = config.command_prefix
-        np.builtin_option_name['help'] = set(config.command.help)
-        np.builtin_option_name['shortcut'] = set(config.command.shortcut)
-        np.builtin_option_name['completion'] = set(config.command.completion)
+        np.builtin_option_name["help"] = set(config.command.help)
+        np.builtin_option_name["shortcut"] = set(config.command.shortcut)
+        np.builtin_option_name["completion"] = set(config.command.completion)
 
     Alconna.config(formatter_type=MarkdownTextFormatter)
     saya = it(Saya)

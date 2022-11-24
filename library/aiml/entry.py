@@ -29,7 +29,7 @@ class AIML:
             )
             self.client.save_brain(brain_path)
 
-    async def chat(self, message: str, session_id: Optional[int] = None):
+    async def chat(self, message: str, session_id: Optional[str] = None):
         if is_include_chinese(message):
             message = await self.translator.trans(message, 'en')
         resp = self.client.respond(message, session_id)
