@@ -1,12 +1,12 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import (
     Callable,
     Dict,
     List,
     NamedTuple,
-    Optional,
     Sequence,
-    Set,
     Type,
     TypeVar,
     cast,
@@ -29,14 +29,14 @@ class BaseProfile(BaseModel):
     additional: Dict[str, Sequence] = Field(default_factory=dict)
 
     @overload
-    def get(self, __t: Type[TMeta]) -> Optional[TMeta]:
+    def get(self, __t: type[TMeta]) -> TMeta | None:
         ...
 
     @overload
-    def get(self, __t: Type[TMeta], __d: TMeta) -> TMeta:
+    def get(self, __t: type[TMeta], __d: TMeta) -> TMeta:
         ...
 
-    def get(self, __t: Type[TMeta], __d: Optional[TMeta] = None):
+    def get(self, __t: type[TMeta], __d: TMeta | None = None):
         if data := self.additional.get(__t.__name__):
             if not isinstance(data, __t):
                 data = __t(*data)
@@ -48,7 +48,7 @@ class BaseProfile(BaseModel):
         self.additional[type(__v).__name__] = __v
 
     @validator("additional", allow_reuse=True, pre=True)
-    def validate_event_type(cls, v: Dict):
+    def validate_event_type(cls, v: dict):
         """验证事件类型, 通过比对 type 字段实现"""
         for k, s in v.copy().items():
             if not isinstance(s, Sequence):
@@ -69,23 +69,23 @@ class UserProfile(BaseProfile):
 
 
 class BotDataManager:
-    disable_functions: Set[str]
-    __functions: Dict[str, Callable]
-    __group_profiles: Dict[str, GroupProfile]
-    __user_profiles: Dict[str, UserProfile]
+    disable_functions: set[str]
+    __functions: dict[str, Callable]
+    __group_profiles: dict[str, GroupProfile]
+    __user_profiles: dict[str, UserProfile]
     __cache_data: dict
-    __metas: Dict[str, Dict[str, Type[tuple]]]
+    __metas: dict[str, dict[str, type[tuple]]]
 
     @staticmethod
-    def validate_meta(schema: Type[TMeta], data: Sequence):
+    def validate_meta(schema: type[TMeta], data: Sequence):
         if isinstance(data, schema):
             return True
         meta = cast(Type[NamedTuple], schema)
-        if len(meta._field_types) != len(data):
+        if len(meta.__annotations__) != len(data):
             return False
         return all(
             isinstance(di, get_origin(si) or si)
-            for si, di in zip(meta._field_types.values(), data)
+            for si, di in zip(meta.__annotations__.values(), data)
         )
 
     def __new__(cls, *args, **kwargs):
@@ -103,7 +103,7 @@ class BotDataManager:
         self.user_path = dir_path / "users_data.json"
         self.cache_path = dir_path / "basic_data.json"
 
-        def _s(mgr: "BotDataManager"):
+        def _s(mgr: BotDataManager):
             mgr.save()
             mgr.__user_profiles.clear()
             mgr.__group_profiles.clear()
@@ -115,7 +115,7 @@ class BotDataManager:
         finalize(self, _s, self)
         DataInstance.set(self)
 
-    def add_meta(self, **kwargs: List[Type[TMeta]]):
+    def add_meta(self, **kwargs: list[type[TMeta]]):
         for k, v in kwargs.items():
             metas = self.__metas.setdefault(k, {})
             for s in v:

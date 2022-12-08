@@ -3,7 +3,7 @@ from base64 import b64encode
 from typing import Tuple
 
 from app import RaianBotInterface, Sender, Target, record
-from arclet.alconna import Args, CommandMeta, Option, store_value
+from arclet.alconna import Args, CommandMeta, Option, store_value, MultiVar
 from arclet.alconna.graia import Alconna, Match, Query, alcommand
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
@@ -73,7 +73,7 @@ async def _handle(prompt: Tuple[str, ...], r18: bool):
 @alcommand(
     Alconna(
         "作画",
-        Args["prompt;S", str],
+        Args["prompt", MultiVar(str, "+")],
         Option("-sd|--seed", Args["seed", int]),
         Option("-st|--step", Args["step", int]),
         Option("-W|--width", Args["width", [512, 768]]),
@@ -153,8 +153,8 @@ async def tdraw(
 @alcommand(
     Alconna(
         "图画",
-        Args["prompt;S", str],
-        Args["img;O", Image],
+        Args["prompt", MultiVar(str, "+")],
+        Args["img;?", Image],
         Option("-sd", Args["seed", int]),
         Option("-r18", action=store_value(True)),
         meta=CommandMeta("用传入图片为基础进行AI作画, 关键词用空格分割", usage="同一时间只能有一次运行任务"),

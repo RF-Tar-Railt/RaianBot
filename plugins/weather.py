@@ -1,4 +1,4 @@
-from arclet.alconna import Args, Arpamar, ArgField, CommandMeta
+from arclet.alconna import Args, Arparma, Field, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
@@ -460,11 +460,11 @@ times = {"今天": 1, "明天": 2, "后天": 3, "大后天": 4, "老后天": 5}
 @alcommand(
     Alconna(
         "{city}?天气",
-        Args["time", times, ArgField(1, alias="今天", completion=lambda: list(times.keys()))],
+        Args["time", times, Field(1, alias="今天", completion=lambda: list(times.keys()))],
         meta=CommandMeta("查询某个城市的天气", usage="提供五个可查询的时间段", example="$北京天气 明天"),
     )
 )
-async def weather(app: Ariadne, sender: Sender, time: Match[int], result: Arpamar):
+async def weather(app: Ariadne, sender: Sender, time: Match[int], result: Arparma):
     city = result.header["city"] or "长沙"
     if city not in city_ids:
         return await app.send_message(sender, MessageChain("不对劲。。。"))

@@ -87,7 +87,7 @@ async def get_join_group(app: Ariadne, group: Group, interface: RaianBotInterfac
             f"如果有需要可以联系主人{config.admin.master_name}({config.admin.master_id})，\n",
             f"尝试发送 {config.command_prefix[0]}帮助 以查看功能列表\n",
             "项目地址：https://github.com/RF-Tar-Railt/RaianBot\n",
-            "赞助：https://afdian.net/@rf_tar_railt\n"
+            "赞助（爱发电）：https://afdian.net/@rf_tar_railt\n"
             "机器人交流群：122680593",
         ),
     )

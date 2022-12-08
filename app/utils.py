@@ -1,12 +1,8 @@
+from __future__ import annotations
+
 from typing import (
-    Any,
     Callable,
-    Dict,
-    List,
     Literal,
-    NamedTuple,
-    Optional,
-    Type,
     TypeVar,
     Union,
 )
@@ -15,11 +11,11 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.model import Friend, Group, Member
 from graia.saya import Channel
-from graia.saya.factory import BufferModifier, buffer_modifier, ensure_buffer
+from graia.saya.factory import ensure_buffer
 
 from .context import DataInstance
 from .control import require_admin, require_function
-from .image import create_md
+from .image import render_markdown
 
 Sender = Union[Group, Friend]
 Target = Union[Member, Friend]
@@ -28,8 +24,8 @@ T_Callable = TypeVar("T_Callable", bound=Callable)
 
 def meta_export(
     *,
-    group_meta: Optional[List[Type[tuple]]] = None,
-    user_meta: Optional[List[Type[tuple]]] = None,
+    group_meta: list[type[tuple]] | None = None,
+    user_meta: list[type[tuple]] | None = None,
 ):
     return Channel.current().export(
         {"group_meta": group_meta or [], "user_meta": user_meta or []}
@@ -57,7 +53,7 @@ def permission(level: Literal["admin", "master"] = "admin"):
 
 
 async def send_handler(output: str):
-    length = (output.count("\n") + 5) * 16
+    # length = (output.count("\n") + 5) * 16
     if not output.startswith("#"):
         output = f"# {output}"
         output = (
@@ -67,4 +63,4 @@ async def send_handler(output: str):
             .replace("<", "&lt;")
             .replace(">", "&gt;")
         )
-    return MessageChain(Image(data_bytes=await create_md(output, height=length)))
+    return MessageChain(Image(data_bytes=await render_markdown(output)))

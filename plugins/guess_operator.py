@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Tuple, Union
 
 from app import RaianBotInterface, Sender, record
-from arclet.alconna import Args, CommandMeta, Option
+from arclet.alconna import Args, CommandMeta, Option, Kw, MultiVar
 from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from arknights_toolkit.wordle import Guess, OperatorWordle, update
 from graia.ariadne.app import Ariadne
@@ -16,8 +16,8 @@ from graia.ariadne.util.interrupt import FunctionWaiter
 alc = Alconna(
     "猜干员",
     Args["max_guess", int, 8],
-    Args["simple;K", bool, False],
-    Option("更新", Args["name;S", str]),
+    Args["simple", Kw @ bool, False],
+    Option("更新", Args["name", MultiVar(str, "+")]),
     Option("规则"),
     Option("重置"),
     meta=CommandMeta("明日方舟猜干员游戏", usage="可以指定最大猜测次数"),
@@ -44,9 +44,9 @@ async def guess_update(app: Ariadne, sender: Sender, name: Match[Tuple[str, ...]
 @record("猜干员")
 @assign("重置")
 async def guess_reset(
-        app: Ariadne,
-        sender: Sender,
-        bot: RaianBotInterface,
+    app: Ariadne,
+    sender: Sender,
+    bot: RaianBotInterface,
 ):
     if (path := Path(f"{bot.config.cache_dir}/plugins/guess")).exists():
         for file in path.iterdir():
@@ -58,11 +58,11 @@ async def guess_reset(
 @record("猜干员")
 @assign("$main")
 async def guess(
-        app: Ariadne,
-        sender: Sender,
-        bot: RaianBotInterface,
-        max_guess: Match[int],
-        simple: Match[bool],
+    app: Ariadne,
+    sender: Sender,
+    bot: RaianBotInterface,
+    max_guess: Match[int],
+    simple: Match[bool],
 ):
     id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
     if (Path(f"{bot.config.cache_dir}/plugins/guess") / f"{id_}.json").exists():
@@ -98,9 +98,7 @@ async def guess(
         if simple.result:
             await app.send_message(sender, MessageChain(wordle.draw(res, simple=True)))
         else:
-            await app.send_message(
-                sender, MessageChain(Image(data_bytes=wordle.draw(res)))
-            )
+            await app.send_message(sender, MessageChain(Image(data_bytes=wordle.draw(res))))
         if res.state != "guessing":
             break
     return await app.send_message(

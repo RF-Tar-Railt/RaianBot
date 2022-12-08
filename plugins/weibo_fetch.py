@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import NamedTuple, List
 from fastapi.responses import RedirectResponse, JSONResponse
-from arclet.alconna import Args, Option, ArgField, CommandMeta
+from arclet.alconna import Args, Option, Field, CommandMeta
 from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Source, Image
@@ -19,7 +19,7 @@ bot = RaianBotService.current()
 
 weibo_fetch = Alconna(
     "微博",
-    Args["user;O#微博用户名称", str, ArgField(completion=lambda: "比如说, 育碧")],
+    Args["user;?#微博用户名称", str, Field(completion=lambda: "比如说, 育碧")],
     Option(
         "动态",
         Args["index#从最前动态排起的第几个动态", int, -1]["page#第几页动态", int, 1],

@@ -1,5 +1,5 @@
 from typing import Tuple, NamedTuple, Dict, List, Optional
-from arclet.alconna import Args, Option, Empty, CommandMeta
+from arclet.alconna import Args, Option, Empty, CommandMeta, MultiVar
 from arclet.alconna.graia import Alconna, alcommand, assign, Match
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
@@ -18,10 +18,10 @@ meta_export(group_meta=[roles])
 role = Alconna(
     [''],
     "群员分组",
-    Option("设置", Args["tag", str]["targets;S", At], help_text="设置分组并选择目标"),
-    Option("增加", Args["tag", str]["targets;S", At], help_text="为分组增加目标"),
-    Option("删除", Args["tag", str]["targets;S", At, Empty], help_text="删除指定分组或分组内的指定成员"),
-    Option("呼叫", Args["tag", str]["content;O", str], help_text="At 指定分组下的群成员"),
+    Option("设置", Args["tag", str]["targets", MultiVar(At, "+")], help_text="设置分组并选择目标"),
+    Option("增加", Args["tag", str]["targets", MultiVar(At, "+")], help_text="为分组增加目标"),
+    Option("删除", Args["tag", str]["targets", MultiVar(At, "+"), Empty], help_text="删除指定分组或分组内的指定成员"),
+    Option("呼叫", Args["tag", str]["content;?", str], help_text="At 指定分组下的群成员"),
     Option("列出", help_text="列出该群所有的分组"),
     meta=CommandMeta("为群成员设置特殊分组", usage="注意: 该命令不需要 “渊白” 开头")
 )

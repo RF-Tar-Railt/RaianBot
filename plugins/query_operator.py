@@ -2,7 +2,7 @@ import asyncio
 import re
 from typing import Optional
 from arknights_toolkit.info import *
-from arclet.alconna import Args, Arpamar, ArgField, CommandMeta
+from arclet.alconna import Args, Arparma, Field, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Source
@@ -50,11 +50,11 @@ def _handle(content: Optional[str] = None):
 @alcommand(
     Alconna(
         "干员{operator}?",
-        Args["content", str, ArgField("干员信息", completion=lambda: ["档案", "精英化材料", "技能升级材料", "属性"])],
+        Args["content", str, Field("干员信息", completion=lambda: ["档案", "精英化材料", "技能升级材料", "属性"])],
         meta=CommandMeta("查询干员信息", usage="大致按照prts的分区板块来查询", example="$干员艾雅法拉 档案"),
     )
 )
-async def weather(app: Ariadne, sender: Sender, content: Match[str], result: Arpamar, source: Source):
+async def weather(app: Ariadne, sender: Sender, content: Match[str], result: Arparma, source: Source):
     name = result.header["operator"] or "艾雅法拉"
     if running.is_set():
         return await app.send_message(sender, "请耐心排队~")

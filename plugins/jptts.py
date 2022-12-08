@@ -2,7 +2,7 @@ import re
 from typing import Tuple
 
 from aiohttp import ClientSession, TCPConnector
-from arclet.alconna import Args, ArgField, CommandMeta, Option
+from arclet.alconna import Args, Field, CommandMeta, Option, MultiVar
 from arclet.alconna.graia import Alconna, alcommand, Match, assign
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
@@ -30,13 +30,13 @@ character = {
 
 jp = Alconna(
     "日本语",
-    Args["jptext;S", str, ArgField(completion=lambda: "比如说，daisuki")],
+    Args["jptext", MultiVar(str, "+"), Field(completion=lambda: "比如说，daisuki")],
     Option(
         "moe",
         Args[
             "char",
             int,
-            ArgField(
+            Field(
                 0,
                 alias="綾地寧々",
                 completion=lambda: [f"{v}: {k}" for k, v in character.items()],
@@ -51,7 +51,7 @@ jp = Alconna(
 
 @alcommand(jp)
 @assign("$main")
-async def tts(app: Ariadne, sender: Sender, jptext: Match[Tuple[str]]):
+async def tts(app: Ariadne, sender: Sender, jptext: Match[Tuple[str, ...]]):
     sentence = " ".join(jptext.result)
     if not sentence.strip() or re.search(r"[\d_+=\-/@#$%^&*(){}\[\]|\\]", sentence):
         return await app.send_message(sender, "无效的文本")

@@ -26,7 +26,7 @@ class TencentChatBot:
             if resp.Reply:
                 msg: str = resp.Reply
                 nickname: str = self.name
-                msg = msg.replace("腾讯小龙女", nickname).replace("小龙女", nickname)
+                msg = msg.replace("腾讯小龙女", nickname).replace("小龙女", nickname).replace("姑姑", nickname)
                 return msg
         except TencentCloudSDKException:
             return

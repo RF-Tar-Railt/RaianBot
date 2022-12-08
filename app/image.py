@@ -1,6 +1,9 @@
-from typing import Union, List, Tuple, Literal
-from graiax.text2img.playwright.builtin import MarkdownToImg
-from graiax.text2img.playwright.types import PageParams, ScreenshotParams
+from __future__ import annotations
+
+from typing import Literal
+from graiax.text2img.playwright.renderer import HTMLRenderer
+from graiax.text2img.playwright.converter import MarkdownConverter
+from graiax.text2img.playwright.renderer import PageOption, ScreenshotOption
 from graia.ariadne.util.async_exec import ParallelExecutor
 from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw
@@ -40,39 +43,43 @@ def cut_text(
     return target.rstrip()
 
 
-async def create_md(
+async def render_markdown(
     md: str,
-    width: int = 840,
-    height: int = 1200,
+    width: int | None = None,
+    height: int | None = None,
     factor: float = 1.5,
     itype: Literal["jpeg", "png"] = "jpeg",
     quality: int = 80,
 ):
-    return await MarkdownToImg().render(
-        md,
-        page_params=PageParams(viewport={"width": width, "height": height}, device_scale_factor=factor),
-        screenshot_params=ScreenshotParams(type=itype, quality=quality, scale="device"),
+    content = MarkdownConverter().convert(md)
+    return await HTMLRenderer(
+        screenshot_option=ScreenshotOption(type=itype, quality=quality, scale="device")
+    ).render(
+        content,
+        extra_page_option=(
+            PageOption(viewport={"width": width, "height": height}, device_scale_factor=factor)  # type: ignore
+        ) if width is not None and height is not None else None
     )
 
 
 async def create_image(
-    text: Union[str, List[str]],
+    text: str | list[str],
     font: str = "simhei.ttf",
     font_size: int = 20,
     cut: int = 80,
     mode: str = "RGBA",
-    background: Union[Tuple[int, int, int], Tuple[int, int, int, float], str] = "white",
+    background: tuple[int, int, int] | tuple[int, int, int, float] | str = "white",
 ) -> bytes:
     return await ParallelExecutor().to_thread(_create_image, text, font, font_size, cut, mode, background)
 
 
 def _create_image(
-    text: Union[str, List[str]],
+    text: str | list[str],
     font: str,
     font_size: int = 20,
     cut: int = 80,
     mode: str = "RGBA",
-    background: Union[Tuple[int, int, int], Tuple[int, int, int, float], str] = "white",
+    background: tuple[int, int, int] | tuple[int, int, int, float] | str = "white",
 ) -> bytes:
     new_font = ImageFont.truetype(font, font_size)
     if isinstance(text, str):

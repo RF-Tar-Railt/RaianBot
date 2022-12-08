@@ -1,6 +1,6 @@
 from typing import NamedTuple
 from app import RaianBotService, Sender, Target, record, meta_export
-from arclet.alconna import ArgField, Args, CommandMeta
+from arclet.alconna import Field, Args, CommandMeta
 from arclet.alconna.graia import Alconna, Match, alcommand
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
 from fastapi.responses import JSONResponse, Response
@@ -55,10 +55,10 @@ async def get_sim_gacha(per: int = 2, status: int = 0):
 @alcommand(
     Alconna(
         "(抽卡|寻访)",
-        Args["count", int, ArgField(10, completion=lambda: "试试输入 300")],
+        Args["count", int, Field(10, completion=lambda: "试试输入 300")],
         meta=CommandMeta("模拟方舟寻访", example="$抽卡 300"),
-        send_error=True,
-    )
+    ),
+    send_error=True,
 )
 @record("抽卡")
 async def gacha_(app: Ariadne, sender: Sender, target: Target, count: Match[int]):

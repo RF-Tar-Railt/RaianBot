@@ -1,6 +1,6 @@
 import json
 import random
-from arclet.alconna import Args, Empty, Option, Arpamar, ArgField, CommandMeta
+from arclet.alconna import Args, Empty, Option, Arparma, Field, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand, fetch_name
 from graia.ariadne.message.element import At
 from graia.ariadne.message.chain import MessageChain
@@ -15,10 +15,10 @@ with open(json_filename, "r", encoding="UTF-8") as f_obj:
 
 ill = Alconna(
     "发病",
-    Args["name#你想对谁发病?", [str, At], Empty],
+    Args["name#你想对谁发病", [str, At], Empty],
     Option(
         "模板|模版",
-        Args["template", list(ill_templates.keys()), ArgField(completion=lambda: list(ill_templates.keys()))],
+        Args["template", list(ill_templates.keys()), Field(completion=lambda: list(ill_templates.keys()))],
         dest="tp",
         help_text="指定发病模板",
     ),
@@ -29,7 +29,7 @@ ill = Alconna(
 @alcommand(ill, send_error=True)
 @record("发病")
 @decorate({"name": fetch_name()})
-async def ill_(app: Ariadne, sender: Sender, name: str, result: Arpamar):
+async def ill_(app: Ariadne, sender: Sender, name: str, result: Arparma):
     """依据模板发病"""
     if result.find("tp"):
         template = ill_templates[result.query("tp.template")]

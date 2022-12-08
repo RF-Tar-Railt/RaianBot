@@ -1,4 +1,4 @@
-from arclet.alconna import Args, ArgField, CommandMeta
+from arclet.alconna import Args, Field, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import MusicShare, MusicShareKind
@@ -13,8 +13,8 @@ from plugins.config.music import MusicConfig
 
 music = Alconna(
     "点歌",
-    Args["name", str, ArgField(completion=lambda: "比如说, ‘以父之名’")],
-    Args["singer;O", str, ArgField(completion=lambda: "比如说, ‘周杰伦’")],
+    Args["name", str, Field(completion=lambda: "比如说, ‘以父之名’")],
+    Args["singer;?", str, Field(completion=lambda: "比如说, ‘周杰伦’")],
     meta=CommandMeta("在网易云点歌", usage="可以指定歌手, 与歌名用空格分开", example="$点歌 Rise"),
 )
 JUMP_URL = "https://music.163.com/song?id={id}"

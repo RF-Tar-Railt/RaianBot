@@ -1,20 +1,23 @@
-from arclet.alconna import Args, CommandMeta, AllParam, ArgField, Option, set_default
+from arclet.alconna import Args, CommandMeta, AllParam, Field, Option, set_default
 from arclet.alconna.graia import Alconna, alcommand, assign, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, AtAll, Image, Plain
 from graia.ariadne.app import Ariadne
-from graiax.text2img.playwright.builtin import html2img, PageParams
+from graiax.text2img.playwright import PageOption, HTMLRenderer
 
-from app import Sender, record, create_md
+from app import Sender, record, render_markdown
 
 m2i = Alconna(
     "文转图",
     Args["mode", "md|chain|html", "chain"],
     Option("--width|w", Args["width", int]),
     Option("--height|h", Args["height", int]),
-    Args["content", AllParam, ArgField(completion=lambda: "插入个图片？")],
+    Args["content", AllParam, Field(completion=lambda: "插入个图片？")],
     meta=CommandMeta("文字转图片", usage="可以选择 md 或 chain 模式", example="$文转图 --width 640 \\n# H1"),
-    behaviors=[set_default(640, "width", "width"), set_default(480, "height", "height")]
+    behaviors=[
+        set_default(value=640, arg="width", option="width"),
+        set_default(value=480, arg="height", option="height"),
+    ],
 )
 
 
@@ -26,7 +29,7 @@ async def chain(app: Ariadne, sender: Sender, message: MessageChain, width: Matc
     if isinstance((text := message.content[0]), Plain):
         assert isinstance(text, Plain)
         string = text.text
-        string = (''.join(string.split("文转图")[1:])).replace("chain", "")
+        string = ("".join(string.split("文转图")[1:])).replace("chain", "")
         content = message.content[1:]
         content.insert(0, Plain(string))
     else:
@@ -47,29 +50,43 @@ async def chain(app: Ariadne, sender: Sender, message: MessageChain, width: Matc
             md += "[@全体成员]()"
         else:
             md += str(elem).replace("\n\n", "\n").replace("\n", "\n\n").replace("#", "&#35;").replace(">", "&gt;")
-    return app.send_message(sender, MessageChain(Image(data_bytes=await create_md(
-        md, width=width.result, height=(md.count('\n') + 5) * 16
-    ))))
+    return app.send_message(
+        sender,
+        MessageChain(Image(data_bytes=await render_markdown(md, width=width.result, height=(md.count("\n") + 5) * 16))),
+    )
 
 
 @alcommand(m2i)
 @record("t2i")
 @assign("mode", "html")
 async def html(app: Ariadne, sender: Sender, message: MessageChain, width: Match[int], height: Match[int]):
-    return app.send_message(sender, MessageChain(
-        Image(data_bytes=await html2img(
-            '\n'.join((str(message).split("\n")[1:])),
-            page_params=PageParams(viewport={"width": width.result, "height": height.result})
-        ))))
+    return app.send_message(
+        sender,
+        MessageChain(
+            Image(
+                data_bytes=await HTMLRenderer(
+                    PageOption(viewport={"width": width.result, "height": height.result})
+                ).render(
+                    "\n".join((str(message).split("\n")[1:])),
+                )
+            )
+        ),
+    )
 
 
 @alcommand(m2i)
 @record("t2i")
 @assign("mode", "md")
 async def mad(app: Ariadne, sender: Sender, message: MessageChain, width: Match[int]):
-    return app.send_message(sender, MessageChain(
-        Image(data_bytes=await create_md(
-            res := '\n'.join(content := (str(message).split("\n")[1:])),
-            width=((max(len(i) for i in content) + 5) * 16 if content else width.result),
-            height=(res.count('\n') + 5) * 16))
-    ))
+    return app.send_message(
+        sender,
+        MessageChain(
+            Image(
+                data_bytes=await render_markdown(
+                    res := "\n".join(content := (str(message).split("\n")[1:])),
+                    width=((max(len(i) for i in content) + 5) * 16 if content else width.result),
+                    height=(res.count("\n") + 5) * 16,
+                )
+            )
+        ),
+    )

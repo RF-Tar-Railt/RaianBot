@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import Union, Optional
-from arclet.alconna import Args, Empty, Option, AllParam, Arpamar, CommandMeta
+from arclet.alconna import Args, Empty, Option, AllParam, Arparma, CommandMeta
 from arclet.alconna.graia import Alconna, alcommand, assign, Match
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import GroupMessage
@@ -135,7 +135,7 @@ async def rremove(app: Ariadne, sender: Group, source: Source, target: Match[Uni
 
 @alcommand(repeat, private=False, send_error=True)
 @assign("增加")
-async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arpamar):
+async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arparma):
     this_file = base_path / f"record_{sender.id}.json"
     content = result.query_with(list, "增加.content") or []
     if name.result in {"(.+?)", ".+?", ".*?", "(.*?)", ".+", ".*", "."}:
@@ -163,7 +163,7 @@ async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name
 
 @alcommand(repeat, private=False, send_error=True)
 @assign("修改")
-async def redit(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arpamar):
+async def redit(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arparma):
     this_file = base_path / f"record_{sender.id}.json"
     content = result.query_with(list, "增加.content") or []
     if name.result in {"(.+?)", ".+?", ".*?", "(.*?)", ".+", ".*", "."}:

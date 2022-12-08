@@ -1,7 +1,7 @@
 from io import BytesIO
 
 from arclet.alconna.graia import alcommand, Match
-from arclet.alconna import Alconna, CommandMeta, Args, ArgField
+from arclet.alconna import Alconna, CommandMeta, Args, Field
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.event.message import GroupMessage
@@ -15,8 +15,8 @@ from PIL import Image as PILImage, ImageDraw, ImageFont
 
 cmd_go = Alconna(
     "五子棋",
-    Args["first", {"我先": True, "电脑先": False}, ArgField(True, alias="我先")],
-    Args["rand", {"随机开局": True}, ArgField(False, alias="否")],
+    Args["first", {"我先": True, "电脑先": False}, Field(True, alias="我先")],
+    Args["rand", {"随机开局": True}, Field(False, alias="否")],
     meta=CommandMeta("人机五子棋游戏"),
 )
 

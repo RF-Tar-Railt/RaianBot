@@ -1,5 +1,5 @@
 import asyncio
-from typing import Union, Optional
+from typing import Optional
 from contextlib import suppress
 from PicImageSearch import Ascii2D, SauceNAO, Network, Iqdb
 from PicImageSearch.saucenao import SauceNAOResponse
@@ -10,7 +10,6 @@ from arclet.alconna.graia import Alconna, Match, ImgOrUrl, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.element import Image, Source, Forward, ForwardNode, Plain
-from graia.ariadne.model import Group, Member, Friend
 from graia.ariadne.app import Ariadne
 from graia.ariadne.util.interrupt import FunctionWaiter
 from loguru import logger
@@ -21,30 +20,21 @@ from plugins.config.img_search import ImgSearchConfig
 running = asyncio.Event()
 
 search = Alconna(
-    "搜图", Args["img;O", ImgOrUrl],
-    meta=CommandMeta("以图搜图，搜图结果会自动发送给你。", usage="该功能会尝试在三类搜索网站中搜索相似图片", example="$搜图 [图片]")
+    "搜图",
+    Args["img;?", ImgOrUrl],
+    meta=CommandMeta("以图搜图，搜图结果会自动发送给你。", usage="该功能会尝试在三类搜索网站中搜索相似图片", example="$搜图 [图片]"),
 )
 
 
 @alcommand(search, send_error=True)
 @record("搜图")
 async def saucenao(
-        app: Ariadne,
-        sender: Sender,
-        target: Target,
-        source: Source,
-        img: Match[str],
-        bot: RaianBotInterface
+    app: Ariadne, sender: Sender, target: Target, source: Source, img: Match[str], bot: RaianBotInterface
 ):
     """通过各API搜图源"""
 
     # @Waiter.create_using_function(listening_events=[GroupMessage, FriendMessage])
-    async def waiter1(
-            app1: Ariadne,
-            waiter1_sender: Sender,
-            waiter1_target: Target,
-            waiter1_message: MessageChain
-    ):
+    async def waiter1(app1: Ariadne, waiter1_sender: Sender, waiter1_target: Target, waiter1_message: MessageChain):
         if all([waiter1_sender.id == sender.id, waiter1_target.id == target.id]):
             waiter1_saying = waiter1_message.display
             if waiter1_saying == "取消":
@@ -55,28 +45,18 @@ async def saucenao(
                 await app1.send_message(sender, MessageChain("请发送图片"))
 
     if running.is_set():
-        await app.send_message(
-            sender, MessageChain("以图搜图正在运行，请稍后再试")
-        )
+        await app.send_message(sender, MessageChain("以图搜图正在运行，请稍后再试"))
         return
     if img.available and img.result:
         image_url = img.result
     else:
-        waite = await app.send_message(
-            sender, MessageChain("请发送图片以继续，发送取消可终止搜图")
-        )
+        waite = await app.send_message(sender, MessageChain("请发送图片以继续，发送取消可终止搜图"))
         image_url = await FunctionWaiter(waiter1, [GroupMessage, FriendMessage]).wait(20, "None")
         if not image_url:
-            return await app.send_message(
-                sender, MessageChain("已取消")
-            )
+            return await app.send_message(sender, MessageChain("已取消"))
         if image_url == "None":
-            return await app.send_message(
-                sender, MessageChain("等待超时"), quote=waite.id
-            )
-    await app.send_message(
-        sender, MessageChain("正在搜索，请稍后"), quote=source.id
-    )
+            return await app.send_message(sender, MessageChain("等待超时"), quote=waite.id)
+    await app.send_message(sender, MessageChain("正在搜索，请稍后"), quote=source.id)
     running.set()
     sauce_result = None
     ascii2_result = None
@@ -108,16 +88,15 @@ async def saucenao(
         await client.close()
     if all([not sauce_result, not ascii2_result, not iqdb_result]):
         running.clear()
-        return await app.send_message(
-            sender, MessageChain(f"搜索失败, 未找到有价值的数据. 请尝试重新搜索"), quote=source.id
-        )
+        return await app.send_message(sender, MessageChain("搜索失败, 未找到有价值的数据. 请尝试重新搜索"), quote=source.id)
     results = []
     if sauce_result:
         sauce_list = []
         for result in sauce_result.raw[:4]:
             sauce_list.append(
                 ForwardNode(
-                    target=target, time=source.time,
+                    target=target,
+                    time=source.time,
                     message=MessageChain(
                         Image(url=result.thumbnail),
                         Plain(
@@ -125,38 +104,32 @@ async def saucenao(
                             f"\n标题：{result.title}"
                             f"\n节点名：{result.index_name}"
                             f"\n链接：{result.url}"
-                        )
-                    )
+                        ),
+                    ),
                 )
             )
-        results.append(
-            ForwardNode(target=target, time=source.time, message=MessageChain(Forward(*sauce_list)))
-        )
+        results.append(ForwardNode(target=target, time=source.time, message=MessageChain(Forward(*sauce_list))))
     if ascii2_result:
         ascii2_list = []
         for result in ascii2_result.raw[:4]:
             ascii2_list.append(
                 ForwardNode(
-                    target=target, time=source.time,
+                    target=target,
+                    time=source.time,
                     message=MessageChain(
                         Image(url=result.thumbnail),
-                        Plain(
-                            f"\n标题：{result.title}"
-                            f"\n作者：{result.author}"
-                            f"\n链接：{result.url}"
-                        )
-                    )
+                        Plain(f"\n标题：{result.title}" f"\n作者：{result.author}" f"\n链接：{result.url}"),
+                    ),
                 )
             )
-        results.append(
-            ForwardNode(target=target, time=source.time, message=MessageChain(Forward(*ascii2_list)))
-        )
+        results.append(ForwardNode(target=target, time=source.time, message=MessageChain(Forward(*ascii2_list))))
     if iqdb_result:
         iqdb_list = []
         for result in iqdb_result.raw[:4]:
             iqdb_list.append(
                 ForwardNode(
-                    target=target, time=source.time,
+                    target=target,
+                    time=source.time,
                     message=MessageChain(
                         Image(url=result.thumbnail),
                         Plain(
@@ -164,20 +137,16 @@ async def saucenao(
                             f"\n来源：{result.source}"
                             f"\n备注：{result.content}"
                             f"\n链接：{result.url}"
-                        )
-                    )
+                        ),
+                    ),
                 )
             )
-        results.append(
-            ForwardNode(target=target, time=source.time, message=MessageChain(Forward(*iqdb_list)))
-        )
+        results.append(ForwardNode(target=target, time=source.time, message=MessageChain(Forward(*iqdb_list))))
     try:
         res = await app.send_message(
-            sender,  MessageChain(
-                Forward(
-                    ForwardNode(target=target, message=MessageChain("搜索结果："), time=source.time),
-                    *results
-                )
+            sender,
+            MessageChain(
+                Forward(ForwardNode(target=target, message=MessageChain("搜索结果："), time=source.time), *results)
             ),
             quote=source.id,
         )

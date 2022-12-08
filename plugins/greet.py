@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import re
 from app import record
 from graia.ariadne import Ariadne
 from graia.ariadne.event.message import GroupMessage
@@ -8,37 +8,31 @@ from graia.ariadne.message.element import At
 from graia.ariadne.model.relationship import Group, Member
 from graiax.shortcut.saya import listen, priority
 
+pat = re.compile("^(早上好|早安|中午好|下午好|晚上好).*?")
+pat1 = re.compile(".*?(早上好|早安|中午好|下午好|晚上好)$")
+
 
 @listen(GroupMessage)
 @record("greet")
 @priority(7)
 async def _init_g(app: Ariadne, group: Group, message: MessageChain, member: Member):
     """简单的问好"""
-    msg = message.display
+    msg = str(message)
     now = datetime.now()
-    if (
-        msg.startswith("早上好")
-        or msg.startswith("早安")
-        or msg.startswith("中午好")
-        or msg.startswith("下午好")
-        or msg.startswith("晚上好")
-    ):
+    if pat.fullmatch(msg) or pat1.fullmatch(msg):
         if 6 <= now.hour < 11:
-            reply = "\t早上好~"
+            reply = "\tο(=•ω＜=)ρ⌒☆\n早上好~"
         elif 11 <= now.hour < 13:
-            reply = "\t中午好~"
+            reply = "\t(o゜▽゜)o☆\n中午好~"
         elif 13 <= now.hour < 18:
-            reply = "\t下午好~"
+            reply = "\t（＾∀＾●）ﾉｼ\n下午好~"
         elif 18 <= now.hour < 24:
-            reply = "\t晚上好~"
+            reply = "\tヾ(≧ ▽ ≦)ゝ\n晚上好~"
         else:
-            reply = "\t时候不早了，睡觉吧"
+            reply = "\t≧ ﹏ ≦\n时候不早了，睡觉吧"
         await app.send_group_message(group, MessageChain(At(member.id), reply))
 
-    if msg.startswith("晚安"):
-        # if str(member.id) in sign_info:
-        #     sign_info[str(member.id)]['trust'] += 1 if sign_info[str(member.id)]['trust'] < 200 else 0
-        #     sign_info[str(member.id)]['interactive'] += 1
+    if msg.startswith("晚安") or msg.endswith("晚安"):
         if 0 <= now.hour < 6:
             reply = "\t时候不早了，睡觉吧~(￣o￣) . z Z"
         elif 20 < now.hour < 24:

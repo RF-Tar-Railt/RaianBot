@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import sys
 import traceback
-from typing import Literal, Set, Type, Union
+from typing import Literal 
 
-from arclet.alconna import Alconna, namespace
+from arclet.alconna import namespace
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
 from creart import it
@@ -53,15 +55,15 @@ class RaianBotService(Service):
         self.data = DataInstance.get(None) or BotDataManager()
         BotInstance.set(self)
 
-    def get_interface(self, _: Type[RaianBotInterface]) -> RaianBotInterface:
+    def get_interface(self, _: type[RaianBotInterface]) -> RaianBotInterface:
         return RaianBotInterface()
 
     @property
-    def required(self) -> Set[Union[str, Type[ExportInterface]]]:
+    def required(self) -> set[str | type[ExportInterface]]:
         return set()
 
     @property
-    def stages(self) -> Set[Literal["preparing", "blocking", "cleanup"]]:
+    def stages(self) -> set[Literal["preparing", "blocking", "cleanup"]]:
         return {"preparing", "cleanup"}
 
     @classmethod
@@ -89,7 +91,7 @@ class RaianBotService(Service):
                                 self.data.add_meta(**export_meta)
                         except BaseException as e:
                             logger.warning(
-                                f"fail to load {path.name}.{name}, caused by "
+                                f"fail to load {path}.{name}, caused by "
                                 f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
                             )
                             manager.status.exiting = True
@@ -126,8 +128,8 @@ def launch(debug_log: bool = True):
         np.builtin_option_name["help"] = set(config.command.help)
         np.builtin_option_name["shortcut"] = set(config.command.shortcut)
         np.builtin_option_name["completion"] = set(config.command.completion)
+        np.formatter_type = MarkdownTextFormatter
 
-    Alconna.config(formatter_type=MarkdownTextFormatter)
     saya = it(Saya)
     bcc = it(Broadcast)
     bcc.prelude_dispatchers.append(RaianBotDispatcher())
@@ -140,7 +142,7 @@ def launch(debug_log: bool = True):
     manager.add_service(FastAPIService(fastapi))
     manager.add_service(UvicornService(config.api.host, config.api.port))
     manager.add_service(RaianBotService(config))
-    Ariadne.config(launch_manager=manager)
+    Ariadne.config(launch_manager=manager, default_account=config.mirai.account)
     set_output("DEBUG" if debug_log else "INFO")
     Ariadne(
         connection=conn_cfg(

@@ -1,6 +1,7 @@
 from typing import Tuple
 from nepattern import BasePattern, Bind
-from arclet.alconna import Args, Arpamar, CommandMeta, namespace, Empty
+from arclet.alconna import Args, Arparma, CommandMeta, namespace, Empty, ArgFlag, Arg, MultiVar
+from arclet.alconna.tools import MarkdownTextFormatter
 from arclet.alconna.graia import Alconna, alcommand, AtID, Match
 from graia.ariadne.event.lifecycle import AccountShutdown
 from graiax.shortcut.saya import listen
@@ -13,10 +14,11 @@ from library.dice import *
 
 with namespace("coc") as np:
     np.headers = [".", "。"]
+    np.formatter_type = MarkdownTextFormatter
 
     rd_c = Alconna(
         "r( )?{dabp}",
-        Args["a_number;O#ra指令使用的数值", int],
+        Arg("a_number", int, notice="ra指令使用的数值", flags=[ArgFlag.OPTIONAL]),
         meta=CommandMeta(
             "投掷指令",
             usage="d：骰子设定指令\n"
@@ -29,7 +31,7 @@ with namespace("coc") as np:
 
     rhd_c = Alconna(
         "rh( )?{dabp}",
-        Args["a_number;O#ra指令使用的数值", int],
+        Arg("a_number", int, notice="ra指令使用的数值", flags=[ArgFlag.OPTIONAL]),
         meta=CommandMeta(
             "投暗掷指令",
             usage="d：骰子设定指令\n"
@@ -43,7 +45,7 @@ with namespace("coc") as np:
     sc_c = Alconna(
         "sc",
         Args["sf#惩罚值", s_or_f],
-        Args["san;O", int],
+        Args["san;?", int],
         meta=CommandMeta(
             "疯狂检定",
             usage="success：判定成功降低san值，支持x或xdy语法\n"
@@ -57,7 +59,7 @@ with namespace("coc") as np:
     li_c = Alconna("li", meta=CommandMeta("总结疯狂症状", usage="自动掷骰1d10"))
     coc_c = Alconna(
         "coc",
-        Args["val;O", int],
+        Args["val;?", int],
         meta=CommandMeta("coc角色作成", example=".coc 20")
     )
     en_c = Alconna(
@@ -67,19 +69,19 @@ with namespace("coc") as np:
     )
     set_c = Alconna(
         "set",
-        Args["name#属性名称，如name、名字、str、力量", str, Empty]["val;O#属性值", str],
+        Args["name#属性名称，如name、名字、str、力量", str, Empty]["val;?#属性值", str],
         meta=CommandMeta(
             "角色卡设定", usage="可以单独输入set指令，将自动读取最近一次coc指令结果进行保存", example=".set name HEH"
         ),
     )
     show_c = Alconna(
         "show",
-        Args["uid;O", AtID],
+        Args["uid;?", AtID],
         meta=CommandMeta("查看指定调查员保存的人物卡", usage="不传入 uid 则查询自身人物卡"),
     )
     shows_c = Alconna(
         "shows",
-        Args["uid;O", AtID],
+        Args["uid;?", AtID],
         meta=CommandMeta("查看指定调查员的技能表", usage="不传入 uid 则查询自身技能表"),
     )
     sa_c = Alconna(
@@ -89,7 +91,7 @@ with namespace("coc") as np:
     )
     del_c = Alconna(
         "del",
-        Args["data;S", Bind[str, "c|card|xxx"]],
+        Args["data", MultiVar(Bind[str, "c|card|xxx"], "+")],
         meta=CommandMeta(
             "删除数据",
             usage="data可以有以下值\n"
@@ -109,7 +111,7 @@ card.load()
 @record("coc")
 async def rd_handle(
     app: Ariadne, sender: Sender,
-    result: Arpamar, a_number: Match[int]
+    result: Arparma, a_number: Match[int]
 ):
     """coc骰娘功能"""
     pat = result.header["dabp"]
@@ -126,7 +128,7 @@ async def rd_handle(
 @record("coc")
 async def rhd_handle(
     app: Ariadne, sender: Sender, target: Target,
-    result: Arpamar, a_number: Match[int]
+    result: Arparma, a_number: Match[int]
 ):
     if not app.get_friend(target.id):
         return await app.send_message(sender, "请先加bot 为好友")
@@ -186,7 +188,7 @@ async def sc_handle(app: Ariadne, sender: Sender, target: Target, sf: Match[str]
 
 @alcommand(set_c)
 @record("coc")
-async def set_handle(app: Ariadne, sender: Sender, target: Target, result: Arpamar):
+async def set_handle(app: Ariadne, sender: Sender, target: Target, result: Arparma):
     if isinstance(sender, Group):
         res = card.set_handler(
             result.all_matched_args.get("name"),

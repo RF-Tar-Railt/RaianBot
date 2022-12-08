@@ -1,15 +1,15 @@
 [project]
 name = "raian-bot"
-version = "0.15.1"
+version = "0.16.0"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna<2.0.0, >=1.3.2.2",
-    "arclet-alconna-graia<1.0.0, >=0.9.0",
-    "arclet-alconna-tools>=0.2.1",
-    "graia-ariadne<0.10.0, >=0.9.4",
+    "arclet-alconna<2.0.0, >=1.4.2.1",
+    "arclet-alconna-graia<1.0.0, >=0.10.0",
+    "arclet-alconna-tools>=0.3.0",
+    "graia-ariadne<0.11.0, >=0.9.4",
     "graia-amnesia>=0.6.0",
     "graia-broadcast>=0.18.2",
     "graia-saya>=0.0.16",
@@ -26,9 +26,9 @@ dependencies = [
     "tencentcloud-sdk-python==3.0.495",
     "ujson~=5.1.0",
     "creart~=0.2.1",
-    "graiax-playwright>=0.2.0.post1",
+    "graiax-playwright>=0.2.1",
     "graiax-silkcoder[ffmpeg]>=0.3.4",
-    "graiax-text2img-playwright>=0.1.0b5",
+    "graiax-text2img-playwright>=0.2",
     "diro-py>=0.1.1",
     "httpx>=0.23.0",
     "arknights-toolkit>=0.3.0",

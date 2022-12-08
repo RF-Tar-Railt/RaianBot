@@ -1,4 +1,4 @@
-from arclet.alconna import Args, Option, CommandMeta, Arpamar
+from arclet.alconna import Args, Option, CommandMeta, Arparma, MultiVar
 from arclet.alconna.graia import Alconna, alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
@@ -9,14 +9,14 @@ from app import record, Sender
 setu = Alconna(
     "涩图",
     Option("-r18", help_text="是否查找r18涩图"),
-    Option("-tag", Args["tags;S", str], help_text="关键字"),
+    Option("-tag", Args["tags", MultiVar(str, "+")], help_text="关键字"),
     meta=CommandMeta("顾名思义"),
 )
 
 
 @alcommand(setu)
 @record('setu')
-async def send_setu(app: Ariadne, sender: Sender, result: Arpamar):
+async def send_setu(app: Ariadne, sender: Sender, result: Arparma):
     """随机涩图发送"""
     print(sender)
     data = {"r18": 2 if result.find("r18") else 0}

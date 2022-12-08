@@ -3,8 +3,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from app import RaianBotInterface, Sender, permission, create_md, send_handler
-from arclet.alconna import ArgField, Args, CommandMeta, Option
+from app import RaianBotInterface, Sender, permission, render_markdown, send_handler
+from arclet.alconna import Field, Args, CommandMeta, Option
 from arclet.alconna.graia import (
     Alconna,
     Match,
@@ -17,7 +17,6 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Image
 from graia.ariadne.model import Group
 from graia.saya import Saya
-from graiax.text2img.playwright.builtin import MarkdownToImg
 from loguru import logger
 from library.aiml.lang_support import is_chinese
 
@@ -26,19 +25,19 @@ module_control = Alconna(
     Option("列出", alias=["list"]),
     Option(
         "卸载",
-        Args["path", str, ArgField(completion=lambda: "试试用‘admin’")],
+        Args["path", str, Field(completion=lambda: "试试用‘admin’")],
         alias=["关闭", "uninstall"],
         help_text="卸载一个模块",
     ),
     Option(
         "安装",
-        Args["path", str, ArgField(completion=lambda: "试试用‘admin’")],
+        Args["path", str, Field(completion=lambda: "试试用‘admin’")],
         alias=["开启", "install"],
         help_text="安装一个模块",
     ),
     Option(
         "重载",
-        Args["path", str, ArgField(completion=lambda: "试试用‘admin’")],
+        Args["path", str, Field(completion=lambda: "试试用‘admin’")],
         alias=["重启", "reload"],
         help_text="重新载入一个模块",
     ),
@@ -50,13 +49,13 @@ function_control = Alconna(
     Option("列出", alias=["list"]),
     Option(
         "禁用",
-        Args["name", str, ArgField(completion=lambda: "试试用‘greet’")],
+        Args["name", str, Field(completion=lambda: "试试用‘greet’")],
         alias=["ban"],
         help_text="禁用一个功能",
     ),
     Option(
         "启用",
-        Args["name", str, ArgField(completion=lambda: "试试用‘greet’")],
+        Args["name", str, Field(completion=lambda: "试试用‘greet’")],
         alias=["active"],
         help_text="启用一个功能",
     ),
@@ -99,7 +98,7 @@ async def debug(app: Ariadne, sender: Sender, bot: RaianBotInterface):
             md += "\n- 所在群组已禁用功能: \n  - " + "\n  - ".join(group.disabled) + "\n"
     return await app.send_message(
         sender,
-        MessageChain(Image(data_bytes=await create_md(md, width=360, height=(md.count("\n") + 5) * 16))),
+        MessageChain(Image(data_bytes=await render_markdown(md, width=360, height=(md.count("\n") + 5) * 16))),
     )
 
 
@@ -119,7 +118,7 @@ async def _m_list(app: Ariadne, sender: Sender, bot: RaianBotInterface):
         md += f"| {channel.meta['name'] or path.split('.')[-1]} | {path} | ✔ 已安装 |\n"
     for path in bot.config.plugin.disabled:
         md += f"| {path.split('.')[-1]} | {path} | ❌ 已卸载 |\n"
-    return await app.send_message(sender, MessageChain(Image(data_bytes=await MarkdownToImg().render(md))))
+    return await app.send_message(sender, MessageChain(Image(data_bytes=await render_markdown(md))))
 
 
 @alcommand(module_control, send_error=True)
@@ -235,7 +234,7 @@ async def _f_list(app: Ariadne, sender: Group, bot: RaianBotInterface):
         md += (
             f"| {i} | {stat} | {bot.data.func_description(i)}{'(默认禁用)' if i in bot.data.disable_functions else ''} |\n"
         )
-    return await app.send_message(sender, MessageChain(Image(data_bytes=(await MarkdownToImg().render(md)))))
+    return await app.send_message(sender, MessageChain(Image(data_bytes=(await render_markdown(md)))))
 
 
 @alcommand(function_control, private=False, send_error=True)

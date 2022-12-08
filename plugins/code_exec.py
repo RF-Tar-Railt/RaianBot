@@ -9,11 +9,11 @@ from app import (
     RaianBotInterface,
     Sender,
     create_image,
-    create_md,
+    render_markdown,
     permission,
     reports_md,
 )
-from arclet.alconna import Alconna, ArgField, Args, Arpamar, CommandMeta, Option
+from arclet.alconna import Alconna, Field, Args, Arparma, CommandMeta, Option, MultiVar
 from arclet.alconna.graia import alcommand, shortcuts, startswith
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
@@ -23,7 +23,7 @@ from graiax.shortcut.saya import listen
 
 code = Alconna(
     "执行",
-    Args["code;S", str, ArgField(completion=lambda: "试试 print(1+1)")],
+    Args["code", MultiVar(str), Field(completion=lambda: "试试 print(1+1)")] / "\n",
     Option("out", Args["name", str, "res"]),
     meta=CommandMeta(description="执行简易代码", example="$执行 print(1+1)", hide=True),
 )
@@ -34,7 +34,7 @@ code = Alconna(
 )
 @alcommand(code, send_error=True)
 @permission("admin")
-async def execc(app: Ariadne, sender: Sender, result: Arpamar, interface: RaianBotInterface):
+async def execc(app: Ariadne, sender: Sender, result: Arparma, interface: RaianBotInterface):
     codes = str(result.origin).split("\n")
     output = result.query("out.name", "res")
     if len(codes) == 1:
@@ -77,7 +77,7 @@ async def execc(app: Ariadne, sender: Sender, result: Arpamar, interface: RaianB
         sys.stdout = _to
         return await app.send_message(
             sender,
-            MessageChain(Image(data_bytes=(await create_md(reports_md(e), 1200)))),
+            MessageChain(Image(data_bytes=(await render_markdown(reports_md(e))))),
         )
     finally:
         sys.stdout = _to
@@ -112,7 +112,7 @@ async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
             MessageChain(
                 Image(
                     data_bytes=(
-                        await create_md(
+                        await render_markdown(
                             md,
                             width=max(max(len(i.strip()) for i in md.splitlines()) * 14, 240),
                             height=(md.count("\n") + 7) * 14,
