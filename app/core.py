@@ -23,6 +23,7 @@ from graiax.playwright import PlaywrightService
 from launart import ExportInterface, Service, Launart
 from loguru import logger
 import pkgutil
+from pathlib import Path
 
 from .config import BotConfig, extract_plugin_config
 from .context import BotInstance, ConfigInstance, DataInstance
@@ -79,7 +80,7 @@ class RaianBotService(Service):
                 saya = it(Saya)
                 with saya.module_context():
                     for module_info in pkgutil.iter_modules(self.config.plugin.paths):
-                        path = module_info.module_finder.path  # noqa
+                        path = Path(module_info.module_finder.path).stem  # noqa
                         name = module_info.name
                         if name == "config" or name.startswith("_") or f"{path}.{name}" in self.config.plugin.disabled:
                             continue

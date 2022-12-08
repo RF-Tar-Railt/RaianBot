@@ -3,7 +3,7 @@ import setuptools
 setuptools.setup(
     name="raian-bot",
     url="https://github.com/RF-Tar-Railt/RaianBot",
-    version="0.15.1",
+    version="0.16.0",
     author="RF-Tar-Railt",
     author_email="rf_tar_railt@qq.com",
     description="simple qq bot bases on Araidne and Alconna",
