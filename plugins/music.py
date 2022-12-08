@@ -8,7 +8,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.util.interrupt import FunctionWaiter
 import asyncio
 
-from app import Sender, BotConfig
+from app import Sender, BotConfig, Target
 from plugins.config.music import MusicConfig
 
 music = Alconna(
@@ -22,7 +22,7 @@ MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"
 
 
 @alcommand(music)
-async def song(app: Ariadne, sender: Sender, name: Match[str], singer: Match[str], config: BotConfig):
+async def song(app: Ariadne, sender: Sender, target: Target, name: Match[str], singer: Match[str], config: BotConfig):
     _singer = f"{singer.result} " if singer.available else ""
     api = config.plugin.get(MusicConfig).api
     if not api:
@@ -48,8 +48,8 @@ async def song(app: Ariadne, sender: Sender, name: Match[str], singer: Match[str
             ),
         )
 
-        async def waiter(waiter_sender: Sender, message: MessageChain):
-            if sender.id == waiter_sender.id:
+        async def waiter(waiter_sender: Sender, waiter_target: Target, message: MessageChain):
+            if sender.id == waiter_sender.id and waiter_target.id == target.id:
                 return int(str(message)) if str(message).isdigit() else False
 
         res = await FunctionWaiter(

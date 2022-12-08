@@ -33,35 +33,37 @@ trans = (
     if bot.config.plugin.get(DialogConfig).tencent
     else YoudaoTrans()
 )
-aiml = AIML(
-    trans,
-    name=f" {bot.config.bot_name}",
-    gender=" girl",
-    mother=" Arclet",
-    father=" RF-Tar-Railt",
-    phylum=" Robot",
-    master=f" {bot.config.admin.master_name}",
-    botmaster=" Master",
-    birth=" 2004-02-02",
-    birthplace=" Terra",
-    location=" Rhodes Island",
-    age=" 18",
-    kingdom=" your heart",
-    religion=" Atheists",
-    family=" Railt's",
-    order=" Nihilian",
-)
-
-aiml_files = "assets/data/alice"
-aiml_brain = f"{bot.config.cache_dir}/plugins/aiml_brain.brn"
-aiml.load_aiml(aiml_files, aiml_brain)
-nickname = bot.config.plugin.get(DialogConfig).nickname.strip()
+config = bot.config.plugin.get(DialogConfig)
+nickname = config.nickname.strip()
 if not nickname:
     nickname = bot.config.bot_name
 
 tcbot = None
-if bot.config.plugin.get(DialogConfig).tencent:
+if config.tencent:
     tcbot = TencentChatBot(nickname, bot.config.tencent.secret_id, bot.config.tencent.secret_key)
+aiml = None
+if not tcbot or not config.gpt_api:
+    aiml = AIML(
+        trans,
+        name=f" {bot.config.bot_name}",
+        gender=" girl",
+        mother=" Arclet",
+        father=" RF-Tar-Railt",
+        phylum=" Robot",
+        master=f" {bot.config.admin.master_name}",
+        botmaster=" Master",
+        birth=" 2004-02-02",
+        birthplace=" Terra",
+        location=" Rhodes Island",
+        age=" 18",
+        kingdom=" your heart",
+        religion=" Atheists",
+        family=" Railt's",
+        order=" Nihilian",
+    )
+    aiml_files = "assets/data/alice"
+    aiml_brain = f"{bot.config.cache_dir}/plugins/aiml_brain.brn"
+    aiml.load_aiml(aiml_files, aiml_brain)
 
 
 async def voice(string: str):
@@ -116,9 +118,8 @@ def error_handle(t):
         [
             t,
             t,
-            t,
             "？",
-            "？？",
+            "。。。",
             "好好好",
             "是是是",
             "我现在还不太明白你在说什么呢，但没关系，以后的我会变得更强呢！",
@@ -143,7 +144,9 @@ async def random_ai(app: Ariadne, sender: Sender, target: Target, msg: str, **kw
             return reply
         if random.randint(1, 10) > 5:
             return error_handle(msg)
-    return await aiml.chat(message=msg, session_id=session)
+    if aiml:
+        return await aiml.chat(message=msg, session_id=session)
+    return error_handle(msg)
 
 
 @listen(GroupMessage, FriendMessage)
