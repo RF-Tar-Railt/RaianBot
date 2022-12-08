@@ -28,6 +28,7 @@ async def _init_g(app: Ariadne, group: Group, interface: RaianBotInterface):
 
 
 @listen(BotLeaveEventKick)
+@priority(13)
 async def get_kicked(app: Ariadne, event: BotLeaveEventKick, interface: RaianBotInterface):
     data = interface.data
     config = interface.config
@@ -48,6 +49,7 @@ async def get_kicked(app: Ariadne, event: BotLeaveEventKick, interface: RaianBot
 
 
 @listen(BotLeaveEventDisband)
+@priority(13)
 async def handle_disband(app: Ariadne, event: BotLeaveEventDisband, interface: RaianBotInterface):
     data = interface.data
     config = interface.config

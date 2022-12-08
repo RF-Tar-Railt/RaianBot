@@ -95,10 +95,14 @@ async def guess(
                 sender,
                 f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！",
             )
-        if simple.result:
-            await app.send_message(sender, MessageChain(wordle.draw(res, simple=True)))
-        else:
-            await app.send_message(sender, MessageChain(Image(data_bytes=wordle.draw(res))))
+        try:
+            if simple.result:
+                await app.send_message(sender, MessageChain(wordle.draw(res, simple=True)))
+            else:
+                await app.send_message(sender, MessageChain(Image(data_bytes=wordle.draw(res))))
+        except Exception as e:
+            await app.send_friend_message(bot.config.admin.master_id, f'{e}')
+            continue
         if res.state != "guessing":
             break
     return await app.send_message(

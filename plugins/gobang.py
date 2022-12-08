@@ -9,7 +9,7 @@ from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
 from playwright.async_api import Page, ConsoleMessage
 from graia.ariadne.util.interrupt import FunctionWaiter
-from app import Sender, record
+from app import Sender, record, RaianBotInterface
 from asyncio import Event
 from PIL import Image as PILImage, ImageDraw, ImageFont
 
@@ -20,13 +20,11 @@ cmd_go = Alconna(
     meta=CommandMeta("人机五子棋游戏"),
 )
 
-running = Event()
-
 
 @alcommand(cmd_go, private=False)
 @record("五子棋")
-async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[bool]):
-    if running.is_set():
+async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[bool], bot: RaianBotInterface):
+    if bot.data.cache.get("gobang"):
         return await app.send_message(sender, "请耐心排队~")
     start = Event()
     browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
@@ -52,7 +50,7 @@ async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[b
                 if msg.isalpha() and len(msg) > 1:
                     return ord(msg[0].upper()) - 65, ord(msg[1].upper()) - 65
 
-        running.set()
+        bot.data.cache["gobang"] = sender.id
 
         await page.click("html")
         page.on("console", callback)
@@ -87,7 +85,7 @@ async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[b
         )
         await app.send_message(sender, MessageChain(Image(data_bytes=bio.getvalue())))
         await app.send_message(sender, "五子棋游戏开始！\n发送 取消 可以结束当前游戏\n发送坐标来下子，例如“HH”")
-        while (await state.inner_text()) != " 请点击 `开始` 按钮":
+        while ((await state.inner_text()) != " 请点击 `开始` 按钮") or not over:
             _bio = BytesIO()
             res = await FunctionWaiter(waiter, [GroupMessage]).wait(timeout=120, default=False)
             if res is None:
@@ -117,6 +115,10 @@ async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[b
                 subsampling=2,
                 qtables="web_high",
             )
-            await app.send_message(sender, MessageChain(Image(data_bytes=_bio.getvalue())))
-        running.clear()
+            try:
+                await app.send_message(sender, MessageChain(Image(data_bytes=_bio.getvalue())))
+            except Exception as e:
+                await app.send_friend_message(bot.config.admin.master_id, f'{e}')
+                continue
+        bot.data.cache.pop("gobang")
         return await app.send_message(sender, "五子棋游戏结束！")
