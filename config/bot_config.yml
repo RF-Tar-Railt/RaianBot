@@ -5,7 +5,7 @@ cache_dir: 'cache'
 ## mirai-api-http 相关配置
 mirai:
   ## bot 登录账号
-  account: 123456789
+  account: 'NOT-A-NUMBER'
   ## mirai-api-http 的链接
   host: "localhost"
   ## mirai-api-http 的端口
@@ -15,12 +15,12 @@ mirai:
 ## bot 权限相关配置
 admin:
   ## bot 的控制者的账号
-  master_id: 987654321
+  master_id: 'NOT-A-NUMBER'
   ## bot 的控制者的名字
   master_name: "admin"
   ## bot 的管理者(除开控制者)的账号
   admins:
-    - 111111111
+    - 'NOT-A-NUMBER'
 ## 浏览器相关配置
 browser:
   type: "chromium"

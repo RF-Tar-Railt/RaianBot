@@ -6,6 +6,64 @@
 
 QQ交流：[122680593](https://jq.qq.com/?_wv=1027&k=lhxRkibY)
 
+---
+
+## 目录
+
++ **[项目结构](#项目结构)**
++ **[已有功能](#已有功能)**
++ **[下载](#下载)**
++ **[安装](#安装)**
+  + [配置环境](#配置环境)
+  + [配置文件](#配置文件)
+  + [运行程序](#运行程序)
+
+---
+
+## 项目结构
+
+```
+RaianBot
+├─── app                         机器人功能相关
+│   ├─── core.py                 机器人核心代码, 负责统一调度资源
+│   ├─── data.py                 机器人数据访问/修改接口
+│   ├─── config.py               机器人配置访问接口
+│   ├─── logger.py               为log增加文件输出
+│   ├─── control.py              鉴权接口
+│   └─── ...
+├─── assets
+│   ├─── data                    存放插件运行时需要的静态资源或数据文件
+│   │   ├─── ill_templates.json  
+│   │   └─── ...
+│   ├─── image                   存放插件运行时需要图片资源
+│   └─── ...
+├─── cache                       机器人运行时产生的临时文件或缓存数据
+│   ├─── plugins 
+│   │   ├─── weibo_data.json     插件运行时产生的临时文件或缓存数据
+│   │   └─── ...
+│   ├─── users_data.json         用户数据文件
+│   ├─── groups_data.json        群组数据文件
+│   └─── basic_data.json         基础数据文件
+├─── config
+│   ├─── plugins                 机器人插件的配置目录 (可以在主配置文件中自行变更)
+│   │   └─── ...                 各插件的配置 (如需要)
+│   └─── bot_config.yml          机器人主配置文件
+├─── logs                        机器人日志目录
+│   ├─── latest.log
+│   └─── ...
+├─── library                     插件依赖的功能库，但没有上传到 pypi等中
+│   ├─── gacha                   抽卡功能库
+│   ├─── weibo                   微博 api 功能库
+│   ├─── rand                    存放随机函数
+│   └─── ...
+├─── plugins                     机器人插件目录 (可以在主配置文件中自行变更)
+│   └─── ...
+├─── main.py                     应用执行入口
+├─── requirements.txt            项目运行环境依赖包
+├─── README.md                   项目说明文件
+└─── ...  
+```
+
 ## 已有功能
 
 - 聊天对话 （需要适配）
@@ -34,7 +92,12 @@ QQ交流：[122680593](https://jq.qq.com/?_wv=1027&k=lhxRkibY)
 
 ## 下载
 
-链接: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/download/v0.13/raian-bot-0.13.0.zip)
+下载压缩包: [link](https://github.com/RF-Tar-Railt/RaianBot/releases/latest)(点击 Assets 下的 raian-bot-XXX)
+
+或 直接使用 git clone:
+```shell
+git clone https://github.com/RF-Tar-Railt/RaianBot.git
+```
 
 ## 安装
 
@@ -64,10 +127,11 @@ pip install -r requirements.txt
 5. 按提示修改其中的`account`与`password`
 
 **bot部分**
-1. 打开`bot_config.yml`
-2. 按照提示逐个修改. 其中`verify_key`, `host`, `port`应与`config.yml`内的相同
+1. bot 的初始配置位于 `./config/` 下
+2. 首先更改 `bot_config.yml`，按照提示逐个修改. 其中`mirai.verify_key`, `mirai.host`, `mirai.port`应与`config.yml`内的相同
+3. 其次适当调整各插件的配置文件, 默认位置为 `./config/plugins/`
 
-### 运行配置
+### 运行程序
 
 **mirai部分**
 1. 在`mcl`文件夹下双击运行`mcl.cmd`文件
@@ -75,51 +139,6 @@ pip install -r requirements.txt
 3. 命令框内出现正常对话信息则代表登录成功
 
 **bot部分**
-1. 运行`main.py`, 机器人发送提示信息则代表启动成功
-2. 根据喜好自行配置`main.py`中的各项初始化配置
 
-## 项目结构
+运行`main.py`, 机器人发送提示信息则代表启动成功
 
-```
-RaianBot
-├─── app                         机器人功能相关
-│   ├─── core.py                 机器人核心代码, 负责统一调度资源
-│   ├─── data.py                 机器人数据访问/修改接口
-│   ├─── config.py               机器人配置访问接口
-│   ├─── logger.py               为log增加文件输出
-│   ├─── model.py                机器人数据模型
-│   ├─── control.py              鉴权接口
-│   └─── ...
-├─── assets
-│   ├─── data                    存放插件运行时需要的静态资源或数据文件
-│   │   ├─── ill_templates.json  
-│   │   └─── ...
-│   ├─── image                   存放插件运行时需要图片资源
-│   └─── ...
-├─── cache                       机器人运行时产生的临时文件或缓存数据
-│   ├─── plugins 
-│   │   ├─── weibo_data.json     插件运行时产生的临时文件或缓存数据
-│   │   └─── ...
-│   ├─── users_data.json         用户数据文件
-│   ├─── groups_data.json        群组数据文件
-│   └─── basic_data.json         基础数据文件
-├─── logs                        机器人日志目录
-│   ├─── latest.log
-│   └─── ...
-├─── library                     插件依赖的功能库，但没有上传到 pypi等中
-│   ├─── gacha                   抽卡功能库
-│   ├─── weibo                   微博 api 功能库
-│   ├─── rand                    存放随机函数
-│   └─── ...
-├─── plugins                     机器人插件目录 (可以进配置文件中自行变更)
-│   └─── ...
-├─── utils                       工具函数存放目录
-│   ├─── exception_report.py     报错处理工具
-│   ├─── generate_img.py         图片生成工具
-│   └─── ...             
-├─── bot_config.yml              机器人配置文件
-├─── main.py                     应用执行入口
-├─── requirements.txt            项目运行环境依赖包
-├─── README.md                   项目说明文件
-└─── ...  
-```
