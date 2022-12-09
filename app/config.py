@@ -3,7 +3,7 @@ import re
 import sys
 from contextlib import suppress
 from pathlib import Path
-from typing import List, Optional, cast, Dict, TypeVar, Type
+from typing import List, Optional, cast, Dict, TypeVar, Type, Literal
 
 import yaml
 from graia.ariadne.message.element import At, Face
@@ -46,6 +46,25 @@ class AdminConfig(BaseModel):
 
     admins: List[int] = Field(default_factory=list)
     """bot 的管理者(除开控制者)的账号"""
+
+
+class BrowserConfig(BaseModel):
+    type: Literal["chromium", "firefox", "webkit"] = Field(default="chromium")
+    """Playwright 浏览器类型"""
+
+    channel: Optional[
+        Literal[
+            "chrome",
+            "chrome-beta",
+            "chrome-dev",
+            "chrome-canary",
+            "msedge",
+            "msedge-beta",
+            "msedge-dev",
+            "msedge-canary",
+        ]
+    ] = Field(default=None)
+    """本地浏览器通道，不指定则使用下载的浏览器"""
 
 
 class CommandConfig(BaseModel):
@@ -99,6 +118,9 @@ class BotConfig(BaseModel):
 
     admin: AdminConfig
     """bot 权限相关配置"""
+
+    browser: BrowserConfig
+    """浏览器相关配置"""
 
     command: CommandConfig
     """bot 命令相关配置"""

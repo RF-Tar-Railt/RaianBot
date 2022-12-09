@@ -102,6 +102,9 @@ class BotDataManager:
         self.group_path = dir_path / "groups_data.json"
         self.user_path = dir_path / "users_data.json"
         self.cache_path = dir_path / "basic_data.json"
+        self.__group_profiles = {}
+        self.__user_profiles = {}
+        self.__cache_data = {"all_joined_group": [], "blacklist": []}
 
         def _s(mgr: BotDataManager):
             mgr.save()
@@ -202,9 +205,6 @@ class BotDataManager:
         return list(self.__functions.keys())
 
     def load(self):
-        self.__group_profiles = {}
-        self.__user_profiles = {}
-        self.__cache_data = {"all_joined_group": [], "blacklist": []}
         if self.group_path.exists():
             with self.group_path.open("r+", encoding="UTF-8") as f_obj:
                 _info: dict = ujson.load(f_obj)

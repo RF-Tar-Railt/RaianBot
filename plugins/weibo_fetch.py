@@ -211,6 +211,8 @@ async def update():
     browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
     async with browser.page(viewport={"width": 800, "height": 2400}) as page:
         for gid in bot.data.groups:
+            if not bot.data.exist(int(gid)):
+                continue
             prof = bot.data.get_group(int(gid))
             if "微博动态自动获取" in prof.disabled:
                 continue

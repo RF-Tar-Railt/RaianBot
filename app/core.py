@@ -139,7 +139,15 @@ def launch(debug_log: bool = True):
     it(GraiaScheduler)
     fastapi = FastAPI()
     saya.install_behaviours(FastAPIBehaviour(fastapi))
-    manager.add_service(PlaywrightService("chromium", headless=True, auto_download_browser=False, channel="msedge"))
+    manager.add_service(
+        PlaywrightService(
+            config.browser.type,
+            headless=True,
+            channel=config.browser.channel,
+            auto_download_browser=(not config.browser.channel),
+            user_data_dir=Path(config.cache_dir) / "browser"
+        )
+    )
     manager.add_service(FastAPIService(fastapi))
     manager.add_service(UvicornService(config.api.host, config.api.port))
     manager.add_service(RaianBotService(config))

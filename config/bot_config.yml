@@ -21,6 +21,11 @@ admin:
   ## bot 的管理者(除开控制者)的账号
   admins:
     - 111111111
+## 浏览器相关配置
+browser:
+  type: "chromium"
+  channel: null
+
 ## bot 命令相关配置
 command:
   ## 命令前缀
