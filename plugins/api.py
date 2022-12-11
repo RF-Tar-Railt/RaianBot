@@ -1,10 +1,10 @@
 from typing import List, Dict, Optional
-from pydantic import BaseModel
 from graiax.fastapi import route
 from graia.saya import Saya
 from creart import it
 from app import UserProfile, GroupProfile, RaianBotService
 from arclet.alconna import command_manager, CommandMeta
+from pydantic import BaseModel
 from fastapi.responses import JSONResponse, PlainTextResponse
 from dataclasses import asdict
 
@@ -74,7 +74,7 @@ async def get_group(gid: int):
 
 class HelpResp(BaseModel):
     count: int
-    content: Dict[str, CommandMeta]
+    content: Dict[str, Dict]
 
 
 @route.route(["GET"], "/help")

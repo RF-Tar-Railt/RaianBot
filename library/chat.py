@@ -1,5 +1,4 @@
 import json
-import random
 
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
@@ -26,7 +25,7 @@ class TencentChatBot:
             if resp.Reply:
                 msg: str = resp.Reply
                 nickname: str = self.name
-                msg = msg.replace("腾讯小龙女", nickname).replace("小龙女", nickname).replace("姑姑", nickname)
-                return msg
+                return msg.replace("腾讯小龙女", nickname).replace("小龙女", nickname).replace("姑姑", nickname)
+
         except TencentCloudSDKException:
             return

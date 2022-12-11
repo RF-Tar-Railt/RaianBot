@@ -22,6 +22,7 @@ from .logger import logger
 from .context import ConfigInstance, DataInstance
 
 TMeta = TypeVar("TMeta", bound=tuple)
+TModel = TypeVar("TModel", bound=BaseModel)
 DATA_VERSION = 2
 
 
@@ -44,7 +45,7 @@ class BaseProfile(BaseModel):
             return data
         return __d
 
-    def set(self,  __v: TMeta):
+    def set(self, __v: TMeta):
         self.additional[type(__v).__name__] = __v
 
     @validator("additional", allow_reuse=True, pre=True)
@@ -83,10 +84,7 @@ class BotDataManager:
         meta = cast(Type[NamedTuple], schema)
         if len(meta.__annotations__) != len(data):
             return False
-        return all(
-            isinstance(di, get_origin(si) or si)
-            for si, di in zip(meta.__annotations__.values(), data)
-        )
+        return all(isinstance(di, get_origin(si) or si) for si, di in zip(meta.__annotations__.values(), data))
 
     def __new__(cls, *args, **kwargs):
         return instance if (instance := DataInstance.get(None)) else super().__new__(cls, *args, **kwargs)
@@ -150,7 +148,7 @@ class BotDataManager:
     def exist(self, id_: int):
         return (str(id_) in self.__user_profiles) or (str(id_) in self.__group_profiles)
 
-    def get_group(self, gid: int):
+    def get_group(self, gid: int) -> GroupProfile:
         if tg := self.__group_profiles.get(str(gid), None):
             for k, v in tg.additional.copy().items():
                 if (schema := self.__metas["group_meta"].get(k)) and not isinstance(v, schema):
@@ -158,7 +156,7 @@ class BotDataManager:
             return tg
         raise ValueError(gid)
 
-    def get_user(self, uid: int):
+    def get_user(self, uid: int) -> UserProfile:
         if tu := self.__user_profiles.get(str(uid), None):
             for k, v in tu.additional.copy().items():
                 if (schema := self.__metas["user_meta"].get(k)) and not isinstance(v, schema):
@@ -207,31 +205,19 @@ class BotDataManager:
     def load(self):
         if self.group_path.exists():
             with self.group_path.open("r+", encoding="UTF-8") as f_obj:
-                _info: dict = ujson.load(f_obj)
-                if _info.get("version", 1) < DATA_VERSION:
-                    logger.critical("群组数据已过期！请先运行 'data_migrator.py' !")
-                    f_obj.close()
-                    raise RuntimeError
-                self.__group_profiles = {
-                    k: GroupProfile.parse_obj(v) for k, v in _info['data'].items()
-                }
+                self.__group_profiles = self._check_load(f_obj, "群组数据已过期！请先运行 'data_migrator.py' !", GroupProfile)
+
         else:
             with self.group_path.open("w+", encoding="UTF-8") as f_obj:
-                ujson.dump({'version': DATA_VERSION, 'data': {}}, f_obj, ensure_ascii=False)
+                ujson.dump({"version": DATA_VERSION, "data": {}}, f_obj, ensure_ascii=False)
 
         if self.user_path.exists():
             with self.user_path.open("r+", encoding="UTF-8") as f_obj:
-                _info: dict = ujson.load(f_obj)
-                if _info.get("version", 1) < DATA_VERSION:
-                    logger.critical("用户数据已过期！请先运行 'data_migrator.py' !")
-                    f_obj.close()
-                    raise RuntimeError
-                self.__user_profiles = {
-                    k: UserProfile.parse_obj(v) for k, v in _info['data'].items()
-                }
+                self.__user_profiles = self._check_load(f_obj, "用户数据已过期！请先运行 'data_migrator.py' !", UserProfile)
+
         else:
             with self.user_path.open("w+", encoding="UTF-8") as f_obj:
-                ujson.dump({'version': DATA_VERSION, 'data': {}}, f_obj, ensure_ascii=False)
+                ujson.dump({"version": DATA_VERSION, "data": {}}, f_obj, ensure_ascii=False)
 
         if self.cache_path.exists():
             with self.cache_path.open("r+", encoding="UTF-8") as f_obj:
@@ -240,17 +226,26 @@ class BotDataManager:
             with self.user_path.open("w+", encoding="UTF-8") as f_obj:
                 ujson.dump(self.__cache_data, f_obj, ensure_ascii=False)
 
+    @staticmethod
+    def _check_load(file, error, model: Type[TModel]) -> dict[str, TModel]:
+        _info: dict = ujson.load(file)
+        if _info.get("version", 1) < DATA_VERSION:
+            logger.critical(error)
+            file.close()
+            raise RuntimeError
+        return {k: model.parse_obj(v) for k, v in _info["data"].items()}
+
     def save(self):
         with self.user_path.open("w+", encoding="UTF-8") as fo:
             ujson.dump(
-                {'version': DATA_VERSION, 'data': {k: v.dict() for k, v in self.__user_profiles.items()}},
+                {"version": DATA_VERSION, "data": {k: v.dict() for k, v in self.__user_profiles.items()}},
                 fo,
                 ensure_ascii=False,
                 indent=2,
             )
         with self.group_path.open("w+", encoding="UTF-8") as fo:
             ujson.dump(
-                {'version': DATA_VERSION, 'data': {k: v.dict() for k, v in self.__group_profiles.items()}},
+                {"version": DATA_VERSION, "data": {k: v.dict() for k, v in self.__group_profiles.items()}},
                 fo,
                 ensure_ascii=False,
                 indent=2,

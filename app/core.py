@@ -145,7 +145,7 @@ def launch(debug_log: bool = True):
             headless=True,
             channel=config.browser.channel,
             auto_download_browser=(not config.browser.channel),
-            user_data_dir=Path(config.cache_dir) / "browser"
+            # user_data_dir=Path(config.cache_dir) / "browser"
         )
     )
     manager.add_service(FastAPIService(fastapi))

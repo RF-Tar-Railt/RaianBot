@@ -39,10 +39,11 @@ async def discard_mute(
 
 @listen(AccountMuted)
 async def handle_mute(app: Ariadne, group: Group, interface: RaianBotInterface):
+
     config = interface.config
     data = interface.data
     admin: "AdminConfig" = interface.config.plugin.get(AdminConfig)
-
+    members = await app.get_member_list(group)
     prof = data.get_group(group.id)
     count = prof.get(mute, mute(admin.mute_max))
     if count.rest_count <= 0:
@@ -50,7 +51,6 @@ async def handle_mute(app: Ariadne, group: Group, interface: RaianBotInterface):
     await app.quit_group(group)
     prof.set(mute(count.rest_count - 1))
     data.update_group(prof)
-    members = await app.get_member_list(group)
     friend_ids = [f.id for f in (await app.get_friend_list())]
     for ad in filter(
         lambda x: x.id in friend_ids and x.permission > MemberPerm.Member,

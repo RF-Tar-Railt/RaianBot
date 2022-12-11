@@ -16,26 +16,26 @@ class roles(NamedTuple):
 meta_export(group_meta=[roles])
 
 role = Alconna(
-    [''],
+    [""],
     "群员分组",
     Option("设置", Args["tag", str]["targets", MultiVar(At, "+")], help_text="设置分组并选择目标"),
     Option("增加", Args["tag", str]["targets", MultiVar(At, "+")], help_text="为分组增加目标"),
     Option("删除", Args["tag", str]["targets", MultiVar(At, "+"), Empty], help_text="删除指定分组或分组内的指定成员"),
     Option("呼叫", Args["tag", str]["content;?", str], help_text="At 指定分组下的群成员"),
     Option("列出", help_text="列出该群所有的分组"),
-    meta=CommandMeta("为群成员设置特殊分组", usage="注意: 该命令不需要 “渊白” 开头")
+    meta=CommandMeta("为群成员设置特殊分组", usage="注意: 该命令不需要 “渊白” 开头"),
 )
 
 
 @alcommand(role, private=False)
-@record('role')
+@record("role")
 @assign("$main")
 async def _r_help(app: Ariadne, sender: Group):
     return await app.send_message(sender, await send_handler(role.get_help()))
 
 
 @alcommand(role, private=False)
-@record('role')
+@record("role")
 @assign("列出")
 async def _r_list(app: Ariadne, target: Member, sender: Group, source: Source, bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
@@ -53,9 +53,7 @@ async def _r_list(app: Ariadne, target: Member, sender: Group, source: Source, b
                 notice = MessageChain("发现无效成员, 已自动清理.")
             else:
                 texts.append(f"{id_}: {members[id_]}")
-        nodes.append(
-            ForwardNode(target=target, time=source.time, message=MessageChain(f"【{k}】\n" + "\n".join(texts)))
-        )
+        nodes.append(ForwardNode(target=target, time=source.time, message=MessageChain(f"【{k}】\n" + "\n".join(texts))))
     await app.send_group_message(sender, MessageChain(Forward(*nodes)))
     if notice:
         await app.send_group_message(sender, notice)
@@ -65,11 +63,8 @@ async def _r_list(app: Ariadne, target: Member, sender: Group, source: Source, b
 
 @alcommand(role, private=False)
 @assign("设置")
-@record('role')
-async def _r_set(
-    app: Ariadne, sender: Group, bot: RaianBotInterface,
-    tag: Match[str], targets: Match[Tuple[At, ...]]
-):
+@record("role")
+async def _r_set(app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match[str], targets: Match[Tuple[At, ...]]):
     group = bot.data.get_group(sender.id)
     _roles = group.get(roles, roles({}))
     _tag = tag.result
@@ -84,10 +79,9 @@ async def _r_set(
 
 @alcommand(role, private=False)
 @assign("增加")
-@record('role')
+@record("role")
 async def _r_append(
-    app: Ariadne, sender: Group, bot: RaianBotInterface,
-    tag: Match[str], targets: Match[Tuple[At, ...]]
+    app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match[str], targets: Match[Tuple[At, ...]]
 ):
     group = bot.data.get_group(sender.id)
     if not (_roles := group.get(roles)):
@@ -105,11 +99,10 @@ async def _r_append(
 
 
 @alcommand(role, private=False)
-@record('role')
+@record("role")
 @assign("删除")
 async def _r_remove(
-    app: Ariadne, sender: Group, bot: RaianBotInterface,
-    tag: Match[str], targets: Match[Optional[Tuple[At, ...]]]
+    app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match[str], targets: Match[Optional[Tuple[At, ...]]]
 ):
     group = bot.data.get_group(sender.id)
     _roles = group.get(roles, roles({}))
@@ -132,11 +125,8 @@ async def _r_remove(
 
 @alcommand(role, private=False)
 @assign("呼叫")
-@record('role')
-async def _r_call(
-        app: Ariadne, sender: Group, bot: RaianBotInterface,
-        tag: Match[str], content: Match[str]
-):
+@record("role")
+async def _r_call(app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match[str], content: Match[str]):
     group = bot.data.get_group(sender.id)
     _roles = group.get(roles, roles({}))
     _tag = tag.result

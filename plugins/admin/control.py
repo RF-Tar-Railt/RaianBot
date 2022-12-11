@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from app import RaianBotInterface, Sender, permission, render_markdown, send_handler
+from app import RaianBotInterface, Sender, permission, render_markdown, send_handler, extract_plugin_config
 from arclet.alconna import Field, Args, CommandMeta, Option
 from arclet.alconna.graia import (
     Alconna,
@@ -162,8 +162,12 @@ async def _m_install(app: Ariadne, sender: Sender, path: Match[str], bot: RaianB
     if channel_path in saya.channels and channel_path not in bot.config.plugin.disabled:
         return await app.send_message(sender, MessageChain("该模组已安装"))
     try:
+        if model := extract_plugin_config(*channel_path.split('.')):
+            bot.config.plugin.data[type(model)] = model
         with saya.module_context():
-            saya.require(channel_path)
+            export_meta = saya.require(channel_path)
+            if isinstance(export_meta, dict):
+                bot.data.add_meta(**export_meta)
     except Exception as e:
         await app.send_message(sender, MessageChain(f"安装 {channel_path} 失败！"))
         raise e
@@ -306,6 +310,8 @@ async def _g_check(app: Ariadne, sender: Sender, bot: RaianBotInterface):
     if not moved:
         return await app.send_message(sender, "自检完成。未发现失效群组")
     for gid in moved:
+        if bot.data.get_group(int(gid)).additional.get("mute", 6) != 6:
+            continue
         bot.data.remove_group(int(gid))
     bot.data.cache["all_joined_group"] = [int(i) for i in bot.data.groups]
     return await app.send_message(sender, f"检测出失效群组：\n" + "\n".join(moved))
