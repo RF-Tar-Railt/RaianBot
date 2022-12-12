@@ -32,6 +32,26 @@ repeat = Alconna(
 
 base_path = Path(f"{bot.config.cache_dir}/plugins/learn_repeat")
 base_path.mkdir(parents=True, exist_ok=True)
+image_path = base_path / "image"
+image_path.mkdir(exist_ok=True)
+
+
+async def _serialize_message(app: Ariadne, content: MessageChain):
+    res = []
+    for elem in content:
+        elem: Union[Plain, Image, Face]
+        if isinstance(elem, Image):
+            assert isinstance(elem.id, str)
+            assert isinstance(elem.url, str)
+            async with app.service.client_session.get(elem.url) as resp:
+                _data = await resp.read()
+            name = elem.id.replace('{', '').replace('}', '')
+            with (image_path / name).open('wb+') as img:
+                img.write(_data)
+            res.append({'type': 'Image', 'path': f"{(image_path / name).absolute()}"})
+        else:
+            res.append(elem.dict())
+    return ujson.dumps(res, ensure_ascii=False, indent=0)
 
 
 @alcommand(repeat, private=False)
@@ -142,20 +162,15 @@ async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name
         return await app.send_message(sender, MessageChain("内容过于宽泛！"))
     _name = name.result.replace("**", "*")
     _record = MessageChain(content)
-    await _record.download_binary()
     _record = _record.include(Face, Image, Plain)
     if not _record:
         return await app.send_message(sender, MessageChain("喂, 没有内容啊~"))
-    for elem in _record:
-        if isinstance(elem, Image):
-            elem.id = None
-            elem.url = None
     if not this_file.exists():
         with this_file.open("w+", encoding="utf-8") as fo:
             ujson.dump({}, fo)
     with this_file.open("r+", encoding="utf-8") as f_obj:
         _data = ujson.load(f_obj)
-    _data[_name] = {"id": target.id, "content": _record.json(), "json": True}
+    _data[_name] = {"id": target.id, "content": await _serialize_message(app, _record), "json": True}
     with this_file.open("w+", encoding="utf-8") as fo:
         ujson.dump(_data, fo, ensure_ascii=False, indent=2)
     return await app.send_message(sender, MessageChain("我学会了！你现在可以来问我了！"), quote=source.id)
@@ -176,15 +191,10 @@ async def redit(app: Ariadne, target: Member, sender: Group, source: Source, nam
     if _name not in _data:
         return await app.send_message(sender, MessageChain("该群不存在该学习记录！"))
     _record = MessageChain(content)
-    await _record.download_binary()
     _record = _record.include(Face, Image, Plain)
     if not _record:
         return await app.send_message(sender, MessageChain("喂, 没有内容啊~"))
-    for elem in _record:
-        if isinstance(elem, Image):
-            elem.id = None
-            elem.url = None
-    _data[_name] = {"id": target.id, "content": _record.json(), "json": True}
+    _data[_name] = {"id": target.id, "content": await _serialize_message(app, _record), "json": True}
     with this_file.open("w+", encoding="utf-8") as fo:
         ujson.dump(_data, fo, ensure_ascii=False, indent=2)
     return await app.send_message(sender, MessageChain("我学会了！你现在可以来问我了！"), quote=source.id)

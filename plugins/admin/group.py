@@ -103,3 +103,12 @@ async def get_join_group(app: Ariadne, group: Group, interface: RaianBotInterfac
                 f"5次以上后群主或管理员需要将禁言理由发送给机器人, 经过审核后可继续使用机器人\n"
             ),
         )
+    if group.id in data.cache.get('blacklist', []):
+        await app.send_group_message(
+            group.id,
+            MessageChain(
+                f"检测到机器人曾被踢出该群聊\n"
+                f"该群已列入机器人黑名单，禁用大部分功能\n"
+                f"恢复使用请管理员输入命令 '{config.command_prefix[0]}群组 解除黑名单' "
+            ),
+        )

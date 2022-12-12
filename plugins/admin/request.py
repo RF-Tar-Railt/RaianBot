@@ -17,28 +17,15 @@ async def get_friend_accept(app: Ariadne, event: NewFriendRequestEvent, interfac
     收到好友申请
     """
     config = interface.config
-    if str(event.supplicant) in interface.data.users:
-        await event.accept()
-        await app.send_friend_message(
-            config.admin.master_id,
-            MessageChain(
-                "收到添加好友事件",
-                f"\nQQ：{event.supplicant}",
-                f"\n昵称：{event.nickname}",
-                f"\n状态：已通过申请\n\n{event.message.upper()}",
-            ),
-        )
-    else:
-        await event.reject("请先在群聊内找机器人进行签到")
-        await app.send_friend_message(
-            config.admin.master_id,
-            MessageChain(
-                "收到添加好友事件",
-                f"\nQQ：{event.supplicant}",
-                f"\n昵称：{event.nickname}",
-                f"\n状态：已拒绝申请\n\n{event.message.upper()}",
-            ),
-        )
+    await app.send_friend_message(
+        config.admin.master_id,
+        MessageChain(
+            "收到添加好友事件",
+            f"\nQQ：{event.supplicant}",
+            f"\n昵称：{event.nickname}",
+            f"\n申请消息：{event.message.upper()}"
+        ),
+    )
 
 
 @listen(BotInvitedJoinGroupRequestEvent)
