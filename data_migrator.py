@@ -1,6 +1,5 @@
 import base64
 import hashlib
-import os
 from io import BytesIO
 from pathlib import Path
 from typing import Union
@@ -96,4 +95,5 @@ if lr_dir.exists():
             ujson.dump(_data, fo, ensure_ascii=False, indent=2)
     logger.success("处理学习回复完毕")
 
-os.system("pause")
+logger.info("数据处理完成，按任意键退出。")
+input()
