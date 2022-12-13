@@ -214,6 +214,7 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 @record("ai")
 async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
+    message = message.copy()
     if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
         return
     if target.id == 2854196310:  # Q群管家

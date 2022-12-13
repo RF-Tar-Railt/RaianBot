@@ -1,11 +1,12 @@
 from contextlib import suppress
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Union
 
 from app import RaianBotInterface, Sender, record
-from arclet.alconna import Args, CommandMeta, Option, Kw, MultiVar
+from arclet.alconna import Args, CommandMeta, Option, Kw
 from arclet.alconna.graia import Alconna, Match, alcommand, assign
-from arknights_toolkit.wordle import Guess, OperatorWordle, update
+from arknights_toolkit.wordle import Guess, OperatorWordle
+from arknights_toolkit import initialize
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
@@ -17,7 +18,7 @@ alc = Alconna(
     "猜干员",
     Args["max_guess", int, 8],
     Args["simple", Kw @ bool, False],
-    Option("更新", Args["name", MultiVar(str, "+")]),
+    Option("更新"),
     Option("规则"),
     Option("重置"),
     meta=CommandMeta("明日方舟猜干员游戏", usage="可以指定最大猜测次数"),
@@ -35,8 +36,8 @@ async def guess_info(app: Ariadne, sender: Sender):
 @alcommand(alc)
 @record("猜干员")
 @assign("更新")
-async def guess_update(app: Ariadne, sender: Sender, name: Match[Tuple[str, ...]]):
-    update(*name.result)
+async def guess_update(app: Ariadne, sender: Sender):
+    initialize()
     return await app.send_message(sender, "更新完毕")
 
 

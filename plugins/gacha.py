@@ -5,11 +5,10 @@ from arclet.alconna.graia import Alconna, Match, alcommand
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
 from fastapi.responses import JSONResponse, Response
 from graia.ariadne.app import Ariadne
-from graia.ariadne.event.lifecycle import ApplicationLaunch
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.util.cooldown import CoolDown
-from graiax.shortcut.saya import dispatch, listen
+from graiax.shortcut.saya import dispatch
 from graiax.fastapi import route
 from plugins.config.gacha import GachaConfig
 
@@ -25,11 +24,6 @@ class arkgacha_proba(NamedTuple):
 
 
 meta_export(user_meta=[arkgacha_proba])
-
-
-@listen(ApplicationLaunch)
-async def gacha_init():
-    await gacha.initialize()
 
 
 @route.route(["GET"], "/gacha")

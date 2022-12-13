@@ -24,6 +24,7 @@ from launart import ExportInterface, Service, Launart
 from loguru import logger
 import pkgutil
 from pathlib import Path
+from arknights_toolkit import initialize
 
 from .config import BotConfig, extract_plugin_config
 from .context import BotInstance, ConfigInstance, DataInstance
@@ -161,6 +162,7 @@ def launch(debug_log: bool = True):
             WebsocketClientConfig(config.url),
         )
     )
+    initialize()
     logger.success("------------------机器人初始化完毕--------------------")
     try:
         Ariadne.launch_blocking()
