@@ -52,7 +52,7 @@ async def bot_invite(app: Ariadne, event: BotInvitedJoinGroupRequestEvent, inter
                 event.supplicant,
                 MessageChain(f"该群被禁言次数达到上限, 已拒绝申请\n" f"请联系群主或管理员向机器人报备禁言理由"),
             )
-        await event.accept("")
+        # await event.accept("")
         return await app.send_friend_message(
             event.supplicant,
             MessageChain(

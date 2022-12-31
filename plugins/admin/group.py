@@ -109,6 +109,6 @@ async def get_join_group(app: Ariadne, group: Group, interface: RaianBotInterfac
             MessageChain(
                 f"检测到机器人曾被踢出该群聊\n"
                 f"该群已列入机器人黑名单，禁用大部分功能\n"
-                f"恢复使用请管理员输入命令 '{config.command_prefix[0]}群组 解除黑名单' "
+                f"恢复使用请管理员输入命令 '{config.command_prefix[0]}群组 黑名单 解除' "
             ),
         )

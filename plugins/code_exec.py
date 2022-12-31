@@ -1,7 +1,4 @@
-# coding: utf-8
 import asyncio
-import contextlib
-import subprocess
 import sys
 from io import StringIO
 
@@ -87,38 +84,46 @@ async def execc(app: Ariadne, sender: Sender, result: Arparma, interface: RaianB
 @permission("master")
 @startswith("shell", bind="echos")
 async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
-    with contextlib.suppress(asyncio.TimeoutError):
-        process = await asyncio.wait_for(
-            asyncio.create_subprocess_shell(
-                str(echos),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                shell=True,
-            ),
-            timeout=20,
-        )
-        data = await asyncio.wait_for(process.stdout.read(), timeout=20)
+    process = await asyncio.create_subprocess_shell(
+        str(echos),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        stdout, stderr = await asyncio.wait_for(process.communicate(), 20)
+    except asyncio.TimeoutError:
+        process.kill()
+        stdout, stderr = await process.communicate()
+    if stdout:
         try:
-            res = data.decode("utf-8")
+            res = stdout.decode('utf-8').strip()
         except UnicodeDecodeError:
-            res = data.decode("gbk")
-        md = f"""\
+            res = stdout.decode('gbk').strip()
+    elif stderr:
+        try:
+            res = stderr.decode('utf-8').strip()
+        except UnicodeDecodeError:
+            res = stderr.decode('gbk').strip()
+    else:
+        res = "No output"
+    md = f"""\
+> exit code: {process.returncode}
+
 ```sh
 {res}
 ```
 """
-        return await app.send_message(
-            sender,
-            MessageChain(
-                Image(
-                    data_bytes=(
-                        await render_markdown(
-                            md,
-                            width=max(max(len(i.strip()) for i in md.splitlines()) * 14, 240),
-                            height=(md.count("\n") + 7) * 14,
-                        )
+    return await app.send_message(
+        sender,
+        MessageChain(
+            Image(
+                data_bytes=(
+                    await render_markdown(
+                        md,
+                        width=max(max(len(i.strip()) for i in md.splitlines()) * 14, 240),
+                        height=(md.count("\n") + 7) * 14,
                     )
                 )
-            ),
-        )
-    return
+            )
+        ),
+    )

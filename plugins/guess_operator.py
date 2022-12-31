@@ -103,7 +103,8 @@ async def guess(
                 await app.send_message(sender, MessageChain(Image(data_bytes=wordle.draw(res))))
         except Exception as e:
             await app.send_friend_message(bot.config.admin.master_id, f'{e}')
-            continue
+            wordle.restart(id_)
+            break
         if res.state != "guessing":
             break
     return await app.send_message(

@@ -151,7 +151,7 @@ async def random_ai(app: Ariadne, sender: Sender, target: Target, msg: str, **kw
 
 @listen(GroupMessage, FriendMessage)
 @startswith(nickname, bind="message")
-@priority(17)
+@priority(20)
 @record("dialog")
 async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
@@ -184,7 +184,7 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 
 @listen(GroupMessage, FriendMessage)
 @endswith(nickname, bind="message")
-@priority(17)
+@priority(20)
 @record("dialog")
 async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
@@ -209,7 +209,7 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 
 
 @listen(GroupMessage, FriendMessage)
-@priority(18)
+@priority(22)
 @dispatch(CoolDown(0.1))
 @record("ai")
 async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):

@@ -43,7 +43,7 @@ async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianB
 
         md += (
             "\n\n---"
-            "\n\n* 输入'命令名 --help' 查看特定命令的语法"
+            f"\n\n* 输入'命令名 {bot.config.command.help[0]}' 查看特定命令的语法"
             "\n\n* 所有功能均无需 @机器人本身"
             "\n\n* 想给点饭钱的话，这里有赞助链接：https://afdian.net/@rf_tar_railt"
             "\n\n* 更多功能待开发，如有特殊需求可以向 3165388245 询问, 或前往 122680593 交流"

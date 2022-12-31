@@ -45,7 +45,7 @@ async def sign_up(app: Ariadne, sender: Group, member: Member, source: Source, b
     if user.trust < int(bot.config.plugin.get(SignConfig).max):
         user.trust += (random.randint(1, 10) / 6.25)
         await app.send_group_message(
-            sender, MessageChain(f"签到成功！\n当前信赖值：{user.trust}"),
+            sender, MessageChain(f"签到成功！\n当前信赖值：{user.trust:.3f}"),
             quote=source.id
         )
     else:

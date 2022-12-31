@@ -6,9 +6,12 @@ from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Source, Image
 from graia.ariadne.model import Friend
+from graia.ariadne.event.message import GroupMessage, FriendMessage
+from graia.ariadne.util.validator import Quoting
 from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
 from graiax.fastapi import route
+from graiax.shortcut.interrupt import FunctionWaiter
 from graiax.shortcut.saya import every
 from playwright.async_api import TimeoutError, Page
 
@@ -20,15 +23,11 @@ bot = RaianBotService.current()
 weibo_fetch = Alconna(
     "微博",
     Args["user;?#微博用户名称", str, Field(completion=lambda: "比如说, 育碧")],
-    Option(
-        "动态",
-        Args["index#从最前动态排起的第几个动态", int, -1]["page#第几页动态", int, 1],
-        help_text="从微博获取指定用户的动态"
-    ),
+    Option("动态", Args["index#从最前动态排起的第几个动态", int, -1]["page#第几页动态", int, 1], help_text="从微博获取指定用户的动态"),
     Option("关注|增加关注", dest="follow", help_text="增加一位微博动态关注对象"),
     Option("取消关注|解除关注", dest="unfollow", help_text="解除一位微博动态关注对象"),
     Option("列出", dest="list", help_text="列出该群的微博动态关注对象"),
-    meta=CommandMeta("获取指定用户的微博资料", example="$微博 育碧\n$微博 育碧 动态 1\n$微博 育碧 关注\n$微博 育碧 取消关注")
+    meta=CommandMeta("获取指定用户的微博资料", example="$微博 育碧\n$微博 育碧 动态 1\n$微博 育碧 关注\n$微博 育碧 取消关注"),
 )
 
 api = WeiboAPI(f"{bot.config.cache_dir}/plugins/weibo_data.json")
@@ -41,31 +40,22 @@ class weibo_followers(NamedTuple):
 meta_export(group_meta=[weibo_followers])
 
 
-async def _handle_dynamic(
-        page: Page,
-        data: WeiboDynamic,
-        time: datetime,
-        target: int,
-        name: str
-):
+async def _handle_dynamic(page: Page, data: WeiboDynamic, time: datetime, target: int, name: str):
     try:
         await page.click("html")
-        await page.goto(data.url, timeout=60000, wait_until='networkidle')
+        await page.goto(data.url, timeout=60000, wait_until="networkidle")
         elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
         elem1 = page.locator("//article[@class='weibo-main']").first
         bounding = await elem.bounding_box()
         bounding1 = await elem1.bounding_box()
         assert bounding
         assert bounding1
-        bounding['height'] += bounding1['height']
+        bounding["height"] += bounding1["height"]
         first = MessageChain(Image(data_bytes=await page.screenshot(full_page=True, clip=bounding)))
     except (TimeoutError, TypeError):
         first = None
-    text = MessageChain(data.text, *(Image(url=i) for i in data.img_urls))
-    url = MessageChain(data.url)
-    nodes = [text, url]
-    if first:
-        nodes.insert(0, first)
+    nodes = [MessageChain(*(Image(url=i) for i in data.img_urls))] if data.img_urls else []
+    nodes.insert(0, first or MessageChain(data.text or "表情"))
     if data.video_url:
         nodes.append(MessageChain(f"视频链接: {data.video_url}"))
     if data.retweet:
@@ -75,10 +65,7 @@ async def _handle_dynamic(
 
 @route.route(["GET"], "/weibo/check", response_model=WeiboUser)
 async def get_check(user: str):
-    return JSONResponse(
-        (await api.get_profile(user, save=False, cache=False)).dict(),
-        headers={"charset": "utf-8"}
-    )
+    return JSONResponse((await api.get_profile(user, save=False, cache=False)).dict(), headers={"charset": "utf-8"})
 
 
 @alcommand(weibo_fetch)
@@ -89,13 +76,14 @@ async def wget(app: Ariadne, sender: Sender, user: Match[str]):
         return await app.send_message(sender, MessageChain("不对劲。。。"))
     if prof := await api.get_profile(user.result, save=False, cache=False):
         return await app.send_message(
-            sender, MessageChain(
+            sender,
+            MessageChain(
                 Image(url=prof.avatar),
                 f"用户名: {prof.name}\n",
                 f"介绍: {prof.description}\n",
                 f"动态数: {prof.statuses}\n",
-                f"是否可见: {'是' if prof.visitable else '否'}"
-            )
+                f"是否可见: {'是' if prof.visitable else '否'}",
+            ),
         )
     return await app.send_message(sender, MessageChain("获取失败啦"))
 
@@ -104,29 +92,39 @@ async def wget(app: Ariadne, sender: Sender, user: Match[str]):
 async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = False):
     if jump:
         return RedirectResponse((await api.get_dynamic(user, index=index, page=page)).url)
-    return JSONResponse(
-        (await api.get_dynamic(user, index=index, page=page)).dict(),
-        headers={"charset": "utf-8"}
-    )
+    return JSONResponse((await api.get_dynamic(user, index=index, page=page)).dict(), headers={"charset": "utf-8"})
 
 
 @alcommand(weibo_fetch)
 @record("微博功能")
 @assign("动态")
 async def wfetch(
-        app: Ariadne, target: Target, sender: Sender, source: Source,
-        user: Match[str], index: Match[int], page: Match[int]
+    app: Ariadne, target: Target, sender: Sender, source: Source, user: Match[str], index: Match[int], page: Match[int]
 ):
     if dynamic := await api.get_dynamic(user.result, index=index.result, page=page.result):
         browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
         async with browser.page(viewport={"width": 800, "height": 2400}) as _page:
-            return await app.send_message(
-                sender,
-                MessageChain(Forward(*(await _handle_dynamic(
-                    _page, dynamic, source.time, target.id, getattr(target, 'name', getattr(target, 'nickname', ""))
-                ))
-                                     ))
+            nodes = await _handle_dynamic(
+                _page,
+                dynamic,
+                source.time,
+                target.id,
+                getattr(target, "name", getattr(target, "nickname", "")),
             )
+            for node in nodes:
+                res = await app.send_message(sender, node.message_chain)
+            # res = await app.send_message(sender, MessageChain(Forward(*nodes)))
+
+            async def waiter(w_sender: Sender, message: MessageChain):
+                if w_sender == sender and message.startswith("链接"):
+                    return True
+
+            resp = await FunctionWaiter(waiter, [GroupMessage, FriendMessage], decorators=[Quoting(res)]).wait(
+                30, False
+            )
+            if not resp:
+                return
+            return await app.send_message(sender, MessageChain(dynamic.url))
     return await app.send_message(sender, MessageChain("获取失败啦"))
 
 
@@ -192,8 +190,8 @@ async def wlist(app: Ariadne, target: Target, sender: Sender, source: Source):
                         f"用户名: {prof.name}\n",
                         f"介绍: {prof.description}\n",
                         f"动态数: {prof.statuses}\n",
-                        f"是否可见: {'是' if prof.visitable else '否'}"
-                    )
+                        f"是否可见: {'是' if prof.visitable else '否'}",
+                    ),
                 )
             )
         else:
@@ -227,14 +225,14 @@ async def update():
                     elif res := await api.update(int(uid)):
                         dynamics[uid] = (
                             data := await _handle_dynamic(page, res, now, bot.config.qq, bot.config.bot_name),
-                            name := res.user.name
+                            name := res.user.name,
                         )
                     else:
                         continue
                     await app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
-                    await app.send_group_message(prof.id, MessageChain(
-                        Forward(*data)
-                    ))
+                    for node in data:
+                        await app.send_group_message(prof.id, node.message_chain)
+                    # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
                 except (ValueError, TypeError, IndexError, KeyError):
                     api.data.followers[uid] = wp
                     await api.data.save()

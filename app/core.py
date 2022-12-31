@@ -162,7 +162,10 @@ def launch(debug_log: bool = True):
             WebsocketClientConfig(config.url),
         )
     )
-    initialize()
+    try:
+        initialize()
+    except Exception as e:
+        logger.error(f"方舟资源初始化失败：{e}")
     logger.success("------------------机器人初始化完毕--------------------")
     try:
         Ariadne.launch_blocking()

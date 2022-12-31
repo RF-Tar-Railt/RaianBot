@@ -119,6 +119,6 @@ async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[b
                 await app.send_message(sender, MessageChain(Image(data_bytes=_bio.getvalue())))
             except Exception as e:
                 await app.send_friend_message(bot.config.admin.master_id, f'{e}')
-                continue
+                break
         bot.data.cache.pop("gobang")
         return await app.send_message(sender, "五子棋游戏结束！")
