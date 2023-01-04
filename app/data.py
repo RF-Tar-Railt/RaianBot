@@ -13,17 +13,17 @@ from typing import (
     get_origin,
     overload,
 )
-from weakref import finalize
 import ujson
 from pydantic import BaseModel, Field
 from pydantic.class_validators import validator
 
 from .logger import logger
-from .context import ConfigInstance, DataInstance
+from .context import DataInstance, MainConfigInstance
+from .config import BotConfig
 
 TMeta = TypeVar("TMeta", bound=tuple)
 TModel = TypeVar("TModel", bound=BaseModel)
-DATA_VERSION = 2
+DATA_VERSION = 3
 
 
 class BaseProfile(BaseModel):
@@ -66,7 +66,9 @@ class GroupProfile(BaseProfile):
 class UserProfile(BaseProfile):
     id: int
     trust: float = Field(default=0)
-    interact_count: int = Field(default=0)
+
+    class Config:
+        extra = "ignore"
 
 
 class BotDataManager:
@@ -86,35 +88,27 @@ class BotDataManager:
             return False
         return all(isinstance(di, get_origin(si) or si) for si, di in zip(meta.__annotations__.values(), data))
 
-    def __new__(cls, *args, **kwargs):
-        return instance if (instance := DataInstance.get(None)) else super().__new__(cls, *args, **kwargs)
-
-    def __init__(self):
-        config = ConfigInstance.get()
-
-        dir_path = Path(config.cache_dir)
-        dir_path.mkdir(exist_ok=True)
+    def __init__(self, config: BotConfig):
+        base = MainConfigInstance.get(None)
+        base_dir_path = Path(base.cache_dir)
+        base_dir_path.mkdir(exist_ok=True, parents=True)
+        self.__loaded = False
         self.__functions = {}
         self.__metas = {"group_meta": {}, "user_meta": {}}
         self.disable_functions = set()
-        self.group_path = dir_path / "groups_data.json"
-        self.user_path = dir_path / "users_data.json"
-        self.cache_path = dir_path / "basic_data.json"
+        self.group_path = base_dir_path / str(config.account) / "groups_data.json"
+        self.user_path = base_dir_path / str(config.account) / "users_data.json"
+        self.cache_path = base_dir_path / str(config.account) / "basic_data.json"
+        # self.plugins_path = base_dir_path / str(config.account) / base.plugin.root
+        # self.plugins_path.mkdir(exist_ok=True, parents=True)
         self.__group_profiles = {}
         self.__user_profiles = {}
         self.__cache_data = {"all_joined_group": [], "blacklist": []}
 
-        def _s(mgr: BotDataManager):
-            mgr.save()
-            mgr.__user_profiles.clear()
-            mgr.__group_profiles.clear()
-            mgr.__cache_data.clear()
-            mgr.__functions.clear()
-            mgr.__metas.clear()
-            mgr.disable_functions.clear()
-
-        finalize(self, _s, self)
-        DataInstance.set(self)
+        if data := DataInstance.get(None):
+            data[config.account] = self
+        else:
+            DataInstance.set({config.account: self})
 
     def add_meta(self, **kwargs: list[type[TMeta]]):
         for k, v in kwargs.items():
@@ -225,6 +219,7 @@ class BotDataManager:
         else:
             with self.user_path.open("w+", encoding="UTF-8") as f_obj:
                 ujson.dump(self.__cache_data, f_obj, ensure_ascii=False)
+        self.__loaded = True
 
     @staticmethod
     def _check_load(file, error, model: Type[TModel]) -> dict[str, TModel]:
@@ -236,6 +231,8 @@ class BotDataManager:
         return {k: model.parse_obj(v) for k, v in _info["data"].items()}
 
     def save(self):
+        if not self.__loaded:
+            return
         with self.user_path.open("w+", encoding="UTF-8") as fo:
             ujson.dump(
                 {"version": DATA_VERSION, "data": {k: v.dict() for k, v in self.__user_profiles.items()}},

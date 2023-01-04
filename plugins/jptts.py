@@ -8,7 +8,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.element import Voice
 from graiax.silkcoder import async_encode
-from app import Sender
+from app import Sender, accessable, exclusive
 
 character = {
     0: "綾地寧々",
@@ -51,6 +51,8 @@ jp = Alconna(
 
 @alcommand(jp)
 @assign("$main")
+@exclusive
+@accessable
 async def tts(app: Ariadne, sender: Sender, jptext: Match[Tuple[str, ...]]):
     sentence = " ".join(jptext.result)
     if not sentence.strip() or re.search(r"[\d_+=\-/@#$%^&*(){}\[\]|\\]", sentence):
@@ -80,6 +82,8 @@ async def tts(app: Ariadne, sender: Sender, jptext: Match[Tuple[str, ...]]):
 
 @alcommand(jp)
 @assign("moe")
+@exclusive
+@accessable
 async def tts1(
     app: Ariadne, sender: Sender, jptext: Match[Tuple[str]], char: Match[int]
 ):

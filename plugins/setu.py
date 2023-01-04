@@ -4,7 +4,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.app import Ariadne
 
-from app import record, Sender
+from app import record, Sender, accessable, exclusive
 
 setu = Alconna(
     "涩图",
@@ -16,6 +16,8 @@ setu = Alconna(
 
 @alcommand(setu)
 @record('setu')
+@exclusive
+@accessable
 async def send_setu(app: Ariadne, sender: Sender, result: Arparma):
     """随机涩图发送"""
     print(sender)

@@ -29,6 +29,10 @@ class AIML:
             )
             self.client.save_brain(brain_path)
 
+    def setting(self, **bot_predicate: str):
+        for k, v in bot_predicate.items():
+            self.client.set_bot_predicate(k, v)
+
     async def chat(self, message: str, session_id: Optional[str] = None):
         if is_include_chinese(message):
             message = await self.translator.trans(message, 'en')

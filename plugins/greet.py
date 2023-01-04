@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from app import record
+from app import record, accessable, exclusive
 from graia.ariadne import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
@@ -15,6 +15,8 @@ pat1 = re.compile(".*?(早上好|早安|中午好|下午好|晚上好)$")
 @listen(GroupMessage)
 @record("greet")
 @priority(7)
+@exclusive
+@accessable
 async def _init_g(app: Ariadne, group: Group, message: MessageChain, member: Member):
     """简单的问好"""
     msg = str(message)

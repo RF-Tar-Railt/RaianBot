@@ -6,7 +6,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Source, ForwardNode, Forward
 from graia.ariadne.model import Group, Member
 
-from app import record, RaianBotInterface, meta_export, send_handler
+from app import record, RaianBotInterface, meta_export, send_handler, accessable, exclusive
 
 
 class roles(NamedTuple):
@@ -30,6 +30,8 @@ role = Alconna(
 @alcommand(role, private=False)
 @record("role")
 @assign("$main")
+@exclusive
+@accessable
 async def _r_help(app: Ariadne, sender: Group):
     return await app.send_message(sender, await send_handler(role.get_help()))
 
@@ -37,6 +39,8 @@ async def _r_help(app: Ariadne, sender: Group):
 @alcommand(role, private=False)
 @record("role")
 @assign("列出")
+@exclusive
+@accessable
 async def _r_list(app: Ariadne, target: Member, sender: Group, source: Source, bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
     if not (_roles := group.get(roles)):
@@ -64,6 +68,8 @@ async def _r_list(app: Ariadne, target: Member, sender: Group, source: Source, b
 @alcommand(role, private=False)
 @assign("设置")
 @record("role")
+@exclusive
+@accessable
 async def _r_set(app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match[str], targets: Match[Tuple[At, ...]]):
     group = bot.data.get_group(sender.id)
     _roles = group.get(roles, roles({}))
@@ -80,6 +86,8 @@ async def _r_set(app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match
 @alcommand(role, private=False)
 @assign("增加")
 @record("role")
+@exclusive
+@accessable
 async def _r_append(
     app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match[str], targets: Match[Tuple[At, ...]]
 ):
@@ -101,6 +109,8 @@ async def _r_append(
 @alcommand(role, private=False)
 @record("role")
 @assign("删除")
+@exclusive
+@accessable
 async def _r_remove(
     app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match[str], targets: Match[Optional[Tuple[At, ...]]]
 ):
@@ -126,6 +136,8 @@ async def _r_remove(
 @alcommand(role, private=False)
 @assign("呼叫")
 @record("role")
+@exclusive
+@accessable
 async def _r_call(app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match[str], content: Match[str]):
     group = bot.data.get_group(sender.id)
     _roles = group.get(roles, roles({}))

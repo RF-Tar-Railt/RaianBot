@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
+from app.config import BasePluginConfig
+from pydantic import Field
 
 
-class Config(BaseModel):
+class Config(BasePluginConfig):
     max: int = Field(default=200)
     """信赖最大值"""
 

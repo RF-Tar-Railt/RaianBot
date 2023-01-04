@@ -5,7 +5,7 @@ from graia.ariadne.message.element import At, AtAll, Image, Plain
 from graia.ariadne.app import Ariadne
 from graiax.text2img.playwright import PageOption, HTMLRenderer
 
-from app import Sender, record, render_markdown
+from app import Sender, record, render_markdown, accessable, exclusive
 
 m2i = Alconna(
     "文转图",
@@ -24,6 +24,8 @@ m2i = Alconna(
 @alcommand(m2i)
 @record("t2i")
 @assign("mode", "chain", True)
+@exclusive
+@accessable
 async def chain(app: Ariadne, sender: Sender, message: MessageChain, width: Match[int]):
     message = message.as_sendable()
     if isinstance((text := message.content[0]), Plain):
@@ -59,6 +61,8 @@ async def chain(app: Ariadne, sender: Sender, message: MessageChain, width: Matc
 @alcommand(m2i)
 @record("t2i")
 @assign("mode", "html")
+@exclusive
+@accessable
 async def html(app: Ariadne, sender: Sender, message: MessageChain, width: Match[int], height: Match[int]):
     return app.send_message(
         sender,
@@ -77,6 +81,8 @@ async def html(app: Ariadne, sender: Sender, message: MessageChain, width: Match
 @alcommand(m2i)
 @record("t2i")
 @assign("mode", "md")
+@exclusive
+@accessable
 async def mad(app: Ariadne, sender: Sender, message: MessageChain, width: Match[int]):
     return app.send_message(
         sender,

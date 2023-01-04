@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import sys
 import traceback
+from types import TracebackType
 from typing import Literal 
 
 from arclet.alconna import namespace
@@ -26,8 +26,8 @@ import pkgutil
 from pathlib import Path
 from arknights_toolkit import initialize
 
-from .config import BotConfig, extract_plugin_config
-from .context import BotInstance, ConfigInstance, DataInstance
+from .config import BotConfig, extract_plugin_config, RaianConfig, load_config, BasePluginConfig
+from .context import BotInstance, DataInstance, MainConfigInstance, AccountDataInstance, BotConfigInstance
 from .data import BotDataManager
 from .logger import set_output
 from .utils import send_handler
@@ -35,30 +35,46 @@ from .utils import send_handler
 AlconnaDispatcher.default_send_handler = send_handler
 
 
-class RaianBotInterface(ExportInterface):
+class RaianBotInterface(ExportInterface["RaianBotService"]):
+    service: "RaianBotService"
+    def __init__(self, service: "RaianBotService", account: int | None = None):
+        self.service = service
+        self.account = account or Ariadne.current().account
+
+    def bind(self, account: int):
+        return RaianBotInterface(self.service, account)
+
     @property
     def data(self) -> BotDataManager:
-        return DataInstance.get(None)
+        if self.account is None:
+            return AccountDataInstance.get()
+        return DataInstance.get()[self.account]
+
+    @property
+    def base_config(self) -> RaianConfig:
+        return self.service.config
 
     @property
     def config(self) -> BotConfig:
-        return ConfigInstance.get(None)
+        if self.account is None:
+            return BotConfigInstance.get()
+        return self.service.config.bots[self.account]
 
 
 class RaianBotService(Service):
     id = "raian.core.service"
     supported_interface_types = {RaianBotInterface}
-    data: BotDataManager
-    config: BotConfig
+    config: RaianConfig
 
-    def __init__(self, config: BotConfig):
+    def __init__(self, config: RaianConfig):
         super().__init__()
         self.config = config
-        self.data = DataInstance.get(None) or BotDataManager()
         BotInstance.set(self)
+        for bot_config in config.bots.values():
+            BotDataManager(bot_config)
 
     def get_interface(self, _: type[RaianBotInterface]) -> RaianBotInterface:
-        return RaianBotInterface()
+        return RaianBotInterface(self)
 
     @property
     def required(self) -> set[str | type[ExportInterface]]:
@@ -74,59 +90,79 @@ class RaianBotService(Service):
         return BotInstance.get()
 
     async def launch(self, manager: Launart):
+        datas = DataInstance.get()
         async with self.stage("preparing"):
-            try:
-                self.data.load()
-                logger.debug("机器人数据加载完毕")
-                saya = it(Saya)
-                with saya.module_context():
-                    for module_info in pkgutil.iter_modules(self.config.plugin.paths):
-                        path = Path(module_info.module_finder.path).stem  # noqa
-                        name = module_info.name
-                        if name == "config" or name.startswith("_") or f"{path}.{name}" in self.config.plugin.disabled:
-                            continue
-                        try:
-                            if model := extract_plugin_config(path, name):
-                                self.config.plugin.data[type(model)] = model
-                            export_meta = saya.require(f"{path}.{name}")
-                            if isinstance(export_meta, dict):
-                                self.data.add_meta(**export_meta)
-                        except BaseException as e:
-                            logger.warning(
-                                f"fail to load {path}.{name}, caused by "
-                                f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
-                            )
-                            manager.status.exiting = True
-                            traceback.print_exc()
-                            break
-            except RuntimeError:
-                manager.status.exiting = True
+            for account, data in datas.items():
+                data.load()
+                logger.debug(f"账号 {account} 数据加载完毕")
+            logger.success("机器人数据加载完毕")
+            saya = it(Saya)
+            with saya.module_context():
+                for module_info in pkgutil.iter_modules(self.config.plugin.paths):
+                    path = Path(module_info.module_finder.path).stem  # noqa
+                    name = module_info.name
+                    if name == "config" or name.startswith("_") or f"{path}.{name}" in self.config.plugin.disabled:
+                        continue
+                    try:
+                        if model := extract_plugin_config(path, name):
+                            self.config.plugin.data[type(model)] = model
+                        export_meta = saya.require(f"{path}.{name}")
+                        if isinstance(export_meta, dict):
+                            for data in datas.values():
+                                data.add_meta(**export_meta)
+                    except BaseException as e:
+                        logger.warning(
+                            f"fail to load {path}.{name}, caused by "
+                            f"{traceback.format_exception(BaseException, e, e.__traceback__, 1)[-1]}"
+                        )
+                        traceback.print_exc()
+                        continue
 
         async with self.stage("cleanup"):
-            self.data.save()
-            logger.debug("机器人数据保存完毕")
+            for account, data in datas.items():
+                data.save()
+                logger.debug(f"账号 {account} 数据保存完毕")
+            logger.success("机器人数据保存完毕")
 
 
 class RaianBotDispatcher(BaseDispatcher):
+
+    def __init__(self, service: RaianBotService):
+        self.service = service
+
+    async def beforeExecution(self, interface: DispatcherInterface):
+        interface.local_storage["$raian_bot_config_token"] = BotConfigInstance.set(
+            self.service.config.bots[Ariadne.current().account]
+        )
+        interface.local_storage["$raian_bot_data_token"] = AccountDataInstance.set(
+            DataInstance.get()[Ariadne.current().account]
+        )
     async def catch(self, interface: DispatcherInterface):
         if isinstance(interface.annotation, type):
-            if interface.annotation is Launart:
-                return Launart.current()
+            if interface.annotation is RaianConfig:
+                return MainConfigInstance.get()
             if interface.annotation is BotConfig:
-                return ConfigInstance.get()
+                return BotConfigInstance.get()
             if interface.annotation is BotDataManager:
-                return DataInstance.get()
-            if issubclass(interface.annotation, ExportInterface):
-                return Launart.current().get_interface(interface.annotation)
+                return AccountDataInstance.get()
+            if issubclass(interface.annotation, BasePluginConfig):
+                return self.service.config.plugin.get(interface.annotation)
 
+    async def afterExecution(
+        self,
+        interface: DispatcherInterface,
+        exception: Exception | None,
+        tb: TracebackType | None,
+    ):
+        AccountDataInstance.reset(interface.local_storage["$raian_bot_data_token"])
+        BotConfigInstance.reset(interface.local_storage["$raian_bot_config_token"])
 
 def launch(debug_log: bool = True):
     """启动机器人"""
-    if not (config := ConfigInstance.get(None)):
-        logger.critical("请先加载配置，再初始化机器人！")
-        sys.exit(1)
+    if not (config := MainConfigInstance.get(None)):
+        config = load_config()
     with namespace("Alconna") as np:
-        np.headers = config.command_prefix
+        np.headers = config.command.headers
         np.builtin_option_name["help"] = set(config.command.help)
         np.builtin_option_name["shortcut"] = set(config.command.shortcut)
         np.builtin_option_name["completion"] = set(config.command.completion)
@@ -134,7 +170,6 @@ def launch(debug_log: bool = True):
 
     saya = it(Saya)
     bcc = it(Broadcast)
-    bcc.prelude_dispatchers.append(RaianBotDispatcher())
     manager = Launart()
     it(AlconnaBehaviour)
     it(GraiaScheduler)
@@ -151,17 +186,19 @@ def launch(debug_log: bool = True):
     )
     manager.add_service(FastAPIService(fastapi))
     manager.add_service(UvicornService(config.api.host, config.api.port))
-    manager.add_service(RaianBotService(config))
-    Ariadne.config(launch_manager=manager, default_account=config.mirai.account)
+    manager.add_service(bot_service := RaianBotService(config))
+    bcc.prelude_dispatchers.append(RaianBotDispatcher(bot_service))
+    Ariadne.config(launch_manager=manager, default_account=config.default_account)
     set_output("DEBUG" if debug_log else "INFO")
-    Ariadne(
-        connection=conn_cfg(
-            config.mirai.account,
-            config.mirai.verify_key,
-            HttpClientConfig(config.url),
-            WebsocketClientConfig(config.url),
+    for account in config.bots:
+        Ariadne(
+            connection=conn_cfg(
+                account,
+                config.mirai.verify_key,
+                HttpClientConfig(config.mirai_addr),
+                WebsocketClientConfig(config.mirai_addr),
+            )
         )
-    )
     try:
         initialize()
     except Exception as e:

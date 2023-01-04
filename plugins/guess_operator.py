@@ -2,7 +2,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Union
 
-from app import RaianBotInterface, Sender, record
+from app import RaianBotInterface, Sender, record, accessable, exclusive
 from arclet.alconna import Args, CommandMeta, Option, Kw
 from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from arknights_toolkit.wordle import Guess, OperatorWordle
@@ -28,6 +28,8 @@ alc = Alconna(
 @alcommand(alc)
 @record("猜干员")
 @assign("规则")
+@exclusive
+@accessable
 async def guess_info(app: Ariadne, sender: Sender):
     image = Path("assets/image/guess.png").open("rb").read()
     return await app.send_message(sender, MessageChain(Image(data_bytes=image)))
@@ -36,6 +38,8 @@ async def guess_info(app: Ariadne, sender: Sender):
 @alcommand(alc)
 @record("猜干员")
 @assign("更新")
+@exclusive
+@accessable
 async def guess_update(app: Ariadne, sender: Sender):
     initialize()
     return await app.send_message(sender, "更新完毕")
@@ -44,20 +48,24 @@ async def guess_update(app: Ariadne, sender: Sender):
 @alcommand(alc)
 @record("猜干员")
 @assign("重置")
+@exclusive
+@accessable
 async def guess_reset(
     app: Ariadne,
     sender: Sender,
     bot: RaianBotInterface,
 ):
-    if (path := Path(f"{bot.config.cache_dir}/plugins/guess")).exists():
-        for file in path.iterdir():
-            file.unlink(missing_ok=True)
+    id_ = f"{app.account}_g{sender.id}" if isinstance(sender, Group) else f"{app.account}_f{sender.id}"
+    if (file := Path(f"{bot.base_config.plugin_cache_dir / 'guess' / f'{id_}.json'}")).exists():
+        file.unlink(missing_ok=True)
     return await app.send_message(sender, "重置完毕")
 
 
 @alcommand(alc)
 @record("猜干员")
 @assign("$main")
+@exclusive
+@accessable
 async def guess(
     app: Ariadne,
     sender: Sender,
@@ -66,11 +74,15 @@ async def guess(
     simple: Match[bool],
 ):
     id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
-    if (Path(f"{bot.config.cache_dir}/plugins/guess") / f"{id_}.json").exists():
-        return await app.send_message(sender, "当前已有游戏运行！")
-    wordle = OperatorWordle(f"{bot.config.cache_dir}/plugins/guess", max_guess.result)
-    wordle.select(id_)
-    await app.send_message(sender, "猜干员游戏开始！\n发送 取消 可以结束当前游戏")
+
+    wordle = OperatorWordle(f"{bot.base_config.plugin_cache_dir / 'guess'}", max_guess.result)
+    if (Path(f"{bot.base_config.plugin_cache_dir / 'guess' / f'{id_}.json'}")).exists():
+        if id_ not in bot.data.cache.setdefault("$guess", []):
+            return await app.send_message(sender, f"游戏异常，请重置后再试\n重置方法：{bot.base_config.command.headers[0]}猜干员 重置")
+        await app.send_message(sender, "游戏继续！")
+    else:
+        wordle.select(id_)
+        await app.send_message(sender, "猜干员游戏开始！\n发送 取消 可以结束当前游戏")
 
     async def waiter(waiter_sender: Sender, message: MessageChain):
         name = str(message)
@@ -81,7 +93,7 @@ async def guess(
             with suppress(ValueError):
                 return wordle.guess(name, id_)
             return
-
+    bot.data.cache.setdefault("$guess", []).append(id_)
     while True:
         res: Union[bool, Guess, None] = await FunctionWaiter(
             waiter,
@@ -92,6 +104,7 @@ async def guess(
             continue
         if not res:
             wordle.restart(id_)
+            bot.data.cache["$guess"].remove(id_)
             return await app.send_message(
                 sender,
                 f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！",
@@ -103,10 +116,11 @@ async def guess(
                 await app.send_message(sender, MessageChain(Image(data_bytes=wordle.draw(res))))
         except Exception as e:
             await app.send_friend_message(bot.config.admin.master_id, f'{e}')
-            wordle.restart(id_)
             break
         if res.state != "guessing":
             break
+    wordle.restart(id_)
+    bot.data.cache["$guess"].remove(id_)
     return await app.send_message(
         sender,
         f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！\n答案为{res.select}",

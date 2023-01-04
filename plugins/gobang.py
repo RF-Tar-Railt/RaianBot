@@ -9,7 +9,7 @@ from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
 from playwright.async_api import Page, ConsoleMessage
 from graia.ariadne.util.interrupt import FunctionWaiter
-from app import Sender, record, RaianBotInterface
+from app import Sender, record, RaianBotInterface, accessable, exclusive
 from asyncio import Event
 from PIL import Image as PILImage, ImageDraw, ImageFont
 
@@ -23,8 +23,10 @@ cmd_go = Alconna(
 
 @alcommand(cmd_go, private=False)
 @record("五子棋")
+@exclusive
+@accessable
 async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[bool], bot: RaianBotInterface):
-    if bot.data.cache.get("gobang"):
+    if bot.data.cache.get("$gobang"):
         return await app.send_message(sender, "请耐心排队~")
     start = Event()
     browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
@@ -50,7 +52,7 @@ async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[b
                 if msg.isalpha() and len(msg) > 1:
                     return ord(msg[0].upper()) - 65, ord(msg[1].upper()) - 65
 
-        bot.data.cache["gobang"] = sender.id
+        bot.data.cache["$gobang"] = sender.id
 
         await page.click("html")
         page.on("console", callback)
@@ -120,5 +122,5 @@ async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[b
             except Exception as e:
                 await app.send_friend_message(bot.config.admin.master_id, f'{e}')
                 break
-        bot.data.cache.pop("gobang")
+        bot.data.cache.pop("$gobang")
         return await app.send_message(sender, "五子棋游戏结束！")

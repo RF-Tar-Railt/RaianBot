@@ -3,22 +3,31 @@ import re
 import sys
 from contextlib import suppress
 from pathlib import Path
-from typing import List, Optional, cast, Dict, TypeVar, Type, Literal
+from typing import List, Optional, cast, Dict, TypeVar, Type, Literal, ClassVar
 
 import yaml
 from graia.ariadne.message.element import At, Face
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from .context import ConfigInstance
+from .context import MainConfigInstance
 
-TModel = TypeVar("TModel", bound=BaseModel)
+class BaseConfig(BaseModel):
+    class Config:
+        extra = "ignore"
 
+class BasePluginConfig(BaseModel):
+    is_global: ClassVar[bool] = False
+    @classmethod
+    def __init_subclass__(cls, **kwargs):
+        if kwargs.get("domain", "global") == "global":
+            cls.is_global = True
+    class Config:
+        extra = "ignore"
 
-class MiraiConfig(BaseModel):
-    account: int
-    """bot 登录账号"""
+TConfig = TypeVar("TConfig", bound=BasePluginConfig)
 
+class MiraiConfig(BaseConfig):
     host: str = Field(default="localhost")
     """mirai-api-http 的链接"""
 
@@ -29,7 +38,7 @@ class MiraiConfig(BaseModel):
     """mirai-api-http 的验证码"""
 
 
-class APIConfig(BaseModel):
+class APIConfig(BaseConfig):
     host: str = Field(default="localhost")
     """FastAPI 服务的运行地址"""
 
@@ -37,7 +46,7 @@ class APIConfig(BaseModel):
     """FastAPI 服务的运行端口"""
 
 
-class AdminConfig(BaseModel):
+class AdminConfig(BaseConfig):
     master_id: int
     """bot 的控制者的账号"""
 
@@ -48,7 +57,7 @@ class AdminConfig(BaseModel):
     """bot 的管理者(除开控制者)的账号"""
 
 
-class BrowserConfig(BaseModel):
+class BrowserConfig(BaseConfig):
     type: Literal["chromium", "firefox", "webkit"] = Field(default="chromium")
     """Playwright 浏览器类型"""
 
@@ -67,7 +76,7 @@ class BrowserConfig(BaseModel):
     """本地浏览器通道，不指定则使用下载的浏览器"""
 
 
-class CommandConfig(BaseModel):
+class CommandConfig(BaseConfig):
     prefix: List[str] = Field(default_factory=lambda x: ["."])
     """命令前缀; At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)"""
 
@@ -80,10 +89,22 @@ class CommandConfig(BaseModel):
     completion: List[str] = Field(default_factory=lambda x: ["-cp", "--comp"])
     """补全选项的名称"""
 
+    @property
+    def headers(self):
+        res = []
+        for p in self.prefix:
+            if mth := re.match(r"^At:(?P<target>\d+)$", p):
+                res.append(At(int(mth.groupdict()["target"])))
+            elif mth := re.match(r"^Face:(?P<target>.+)$", p):
+                res.append(Face(name=mth.groupdict()["target"]))
+            else:
+                res.append(p)
+        return res
 
-class PluginConfig(BaseModel):
-    root: str = Field(default="plugins")
-    """模块配置文件的根路径"""
+
+class PluginConfig(BaseConfig):
+    root: str = Field(default="plugins", exclude={"bots", "data", "config"})
+    """模块缓存的根路径"""
 
     paths: List[str] = Field(default_factory=lambda x: ["plugins"])
     """模块存放的路径"""
@@ -91,14 +112,14 @@ class PluginConfig(BaseModel):
     disabled: List[str] = Field(default_factory=list)
     """全局初始禁用的模块名称"""
 
-    data: Dict[Type[BaseModel], BaseModel] = Field(default_factory=dict)
+    data: Dict[Type[BasePluginConfig], BasePluginConfig] = Field(default_factory=dict)
     """插件配置存放处"""
 
-    def get(self, mtype: Type[TModel]) -> TModel:
+    def get(self, mtype: Type[TConfig]) -> TConfig:
         return self.data[mtype]
 
 
-class TencentCloudAPIConfig(BaseModel):
+class TencentCloudAPIConfig(BaseConfig):
     secret_id: str = Field(default="xxxxxxxxxxxxxxxxxxxx")
     """腾讯云API 的 secret-id"""
 
@@ -106,18 +127,29 @@ class TencentCloudAPIConfig(BaseModel):
     """腾讯云API 的 secret-key"""
 
 
-class BotConfig(BaseModel):
+class BotConfig(BaseConfig):
     bot_name: str
     """机器人名字, 请尽量不要与 prefix 重合"""
+
+    account: int
+    """bot 登录账号"""
+
+    disabled: List[str] = Field(default_factory=list)
+    """bot 初始禁用的模块名称"""
+
+    admin: AdminConfig
+    """bot 权限相关配置"""
+
+
+class RaianConfig(BaseConfig):
+    default_account: int
+    """bot 默认登录账号"""
 
     cache_dir: str = Field(default="cache")
     """缓存数据存放的文件夹, 默认为 cache"""
 
     mirai: MiraiConfig
     """mirai-api-http 相关配置"""
-
-    admin: AdminConfig
-    """bot 权限相关配置"""
 
     browser: BrowserConfig
     """浏览器相关配置"""
@@ -129,51 +161,61 @@ class BotConfig(BaseModel):
     """bot 模块相关配置"""
 
     api: APIConfig
-    """bot 对外接口相关配置"""
+    """对外接口相关配置"""
 
     tencent: TencentCloudAPIConfig
     """腾讯云相关配置"""
 
-    @property
-    def qq(self) -> int:
-        return self.mirai.account
+    bots: Dict[int, BotConfig] = Field(default_factory=dict)
+    """bot 配置"""
+
+    root: str = Field(default="config")
+    """根目录"""
 
     @property
-    def url(self) -> str:
+    def mirai_addr(self) -> str:
         return f"http://{self.mirai.host}:{self.mirai.port}"
 
     @property
-    def command_prefix(self):
-        res = []
-        for p in self.command.prefix:
-            if mth := re.match(r"^At:(?P<target>\d+)$", p):
-                res.append(At(int(mth.groupdict()["target"])))
-            elif mth := re.match(r"^Face:(?P<target>.+)$", p):
-                res.append(Face(name=mth.groupdict()["target"]))
-            else:
-                res.append(p)
-        return res
+    def plugin_cache_dir(self) -> Path:
+        return Path.cwd() / self.cache_dir / self.plugin.root
+
+def load_config(root_dir: str = "config") -> RaianConfig:
+    if (path := Path.cwd() / root_dir).exists() and path.is_dir():
+        config_path = path / "config.yml"
+        if config_path.exists() and config_path.is_file():
+            with open(config_path, "r", encoding="utf-8") as f:
+                main_config = RaianConfig.parse_obj(yaml.safe_load(f))
+            main_config.root = root_dir
+            configs = {}
+            for config_file in (path / "bots").iterdir():
+                name = config_file.name
+                if name == "config.yml":
+                    continue
+                if name == "{example_account}.yml":
+                    logger.warning(f"请将 {root_dir}/bots/{name} 重命名为你的机器人账号")
+                    continue
+                if config_file.is_dir() or not config_file.stem.isdigit():
+                    logger.warning(f"请将 {root_dir}/bots/{name} 重命名为你的机器人账号")
+                    continue
+                with config_file.open(encoding="utf-8") as f:
+                    configs[int(config_file.stem)] = BotConfig.parse_obj(yaml.safe_load(f.read()))
+            if configs and main_config.default_account in configs:
+                main_config.bots.update(configs)
+                MainConfigInstance.set(main_config)
+                return main_config
+
+    logger.critical("没有有效的配置文件！")
+    sys.exit()
 
 
-def load_config(file: str = "bot_config.yml") -> BotConfig:
-    if (path := Path.cwd() / "config" / file).exists():
-        with path.open("r+", encoding="UTF-8") as f_obj:
-            _config_data = yaml.safe_load(f_obj.read())
-        cfg = BotConfig.parse_obj(_config_data)
-        ConfigInstance.set(cfg)
-        return cfg
-    else:
-        logger.critical("没有有效的配置文件！")
-        sys.exit()
-
-
-def extract_plugin_config(plugin_path: str, name: str) -> Optional[BaseModel]:
-    with suppress(ModuleNotFoundError, FileNotFoundError, AttributeError):
+def extract_plugin_config(plugin_path: str, name: str) -> Optional[BasePluginConfig]:
+    with suppress(ModuleNotFoundError, FileNotFoundError, AttributeError, KeyError):
         config_module = importlib.import_module(f"{plugin_path}.config.{name}")
-        if (base_config := ConfigInstance.get(None)) and (
-            path := Path.cwd() / "config" / base_config.plugin.root / f"{name}.yml"
+        if (base := MainConfigInstance.get(None)) and (
+            path := Path.cwd() / base.root / "plugins" / f"{name}.yml"
         ).exists():
             with path.open("r+", encoding="UTF-8") as f_obj:
                 data = yaml.safe_load(f_obj.read())
-            return cast(BaseModel, config_module.Config).parse_obj(data)
+            return cast(BasePluginConfig, config_module.Config).parse_obj(data)
     return

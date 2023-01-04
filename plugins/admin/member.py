@@ -1,4 +1,4 @@
-from app import BotConfig, record
+from app import exclusive, record
 from graia.ariadne import Ariadne
 from graia.ariadne.event.mirai import (
     MemberJoinEvent,
@@ -17,6 +17,7 @@ from ..config.admin import AdminConfig
 
 @listen(MemberLeaveEventQuit, MemberLeaveEventKick)
 @record("member_leave")
+@exclusive
 async def member_leave_tell(app: Ariadne, group: Group, member: Member):
     """用户离群提醒"""
     await app.send_group_message(
@@ -27,11 +28,11 @@ async def member_leave_tell(app: Ariadne, group: Group, member: Member):
 
 @listen(MemberJoinEvent)
 @record("member_join")
+@exclusive
 async def member_join_tell(
-        app: Ariadne, group: Group, member: Member, config: BotConfig
+        app: Ariadne, group: Group, member: Member, admin: AdminConfig
 ):
     """用户入群提醒"""
-    admin: "AdminConfig" = config.plugin.get(AdminConfig)
     welcome = admin.member_join_welcome or (
         f"欢迎新人加入{group.name}！进群了就别想跑哦~\n来个star吧球球惹QAQ\n",
         "项目地址：https://github.com/RF-Tar-Railt/RaianBot",
@@ -42,6 +43,7 @@ async def member_join_tell(
 
 @listen(MemberMuteEvent)
 @record("member_mute", disable=True)
+@exclusive
 async def member_mute_tell(app: Ariadne, group: Group, target: Member):
     """用户被禁言提醒"""
     await app.send_group_message(
@@ -51,6 +53,7 @@ async def member_mute_tell(app: Ariadne, group: Group, target: Member):
 
 @listen(MemberUnmuteEvent)
 @record("member_unmute", disable=True)
+@exclusive
 async def member_unmute_tell(
         app: Ariadne, group: Group, target: Member, operator: Member
 ):

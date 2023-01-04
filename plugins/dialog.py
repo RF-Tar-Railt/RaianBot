@@ -1,26 +1,26 @@
-import ujson
 import random
 import re
 from datetime import datetime
-from pathlib import Path
 from io import BytesIO
-from PIL import Image as Img
-from arclet.alconna.graia import startswith, endswith, success_record
+from pathlib import Path
+
+import ujson
+from app import RaianBotInterface, RaianBotService, Sender, Target, exclusive, record, accessable
 from arclet.alconna import command_manager
-from graia.ariadne.message.element import Plain, Voice, Image, Source, At, Face, Quote
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.event.message import GroupMessage, FriendMessage
+from arclet.alconna.graia import endswith, startswith, success_record
 from graia.ariadne.app import Ariadne
-from graia.ariadne.model import Friend, Group
-from graiax.shortcut.saya import listen, priority, dispatch
+from graia.ariadne.event.message import FriendMessage, GroupMessage
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import At, Face, Image, Plain, Quote, Source, Voice
+from graia.ariadne.model import Friend
 from graia.ariadne.util.cooldown import CoolDown
 from graia.broadcast.exceptions import PropagationCancelled
-
-from app import RaianBotService, record, Sender, Target
+from graiax.shortcut.saya import dispatch, listen, priority
 from library.aiml.entry import AIML
 from library.chat import TencentChatBot
 from library.rand import random_pick_small
 from library.translate import TencentTrans, YoudaoTrans
+from PIL import Image as Img
 from plugins.config.dialog import DialogConfig
 
 bot = RaianBotService.current()
@@ -28,15 +28,10 @@ bot = RaianBotService.current()
 json_filename = "assets/data/dialog_templates.json"
 with open(json_filename, "r", encoding="UTF-8") as f_obj:
     dialog_templates = ujson.load(f_obj)["templates"]
-trans = (
-    TencentTrans(bot.config.tencent.secret_id, bot.config.tencent.secret_key)
-    if bot.config.plugin.get(DialogConfig).tencent
-    else YoudaoTrans()
-)
-config = bot.config.plugin.get(DialogConfig)
+config: DialogConfig = bot.config.plugin.get(DialogConfig)
+trans = TencentTrans(bot.config.tencent.secret_id, bot.config.tencent.secret_key) if config.tencent else YoudaoTrans()
+
 nickname = config.nickname.strip()
-if not nickname:
-    nickname = bot.config.bot_name
 
 tcbot = None
 if config.tencent:
@@ -45,12 +40,10 @@ aiml = None
 if not tcbot or not config.gpt_api:
     aiml = AIML(
         trans,
-        name=f" {bot.config.bot_name}",
         gender=" girl",
         mother=" Arclet",
         father=" RF-Tar-Railt",
         phylum=" Robot",
-        master=f" {bot.config.admin.master_name}",
         botmaster=" Master",
         birth=" 2004-02-02",
         birthplace=" Terra",
@@ -62,7 +55,7 @@ if not tcbot or not config.gpt_api:
         order=" Nihilian",
     )
     aiml_files = "assets/data/alice"
-    aiml_brain = f"{bot.config.cache_dir}/plugins/aiml_brain.brn"
+    aiml_brain = f"{bot.config.plugin_cache_dir / 'aiml_brain.brn'}"
     aiml.load_aiml(aiml_files, aiml_brain)
 
 
@@ -131,12 +124,13 @@ def error_handle(t):
 
 
 async def random_ai(app: Ariadne, sender: Sender, target: Target, msg: str, **kwargs: float):
-    session = f"{sender.id}-{target.id}"
-    ai_url = bot.config.plugin.get(DialogConfig).gpt_api
+    session = f"{app.account}-{sender.id}-{target.id}"
+    interface = app.launch_manager.get_interface(RaianBotInterface)
+    ai_url = config.gpt_api
     rand = random_pick_small([1, 2, 3], [0.1, kwargs.get("tx", 0.4), kwargs.get("gpt", 0.5)])
     if rand == 3 and ai_url:
         async with app.service.client_session.get(
-            ai_url, params={"text": msg, "session": f"{bot.config.bot_name}/{session}"}
+            ai_url, params={"text": msg, "session": f"{interface.config.bot_name}/{session}"}
         ) as resp:
             return "".join((await resp.json())["result"])
     if rand == 2 and tcbot:
@@ -145,18 +139,19 @@ async def random_ai(app: Ariadne, sender: Sender, target: Target, msg: str, **kw
         if random.randint(1, 10) > 5:
             return error_handle(msg)
     if aiml:
+        aiml.setting(name=interface.config.bot_name, master=interface.config.admin.master_name)
         return await aiml.chat(message=msg, session_id=session)
     return error_handle(msg)
 
 
 @listen(GroupMessage, FriendMessage)
 @startswith(nickname, bind="message")
-@priority(20)
 @record("dialog")
+@priority(20)
+@exclusive
+@accessable
 async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
-    if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
-        return
     cmds = [i.name for i in command_manager.get_commands()]
     if msg := str(message.include(Plain)).strip(" +"):
         if len(success_record):
@@ -184,12 +179,12 @@ async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 
 @listen(GroupMessage, FriendMessage)
 @endswith(nickname, bind="message")
-@priority(20)
 @record("dialog")
+@priority(20)
+@exclusive
+@accessable
 async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
     """依据语料进行匹配回复"""
-    if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
-        return
     if msg := str(message.include(Plain)).strip(" +"):
         for key, value in dialog_templates["content"].items():
             if re.match(f"^{key}.*?", msg):
@@ -209,14 +204,14 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 
 
 @listen(GroupMessage, FriendMessage)
-@priority(22)
 @dispatch(CoolDown(0.1))
+@priority(22)
 @record("ai")
+@exclusive
+@accessable
 async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
     message = message.copy()
-    if not isinstance(sender, Group) and sender.id == bot.config.mirai.account:
-        return
     if target.id == 2854196310:  # Q群管家
         return
     cmds = [i.name for i in command_manager.get_commands()]

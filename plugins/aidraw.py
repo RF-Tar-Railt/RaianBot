@@ -2,7 +2,7 @@ import time
 from base64 import b64encode
 from typing import Tuple
 
-from app import RaianBotInterface, Sender, Target, record
+from app import RaianBotInterface, Sender, Target, record, exclusive, accessable
 from arclet.alconna import Args, CommandMeta, Option, store_value, MultiVar
 from arclet.alconna.graia import Alconna, Match, Query, alcommand
 from graia.ariadne.app import Ariadne
@@ -69,7 +69,6 @@ async def _handle(prompt: Tuple[str, ...], r18: bool):
     return tags, negative_prompt
 
 
-@record("ai绘画")
 @alcommand(
     Alconna(
         "作画",
@@ -87,6 +86,9 @@ async def _handle(prompt: Tuple[str, ...], r18: bool):
         ),
     )
 )
+@record("ai绘画")
+@exclusive
+@accessable
 async def tdraw(
     app: Ariadne,
     sender: Sender,
@@ -131,7 +133,7 @@ async def tdraw(
         async with AsyncClient(headers=header) as client:
             st = time.time()
             resp = await client.post(
-                str(bot.config.plugin.get(AIDrawConfig).txt2img),
+                str(bot.base_config.plugin.get(AIDrawConfig).txt2img),
                 json={"txt2imgreq": req},
                 timeout=200,
             )
@@ -149,7 +151,6 @@ async def tdraw(
         running.clear()
 
 
-@record("ai绘画")
 @alcommand(
     Alconna(
         "图画",
@@ -160,6 +161,9 @@ async def tdraw(
         meta=CommandMeta("用传入图片为基础进行AI作画, 关键词用空格分割", usage="同一时间只能有一次运行任务"),
     )
 )
+@record("ai绘画")
+@exclusive
+@accessable
 async def idraw(
     app: Ariadne,
     sender: Sender,
@@ -221,7 +225,7 @@ async def idraw(
     try:
         async with AsyncClient(headers=header) as client:
             resp = await client.post(
-                str(bot.config.plugin.get(AIDrawConfig).img2img), json={"img2imgreq": req}
+                str(bot.base_config.plugin.get(AIDrawConfig).img2img), json={"img2imgreq": req}
             )
             data = resp.json()
             await app.send_message(

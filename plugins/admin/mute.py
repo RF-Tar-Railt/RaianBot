@@ -25,24 +25,23 @@ meta_export(group_meta=[mute])
 @permission("admin")
 @startswith("解除群限制:", bind="message")
 async def discard_mute(
-    app: Ariadne, friend: Friend, message: MessageChain, interface: RaianBotInterface
+    app: Ariadne, friend: Friend, message: MessageChain, interface: RaianBotInterface, admin: AdminConfig
 ):
     data = interface.data
     target = int(str(message))
     if not data.exist(target):
         return
     prof = data.get_group(target)
-    prof.set(mute(interface.config.plugin.get(AdminConfig).mute_max))
+    prof.set(mute(admin.mute_max))
     data.update_group(prof)
     return await app.send_friend_message(friend, MessageChain("该群限制解除成功"))
 
 
 @listen(AccountMuted)
 async def handle_mute(app: Ariadne, group: Group, interface: RaianBotInterface):
-
     config = interface.config
     data = interface.data
-    admin: "AdminConfig" = interface.config.plugin.get(AdminConfig)
+    admin: "AdminConfig" = interface.base_config.plugin.get(AdminConfig)
     members = await app.get_member_list(group)
     prof = data.get_group(group.id)
     count = prof.get(mute, mute(admin.mute_max))

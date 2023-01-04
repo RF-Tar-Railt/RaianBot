@@ -15,7 +15,7 @@ from graiax.shortcut.saya import listen, priority
 from graia.broadcast.exceptions import PropagationCancelled
 from contextlib import suppress
 
-from app import RaianBotService, record, send_handler
+from app import RaianBotService, record, send_handler, accessable, exclusive
 
 bot = RaianBotService.current()
 
@@ -30,24 +30,22 @@ repeat = Alconna(
     meta=CommandMeta("让机器人记录指定内容并尝试回复", usage="注意: 该命令不需要 “渊白” 开头", example="学习回复 增加 abcd xyz"),
 )
 
-base_path = Path(f"{bot.config.cache_dir}/plugins/learn_repeat")
+base_path = Path(f"{bot.config.plugin_cache_dir / 'learn_repeat'}")
 base_path.mkdir(parents=True, exist_ok=True)
 image_path = base_path / "image"
 image_path.mkdir(exist_ok=True)
 
 
-async def _serialize_message(app: Ariadne, content: MessageChain):
+async def _serialize_message(content: MessageChain):
     res = []
     for elem in content:
         elem: Union[Plain, Image, Face]
         if isinstance(elem, Image):
             assert isinstance(elem.id, str)
             assert isinstance(elem.url, str)
-            async with app.service.client_session.get(elem.url) as resp:
-                _data = await resp.read()
             name = elem.id.replace('{', '').replace('}', '')
             with (image_path / name).open('wb+') as img:
-                img.write(_data)
+                img.write(await elem.get_bytes())
             res.append({'type': 'Image', 'path': f"{(image_path / name).absolute()}"})
         else:
             res.append(elem.dict())
@@ -56,14 +54,19 @@ async def _serialize_message(app: Ariadne, content: MessageChain):
 
 @alcommand(repeat, private=False)
 @assign("$main")
+@exclusive
+@accessable
 async def shelp(app: Ariadne, sender: Group):
     return await app.send_message(sender, await send_handler(repeat.get_help()))
 
 
 @alcommand(repeat, private=False)
 @assign("列出")
+@exclusive
+@accessable
 async def rlist(app: Ariadne, sender: Group, target: Match[Optional[At]]):
-    this_file = base_path / f"record_{sender.id}.json"
+    this_file = base_path / f"{app.account}" / f"record_{sender.id}.json"
+    this_file.parent.mkdir(parents=True, exist_ok=True)
     if not this_file.exists():
         return await app.send_message(sender, MessageChain("该群未找到任何学习记录"))
     _target = target.result
@@ -106,8 +109,11 @@ async def rlist(app: Ariadne, sender: Group, target: Match[Optional[At]]):
 
 @alcommand(repeat, private=False)
 @assign("查找")
+@exclusive
+@accessable
 async def rfind(app: Ariadne, sender: Group, target: Match[str]):
-    this_file = base_path / f"record_{sender.id}.json"
+    this_file = base_path / f"{app.account}" / f"record_{sender.id}.json"
+    this_file.parent.mkdir(parents=True, exist_ok=True)
     if not this_file.exists():
         return await app.send_message(sender, MessageChain("该群未找到任何学习记录"))
     name = target.result
@@ -129,8 +135,11 @@ async def rfind(app: Ariadne, sender: Group, target: Match[str]):
 
 @alcommand(repeat, private=False)
 @assign("删除")
+@exclusive
+@accessable
 async def rremove(app: Ariadne, sender: Group, source: Source, target: Match[Union[str, At]]):
-    this_file = base_path / f"record_{sender.id}.json"
+    this_file = base_path / f"{app.account}" / f"record_{sender.id}.json"
+    this_file.parent.mkdir(parents=True, exist_ok=True)
     if not this_file.exists():
         return await app.send_message(sender, MessageChain("该群未找到学习记录"))
     name = target.result
@@ -155,8 +164,11 @@ async def rremove(app: Ariadne, sender: Group, source: Source, target: Match[Uni
 
 @alcommand(repeat, private=False, send_error=True)
 @assign("增加")
+@exclusive
+@accessable
 async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arparma):
-    this_file = base_path / f"record_{sender.id}.json"
+    this_file = base_path / f"{app.account}" / f"record_{sender.id}.json"
+    this_file.parent.mkdir(parents=True, exist_ok=True)
     content = result.query_with(list, "增加.content") or []
     if name.result in {"(.+?)", ".+?", ".*?", "(.*?)", ".+", ".*", "."}:
         return await app.send_message(sender, MessageChain("内容过于宽泛！"))
@@ -170,7 +182,7 @@ async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name
             ujson.dump({}, fo)
     with this_file.open("r+", encoding="utf-8") as f_obj:
         _data = ujson.load(f_obj)
-    _data[_name] = {"id": target.id, "content": await _serialize_message(app, _record), "json": True}
+    _data[_name] = {"id": target.id, "content": await _serialize_message(_record), "json": True}
     with this_file.open("w+", encoding="utf-8") as fo:
         ujson.dump(_data, fo, ensure_ascii=False, indent=2)
     return await app.send_message(sender, MessageChain("我学会了！你现在可以来问我了！"), quote=source.id)
@@ -178,8 +190,11 @@ async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name
 
 @alcommand(repeat, private=False, send_error=True)
 @assign("修改")
+@exclusive
+@accessable
 async def redit(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arparma):
-    this_file = base_path / f"record_{sender.id}.json"
+    this_file = base_path / f"{app.account}" / f"record_{sender.id}.json"
+    this_file.parent.mkdir(parents=True, exist_ok=True)
     content = result.query_with(list, "增加.content") or []
     if name.result in {"(.+?)", ".+?", ".*?", "(.*?)", ".+", ".*", "."}:
         return await app.send_message(sender, MessageChain("内容过于宽泛！"))
@@ -194,7 +209,7 @@ async def redit(app: Ariadne, target: Member, sender: Group, source: Source, nam
     _record = _record.include(Face, Image, Plain)
     if not _record:
         return await app.send_message(sender, MessageChain("喂, 没有内容啊~"))
-    _data[_name] = {"id": target.id, "content": await _serialize_message(app, _record), "json": True}
+    _data[_name] = {"id": target.id, "content": await _serialize_message(_record), "json": True}
     with this_file.open("w+", encoding="utf-8") as fo:
         ujson.dump(_data, fo, ensure_ascii=False, indent=2)
     return await app.send_message(sender, MessageChain("我学会了！你现在可以来问我了！"), quote=source.id)
@@ -205,7 +220,8 @@ async def redit(app: Ariadne, target: Member, sender: Group, source: Source, nam
 @record("repeat")
 async def handle(app: Ariadne, sender: Group, message: MessageChain):
     """依据记录回复对应内容"""
-    this_file = base_path / f"record_{sender.id}.json"
+    this_file = base_path / f"{app.account}" / f"record_{sender.id}.json"
+    this_file.parent.mkdir(parents=True, exist_ok=True)
     if not this_file.exists():
         return
     with this_file.open("r+", encoding="utf-8") as f_obj:

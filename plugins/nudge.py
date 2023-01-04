@@ -7,7 +7,7 @@ from graia.ariadne.model import Group, Member
 from graia.ariadne.app import Ariadne
 from graiax.shortcut.saya import listen
 
-from app import RaianBotInterface, record
+from app import RaianBotInterface, record, accessable, exclusive
 from library.petpet import PetGenerator
 
 rua = Alconna(
@@ -21,11 +21,14 @@ pet = PetGenerator("assets/image/rua")
 
 
 @alcommand(rua, private=False)
+@record("rua")
+@exclusive
+@accessable
 async def draw(
-        app: Ariadne,
-        member: Member,
-        sender: Group,
-        target: Match[int]
+    app: Ariadne,
+    member: Member,
+    sender: Group,
+    target: Match[int]
 ):
     async with app.service.client_session.get(f"https://q1.qlogo.cn/g?b=qq&nk={target.result}&s=640") as resp:
         data = await resp.read()
@@ -36,8 +39,9 @@ async def draw(
 
 @listen(NudgeEvent)
 @record("rua")
+@accessable
 async def draw(app: Ariadne, event: NudgeEvent, bot: RaianBotInterface):
-    if event.supplicant == bot.config.mirai.account or event.target != bot.config.mirai.account:
+    if event.supplicant in bot.base_config.bots or event.target != bot.config.account:
         return
     async with app.service.client_session.get(
             f"https://q1.qlogo.cn/g?b=qq&nk={event.supplicant}&s=640"

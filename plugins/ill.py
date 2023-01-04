@@ -7,7 +7,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.app import Ariadne
 from graiax.shortcut.saya import decorate
 
-from app import Sender, record
+from app import Sender, record, accessable, exclusive
 
 json_filename = "assets/data/ill_templates.json"
 with open(json_filename, "r", encoding="UTF-8") as f_obj:
@@ -29,10 +29,12 @@ ill = Alconna(
 @alcommand(ill, send_error=True)
 @record("发病")
 @decorate({"name": fetch_name()})
+@exclusive
+@accessable
 async def ill_(app: Ariadne, sender: Sender, name: str, result: Arparma):
     """依据模板发病"""
     if result.find("tp"):
         template = ill_templates[result.query("tp.template")]
     else:
         template = random.choice(list(ill_templates.values()))
-    return await app.send_message(sender, MessageChain(template.format(target=name)))
+    return await app.send_message(sender, MessageChain(template.format(target=name[:20])))

@@ -8,7 +8,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.util.interrupt import FunctionWaiter
 import asyncio
 
-from app import Sender, BotConfig, Target
+from app import Sender, Target, exclusive, accessable
 from plugins.config.music import MusicConfig
 
 music = Alconna(
@@ -22,9 +22,11 @@ MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"
 
 
 @alcommand(music)
-async def song(app: Ariadne, sender: Sender, target: Target, name: Match[str], singer: Match[str], config: BotConfig):
+@accessable
+@exclusive
+async def song(app: Ariadne, sender: Sender, target: Target, name: Match[str], singer: Match[str], config: MusicConfig):
     _singer = f"{singer.result} " if singer.available else ""
-    api = config.plugin.get(MusicConfig).api
+    api = config.api
     if not api:
         return await app.send_message(sender, "网易云没有配置！")
     song_search_url = f"{api}/search?keywords={_singer + name.result}&limit=10"

@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field, AnyUrl
 from typing import Optional
+from app.config import BasePluginConfig
+from pydantic import Field, AnyUrl
 
 
-class Config(BaseModel):
+class Config(BasePluginConfig, domain="global"):
     api: Optional[AnyUrl] = Field(default=None)
     """网易云API 接口"""
 

@@ -15,6 +15,8 @@ if not cache_dir_root.exists():
     logger.warning("未知的目录")
     exit(1)
 
+account = input("输入当前账号: >>>")
+
 if (gd := cache_dir_root / "groups_data.json").exists():
     logger.info("处理群组数据中。。。")
     with gd.open("r+", encoding="utf-8") as f:
@@ -33,6 +35,13 @@ if (gd := cache_dir_root / "groups_data.json").exists():
             logger.debug(f"处理群组 {gid} 完成")
         with gd.open("w", encoding="utf-8") as f:
             ujson.dump({"version": 2, "data": data}, f, ensure_ascii=False, indent=2)
+    elif data.get("version", 2) == 2:
+        data["version"] = 3
+        (cache_dir_root / account).mkdir(exist_ok=True, parents=True)
+        with (cache_dir_root / account / "groups_data.json").open("w+", encoding="utf-8") as f:
+            ujson.dump(data, f, ensure_ascii=False, indent=2)
+    elif data.get("version", 2) == 3:
+        logger.info("群组数据已经是最新版本")
     logger.success("处理群组数据完成")
 
 if (ud := cache_dir_root / "users_data.json").exists():
@@ -50,6 +59,13 @@ if (ud := cache_dir_root / "users_data.json").exists():
             logger.debug(f"处理用户 {uid} 完成")
         with ud.open("w", encoding="utf-8") as f:
             ujson.dump({"version": 2, "data": data}, f, ensure_ascii=False, indent=2)
+    elif data.get("version", 2) == 2:
+        data["version"] = 3
+        (cache_dir_root / account).mkdir(exist_ok=True, parents=True)
+        with (cache_dir_root / account / "users_data.json").open("w+", encoding="utf-8") as f:
+            ujson.dump(data, f, ensure_ascii=False, indent=2)
+    elif data.get("version", 2) == 3:
+        logger.info("用户数据已经是最新版本")
     logger.success("处理用户数据完成")
 
 

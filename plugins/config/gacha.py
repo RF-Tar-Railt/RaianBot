@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
+from app.config import BasePluginConfig
+from pydantic import Field
 
 
-class Config(BaseModel):
+class Config(BasePluginConfig, domain="global"):
     file: str = Field(default="assets/data/gacha_arknights.json")
     """卡池的文件路径"""
     cooldown: float = Field(default=1.5)

@@ -3,26 +3,21 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from app import RaianBotInterface, Sender, permission, render_markdown, send_handler, extract_plugin_config
-from arclet.alconna import Field, Args, CommandMeta, Option
-from arclet.alconna.graia import (
-    Alconna,
-    Match,
-    alcommand,
-    assign,
-)
+from app import RaianBotInterface, Sender, exclusive, extract_plugin_config, permission, render_markdown, send_handler
+from arclet.alconna import Args, CommandMeta, Field, Option
+from arclet.alconna.graia import Alconna, Match, alcommand, assign, mention
 from creart import it
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Forward, ForwardNode, Image
+from graia.ariadne.message.element import At, Forward, ForwardNode, Image
 from graia.ariadne.model import Group
 from graia.saya import Saya
-from loguru import logger
 from library.aiml.lang_support import is_chinese
+from loguru import logger
 
 module_control = Alconna(
     "模块",
-    Option("列出", alias=["list"]),
+    Option("列出", Args["spec;?", At], alias=["list"]),
     Option(
         "卸载",
         Args["path", str, Field(completion=lambda: "试试用‘admin’")],
@@ -36,6 +31,18 @@ module_control = Alconna(
         help_text="安装一个模块",
     ),
     Option(
+        "禁用",
+        Args["path", str, Field(completion=lambda: "试试用‘admin’")]["spec;?", At],
+        alias=["disable"],
+        help_text="禁用一个模块",
+    ),
+    Option(
+        "启用",
+        Args["path", str, Field(completion=lambda: "试试用‘admin’")]["spec;?", At],
+        alias=["enable"],
+        help_text="启用一个模块",
+    ),
+    Option(
         "重载",
         Args["path", str, Field(completion=lambda: "试试用‘admin’")],
         alias=["重启", "reload"],
@@ -46,16 +53,16 @@ module_control = Alconna(
 
 function_control = Alconna(
     "功能",
-    Option("列出", alias=["list"]),
+    Option("列出", Args["spec;?", At], alias=["list"]),
     Option(
         "禁用",
-        Args["name", str, Field(completion=lambda: "试试用‘greet’")],
-        alias=["ban"],
+        Args["name", str, Field(completion=lambda: "试试用‘greet’")]["spec;?", At],
+        alias=["ban", "disable"],
         help_text="禁用一个功能",
     ),
     Option(
         "启用",
-        Args["name", str, Field(completion=lambda: "试试用‘greet’")],
+        Args["name", str, Field(completion=lambda: "试试用‘greet’")]["spec;?", At],
         alias=["active"],
         help_text="启用一个功能",
     ),
@@ -64,21 +71,22 @@ function_control = Alconna(
 
 group_control = Alconna(
     "群组",
-    Option("当前状态|状态|信息", dest="status", help_text="查看当前群组信息"),
-    Option("黑名单 列入|加入", dest="add", help_text="将当前群组加入黑名单"),
-    Option("黑名单 解除|移出|移除", dest="remove", help_text="将当前群组移出黑名单"),
-    Option("退出"),
-    Option("检查"),
-    Option("列出"),
+    Option("当前状态|状态|信息", Args["spec;?", At], dest="status", help_text="查看当前群组信息"),
+    Option("黑名单 列入|加入", Args["spec;?", At], dest="add", help_text="将当前群组加入黑名单"),
+    Option("黑名单 解除|移出|移除", Args["spec;?", At], dest="remove", help_text="将当前群组移出黑名单"),
+    Option("退出", Args["spec;?", At], dest="quit", help_text="退出指定群组"),
+    Option("检查", Args["spec;?", At], dest="check", help_text="检查指定群组是否在黑名单中"),
+    Option("列出", Args["spec;?", At], dest="list", help_text="列出指定群组的信息"),
     meta=CommandMeta("操作当前群组", example="$群管 当前状态\n$群管 黑名单 加入"),
 )
 
 
 @alcommand(Alconna("调试", meta=CommandMeta("显示调试信息")))
 @permission("admin")
+@exclusive
 async def debug(app: Ariadne, sender: Sender, bot: RaianBotInterface):
     md = f"""\
-# {bot.config.bot_name} 调试信息
+# {bot.config.bot_name} ({bot.config.account}) 调试信息
 
 ## 统计
 
@@ -88,8 +96,8 @@ async def debug(app: Ariadne, sender: Sender, bot: RaianBotInterface):
 
 - 当前共有:      {len(bot.data.users)}人参与签到
 """
-    if bot.config.plugin.disabled:
-        md += "\n- 已禁用模块: \n  - " + "\n  - ".join(bot.config.plugin.disabled) + "\n"
+    if disabled := {*bot.config.disabled, *bot.base_config.plugin.disabled}:
+        md += "\n- 已禁用模块: \n  - " + "\n  - ".join(disabled) + "\n"
     if isinstance(sender, Group):
         md += f"## {sender.name} 相关:\n\n"
         group = bot.data.get_group(sender.id)
@@ -103,20 +111,26 @@ async def debug(app: Ariadne, sender: Sender, bot: RaianBotInterface):
 
 
 @alcommand(module_control, send_error=True)
+@mention("spec")
 @assign("列出")
+@exclusive
 async def _m_list(app: Ariadne, sender: Sender, bot: RaianBotInterface):
     saya = it(Saya)
     md = f"""\
 <div align="center">
 
-# {bot.config.bot_name} 模块信息
+# {bot.config.bot_name} ({bot.config.account}) 模块信息
 
 | 模块名 | 模块路径 | 状态 |
 | ----- | ------- | --- |
 """
     for path, channel in saya.channels.items():
         md += f"| {channel.meta['name'] or path.split('.')[-1]} | {path} | ✔ 已安装 |\n"
-    for path in bot.config.plugin.disabled:
+    for path in bot.config.disabled:
+        if path in bot.base_config.plugin.disabled:
+            continue
+        md += f"| {path.split('.')[-1]} | {path} | ❌ 已禁用 |\n"
+    for path in bot.base_config.plugin.disabled:
         md += f"| {path.split('.')[-1]} | {path} | ❌ 已卸载 |\n"
     return await app.send_message(sender, MessageChain(Image(data_bytes=await render_markdown(md))))
 
@@ -124,13 +138,16 @@ async def _m_list(app: Ariadne, sender: Sender, bot: RaianBotInterface):
 @alcommand(module_control, send_error=True)
 @permission("master")
 @assign("卸载")
+@exclusive
 async def _m_uninstall(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotInterface):
+    if bot.config.account != bot.base_config.default_account:
+        return await app.send_message(sender, "请在主账号上操作")
     saya = it(Saya)
     channel_path = path.result if path.available else "admin"
     if channel_path.split(".")[-1] == "admin":
         return await app.send_message(sender, MessageChain("无法卸载管理模块"))
     if len(channel_path.split(".")) <= 1:
-        for root in bot.config.plugin.paths:
+        for root in bot.base_config.plugin.paths:
             if f"{root}.{channel_path}" in saya.channels:
                 channel_path = f"{root}.{channel_path}"
                 break
@@ -142,28 +159,31 @@ async def _m_uninstall(app: Ariadne, sender: Sender, path: Match[str], bot: Raia
         await app.send_message(sender, MessageChain(f"卸载 {channel_path} 失败！"))
         raise e
     else:
-        bot.config.plugin.disabled.append(channel_path)
+        bot.base_config.plugin.disabled.append(channel_path)
         return await app.send_message(sender, MessageChain(f"卸载 {channel_path} 成功"))
 
 
 @alcommand(module_control, send_error=True)
 @permission("master")
 @assign("安装")
+@exclusive
 async def _m_install(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotInterface):
+    if bot.config.account != bot.base_config.default_account:
+        return await app.send_message(sender, "请在主账号上操作")
     saya = it(Saya)
     channel_path = path.result if path.available else "admin"
     if channel_path.split(".")[-1] == "admin":
         return
     if len(channel_path.split(".")) <= 1:
-        for root in bot.config.plugin.paths:
+        for root in bot.base_config.plugin.paths:
             if Path(f"./{root}/{channel_path}.py").exists():
                 channel_path = f"{root}.{channel_path}"
                 break
-    if channel_path in saya.channels and channel_path not in bot.config.plugin.disabled:
+    if channel_path in saya.channels and channel_path not in bot.base_config.plugin.disabled:
         return await app.send_message(sender, MessageChain("该模组已安装"))
     try:
-        if model := extract_plugin_config(*channel_path.split('.')):
-            bot.config.plugin.data[type(model)] = model
+        if model := extract_plugin_config(*channel_path.split(".")):
+            bot.base_config.plugin.data[type(model)] = model
         with saya.module_context():
             export_meta = saya.require(channel_path)
             if isinstance(export_meta, dict):
@@ -172,21 +192,24 @@ async def _m_install(app: Ariadne, sender: Sender, path: Match[str], bot: RaianB
         await app.send_message(sender, MessageChain(f"安装 {channel_path} 失败！"))
         raise e
     else:
-        if channel_path in bot.config.plugin.disabled:
-            bot.config.plugin.disabled.remove(channel_path)
+        if channel_path in bot.base_config.plugin.disabled:
+            bot.base_config.plugin.disabled.remove(channel_path)
         return await app.send_message(sender, MessageChain(f"安装 {channel_path} 成功"))
 
 
 @alcommand(module_control, send_error=True)
 @permission("master")
 @assign("重载")
+@exclusive
 async def _m_reload(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotInterface):
+    if bot.config.account != bot.base_config.default_account:
+        return await app.send_message(sender, "请在主账号上操作")
     saya = it(Saya)
     channel_path = path.result if path.available else "admin"
     if channel_path.split(".")[-1] == "admin":
         return
     if len(channel_path.split(".")) <= 1:
-        for root in bot.config.plugin.paths:
+        for root in bot.base_config.plugin.paths:
             if Path(f"./{root}/{channel_path}.py").exists():
                 channel_path = f"{root}.{channel_path}"
                 break
@@ -209,24 +232,74 @@ async def _m_reload(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBo
 
 @alcommand(module_control, send_error=True)
 @assign("$main")
+@exclusive
 async def _m_main(app: Ariadne, sender: Sender):
     return await app.send_message(sender, await send_handler(module_control.get_help()))
 
 
+@alcommand(module_control, send_error=True)
+@permission("master")
+@mention("spec")
+@assign("启用")
+@exclusive
+async def _m_enable(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotInterface):
+    saya = it(Saya)
+    channel_path = path.result if path.available else "admin"
+    if channel_path.split(".")[-1] == "admin":
+        return
+    if len(channel_path.split(".")) <= 1:
+        for root in bot.base_config.plugin.paths:
+            if f"{root}.{channel_path}" in saya.channels:
+                channel_path = f"{root}.{channel_path}"
+                break
+    if not (_channel := saya.channels.get(channel_path)):
+        return await app.send_message(sender, MessageChain("该模组未安装, 您可能需要安装它"))
+    if channel_path in bot.base_config.plugin.disabled:
+        bot.base_config.plugin.disabled.remove(channel_path)
+        return await app.send_message(sender, MessageChain(f"启用 {channel_path} 成功"))
+    return await app.send_message(sender, MessageChain("该模组已启用"))
+
+
+@alcommand(module_control, send_error=True)
+@permission("master")
+@mention("spec")
+@assign("禁用")
+@exclusive
+async def _m_disable(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBotInterface):
+    saya = it(Saya)
+    channel_path = path.result if path.available else "admin"
+    if channel_path.split(".")[-1] == "admin":
+        return await app.send_message(sender, MessageChain("无法禁用管理模块"))
+    if len(channel_path.split(".")) <= 1:
+        for root in bot.base_config.plugin.paths:
+            if f"{root}.{channel_path}" in saya.channels:
+                channel_path = f"{root}.{channel_path}"
+                break
+    if not (_channel := saya.channels.get(channel_path)):
+        return await app.send_message(sender, MessageChain("该模组未安装, 您可能需要安装它"))
+    if channel_path in bot.base_config.plugin.disabled:
+        return await app.send_message(sender, MessageChain("该模组已被禁用"))
+    bot.config.disabled.append(channel_path)
+    return await app.send_message(sender, MessageChain(f"禁用 {channel_path} 成功"))
+
+
 @alcommand(function_control, send_error=True)
 @assign("$main")
+@exclusive
 async def _f_main(app: Ariadne, sender: Sender):
     return await app.send_message(sender, await send_handler(function_control.get_help()))
 
 
 @alcommand(function_control, private=False, send_error=True)
+@mention("spec")
 @assign("列出")
+@exclusive
 async def _f_list(app: Ariadne, sender: Group, bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
     md = f"""\
 <div align="center">
 
-# {bot.config.bot_name} 功能概览
+# {bot.config.bot_name} ({bot.config.account}) 功能概览
 
 ## {sender.name} / {sender.id} 统计情况
 
@@ -243,7 +316,9 @@ async def _f_list(app: Ariadne, sender: Group, bot: RaianBotInterface):
 
 @alcommand(function_control, private=False, send_error=True)
 @permission("admin")
+@mention("spec")
 @assign("启用")
+@exclusive
 async def _f_active(app: Ariadne, sender: Group, name: Match[str], bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
     if not name.available:
@@ -261,7 +336,9 @@ async def _f_active(app: Ariadne, sender: Group, name: Match[str], bot: RaianBot
 
 @alcommand(function_control, private=False, send_error=True)
 @permission("admin")
+@mention("spec")
 @assign("禁用")
+@exclusive
 async def _f(app: Ariadne, sender: Group, name: Match[str], bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
     if not name.available:
@@ -279,13 +356,16 @@ async def _f(app: Ariadne, sender: Group, name: Match[str], bot: RaianBotInterfa
 
 @alcommand(group_control, send_error=True)
 @assign("$main")
+@exclusive
 async def _g_main(app: Ariadne, sender: Sender):
     return await app.send_message(sender, await send_handler(group_control.get_help()))
 
 
 @alcommand(group_control, private=False, send_error=True)
 @permission("admin")
-@assign("退出")
+@mention("spec")
+@assign("quit")
+@exclusive
 async def _g_quit(app: Ariadne, sender: Group, bot: RaianBotInterface):
     await app.send_message(sender, "正在退出该群聊。。。")
     logger.debug(f"quiting from {sender.name}({sender.id})...")
@@ -294,7 +374,9 @@ async def _g_quit(app: Ariadne, sender: Group, bot: RaianBotInterface):
 
 
 @alcommand(group_control, private=False, send_error=True)
+@mention("spec")
 @assign("status")
+@exclusive
 async def _g_state(app: Ariadne, sender: Group, bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
     fns = "所在群组已列入黑名单" if group.in_blacklist else f"所在群组已禁用功能: {group.disabled}"
@@ -303,7 +385,9 @@ async def _g_state(app: Ariadne, sender: Group, bot: RaianBotInterface):
 
 @alcommand(group_control, send_error=True)
 @permission("admin")
-@assign("检查")
+@mention("spec")
+@assign("check")
+@exclusive
 async def _g_check(app: Ariadne, sender: Sender, bot: RaianBotInterface):
     groups = [i.id for i in await app.get_group_list()]
     moved = [gid for gid in bot.data.groups if int(gid) not in groups]
@@ -319,11 +403,13 @@ async def _g_check(app: Ariadne, sender: Sender, bot: RaianBotInterface):
 
 @alcommand(group_control, send_error=True)
 @permission("admin")
-@assign("列出")
+@mention("spec")
+@assign("list")
+@exclusive
 async def _g_list(app: Ariadne, sender: Sender, bot: RaianBotInterface):
     groups: List[Group] = await app.get_group_list()
     for i in range(1 + (len(groups) - 1) // 50):
-        select = groups[i * 50: (i + 1) * 50]
+        select = groups[i * 50 : (i + 1) * 50]
         forwards = []
         now = datetime.now()
         for gp in select:
@@ -333,7 +419,7 @@ async def _g_list(app: Ariadne, sender: Sender, bot: RaianBotInterface):
             gp_name = re.sub(r"<\$[^<>]*?>", "", gp_name)
             forwards.append(
                 ForwardNode(
-                    target=bot.config.mirai.account,
+                    target=bot.config.account,
                     name=bot.config.bot_name,
                     time=now,
                     message=MessageChain(Image(data_bytes=data), f"\n{gp_name}({gp.id})"),
@@ -346,7 +432,9 @@ async def _g_list(app: Ariadne, sender: Sender, bot: RaianBotInterface):
 
 @alcommand(group_control, private=False, send_error=True)
 @permission("admin")
+@mention("spec")
 @assign("add")
+@exclusive
 async def _g_bl_add(app: Ariadne, sender: Group, bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
     if group.in_blacklist or sender.id in bot.data.cache["blacklist"]:
@@ -359,7 +447,9 @@ async def _g_bl_add(app: Ariadne, sender: Group, bot: RaianBotInterface):
 
 @alcommand(group_control, private=False, send_error=True)
 @permission("admin")
+@mention("spec")
 @assign("remove")
+@exclusive
 async def _g_bl_remove(app: Ariadne, sender: Group, bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
     if group.in_blacklist or sender.id in bot.data.cache["blacklist"]:

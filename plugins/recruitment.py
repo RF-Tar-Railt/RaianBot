@@ -8,11 +8,11 @@ from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
 from arknights_toolkit.recruit import recruitment
 
-from app import Sender
+from app import Sender, accessable, exclusive
 
 recruit = Alconna(
     "公招",
-    Args["tags", MultiVar(str, "+"), Field(..., completion=lambda: "高资")],
+    Args["tags", MultiVar(str, "+"), Field('...', completion=lambda: "高资")],
     Option("详细|--d", dest="detail"),
     meta=CommandMeta("自助访问 prts 的公招计算器并截图", usage="标签之间用空格分隔", example="$公招 高资 生存"),
 )
@@ -20,6 +20,8 @@ running = asyncio.Event()
 
 
 @alcommand(recruit, send_error=True)
+@exclusive
+@accessable
 async def recruit(
     app: Ariadne, sender: Sender, source: Source, tags: Match[Tuple[str, ...]], detail: Query = Query("detail")
 ):

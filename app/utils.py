@@ -6,7 +6,8 @@ from typing import (
     TypeVar,
     Union,
 )
-
+import inspect
+from pathlib import Path
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.model import Friend, Group, Member
@@ -14,7 +15,7 @@ from graia.saya import Channel
 from graia.saya.factory import ensure_buffer
 
 from .context import DataInstance
-from .control import require_admin, require_function
+from .control import require_admin, require_function, check_disabled, check_exclusive
 from .image import render_markdown
 
 Sender = Union[Group, Friend]
@@ -34,14 +35,28 @@ def meta_export(
 
 def record(name: str, require: bool = True, disable: bool = False):
     def wrapper(func: T_Callable) -> T_Callable:
-        data = DataInstance.get()
-        data.record(name, disable)(func)
+        datas = DataInstance.get()
+        for data in datas.values():
+            data.record(name, disable)(func)
         if require:
             buffer = ensure_buffer(func)
             buffer.setdefault("decorators", []).append(require_function(name))
         return func
 
     return wrapper
+
+def accessable(path: str | T_Callable | None = None):
+    def wrapper(func: T_Callable) -> T_Callable:
+        nonlocal path
+        buffer = ensure_buffer(func)
+        if not path:
+            file = inspect.getsourcefile(func)
+            _path = Path(file)
+            path = f"{_path.parts[-2]}.{_path.stem}"
+        buffer.setdefault("decorators", []).append(check_disabled(path))
+        return func
+
+    return wrapper(path) if callable(path) else wrapper
 
 
 def permission(level: Literal["admin", "master"] = "admin"):
@@ -50,6 +65,12 @@ def permission(level: Literal["admin", "master"] = "admin"):
         buffer.setdefault("decorators", []).append(require_admin(level == "master", __record=func))
         return func
     return wrapper
+
+
+def exclusive(func: T_Callable) -> T_Callable:
+    buffer = ensure_buffer(func)
+    buffer.setdefault("decorators", []).append(check_exclusive())
+    return func
 
 
 async def send_handler(output: str):

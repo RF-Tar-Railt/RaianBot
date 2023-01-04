@@ -23,10 +23,12 @@ async def announcement(
     msg = message.as_sendable()
     ft = time.time()
     data = interface.data
-    admin: "AdminConfig" = interface.config.plugin.get(AdminConfig)
+    admin: "AdminConfig" = interface.base_config.plugin.get(AdminConfig)
     group_list = await app.get_group_list()
     for group in group_list:
-        if data.exist(group.id) and "broadcast" in data.get_group(group.id).disabled:
+        if not data.exist(group.id):
+            continue
+        if "broadcast" in data.get_group(group.id).disabled or data.get_group(group.id).in_blacklist:
             continue
         try:
             await app.send_group_message(

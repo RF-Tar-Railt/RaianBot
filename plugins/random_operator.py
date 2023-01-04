@@ -6,7 +6,7 @@ from graiax.shortcut.saya import decorate
 from graia.ariadne.app import Ariadne
 from arknights_toolkit.random_operator import RandomOperator
 
-from app import Sender, record, create_image
+from app import Sender, record, create_image, accessable, exclusive
 
 
 @alcommand(
@@ -19,6 +19,8 @@ from app import Sender, record, create_image
 )
 @decorate({"name": fetch_name()})
 @record("随机干员")
+@exclusive
+@accessable
 async def ro(app: Ariadne, sender: Sender, name: str):
     """依据名字随机生成干员"""
     return await app.send_message(

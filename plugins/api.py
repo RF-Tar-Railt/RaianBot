@@ -2,8 +2,8 @@ from typing import List, Dict, Optional
 from graiax.fastapi import route
 from graia.saya import Saya
 from creart import it
-from app import UserProfile, GroupProfile, RaianBotService
-from arclet.alconna import command_manager, CommandMeta
+from app import UserProfile, GroupProfile, RaianBotService, RaianBotInterface
+from arclet.alconna import command_manager
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, PlainTextResponse
 from dataclasses import asdict
@@ -33,40 +33,44 @@ class GroupFindResp(BaseModel):
 
 @route.route(["GET"], "/")
 async def root():
-    return {"code": 200, "content": f"这里是{bot.config.bot_name}!"}
+    return {"code": 200, "content": "这里是 Raian Bot API!"}
 
 
-@route.route(["GET"], "/users", response_model=UsersResp)
-async def get_users():
-    ids = bot.data.users
-    users = [bot.data.get_user(int(i)).dict() for i in ids]
+@route.route(["GET"], "/{account}/users", response_model=UsersResp)
+async def get_users(account: int):
+    interface = RaianBotInterface(bot, account)
+    ids = interface.data.users
+    users = [interface.data.get_user(int(i)).dict() for i in ids]
     return JSONResponse(
         content={"count": len(ids), "users": users}, headers={"charset": "utf-8"}
     )
 
 
-@route.route(["GET"], "/users/{uid}", response_model=UserFindResp)
-@route.route(["GET"], "/user/get/{uid}", response_model=UserFindResp)
-async def get_user(uid: int):
-    res = bot.data.get_user(uid)
+@route.route(["GET"], "/{account}/users/{uid}", response_model=UserFindResp)
+@route.route(["GET"], "/{account}/user/get/{uid}", response_model=UserFindResp)
+async def get_user(account: int, uid: int):
+    interface = RaianBotInterface(bot, account)
+    res = interface.data.get_user(uid)
     return JSONResponse(
         content={"founded": bool(res), "user": res.dict()}, headers={"charset": "utf-8"}
     )
 
 
-@route.route(["GET"], "/groups", response_model=GroupsResp)
-async def get_groups():
-    ids = bot.data.groups
-    groups = [bot.data.get_group(int(i)).dict() for i in ids]
+@route.route(["GET"], "/{account}/groups", response_model=GroupsResp)
+async def get_groups(account: int):
+    interface = RaianBotInterface(bot, account)
+    ids = interface.data.groups
+    groups = [interface.data.get_group(int(i)).dict() for i in ids]
     return JSONResponse(
         content={"count": len(ids), "groups": groups}, headers={"charset": "utf-8"}
     )
 
 
-@route.route(["GET"], "/groups/{gid}", response_model=GroupFindResp)
-@route.route(["GET"], "/group/get/{gid}", response_model=GroupFindResp)
-async def get_group(gid: int):
-    res = bot.data.get_group(gid)
+@route.route(["GET"], "/{account}/groups/{gid}", response_model=GroupFindResp)
+@route.route(["GET"], "/{account}/group/get/{gid}", response_model=GroupFindResp)
+async def get_group(account: int, gid: int):
+    interface = RaianBotInterface(bot, account)
+    res = interface.data.get_group(gid)
     return JSONResponse(
         content={"founded": bool(res), "group": res.dict()}, headers={"charset": "utf-8"}
     )
@@ -100,14 +104,16 @@ class DebugResp(BaseModel):
     disabled_plugins: List[str]
 
 
-@route.route(["GET"], "/debug", response_model=DebugResp)
-async def get_debug():
+@route.route(["GET"], "/{account}/debug", response_model=DebugResp)
+async def get_debug(account: int):
+    interface = RaianBotInterface(bot, account)
     return JSONResponse(
         content={
             "channels": len(it(Saya).channels),
-            "groups": len(bot.data.groups),
-            "users": len(bot.data.users),
-            "disabled_plugins": bot.config.plugin.disabled,
+            "groups": len(interface.data.groups),
+            "users": len(interface.data.users),
+            "uninstalled_plugins": bot.config.plugin.disabled,
+            "disabled_plugins": interface.config.disabled,
         },
         headers={"charset": "utf-8"},
     )

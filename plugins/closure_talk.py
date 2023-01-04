@@ -11,7 +11,7 @@ from graiax.playwright import PlaywrightBrowser
 from graiax.shortcut.saya import listen, priority
 from library.ak_closure_talk import ArknightsClosureStore
 from library.ak_closure_talk.exceptions import *
-from app import BotConfig, RaianBotService
+from app import BotConfig, RaianBotService, exclusive, accessable, BotDataManager
 
 bot = RaianBotService.current()
 store = ArknightsClosureStore()
@@ -26,13 +26,14 @@ closure = Alconna(
     meta=CommandMeta("创建罗德岛聊天室并制图", usage="注意: 该命令不需要 “渊白” 开头"),
 )
 
-rooms = []
 cache_dir = Path(bot.config.cache_dir) / "plugins" / "closure"
 cache_dir.mkdir(parents=True, exist_ok=True)
 
 
 @alcommand(closure, private=False)
 @assign("$main")
+@exclusive
+@accessable
 async def _help(app: Ariadne, sender: Group):
     return await app.send_message(
         sender,
@@ -50,15 +51,19 @@ async def _help(app: Ariadne, sender: Group):
 
 @alcommand(closure, private=False)
 @assign("reset")
-async def _reset(app: Ariadne, sender: Group):
+@exclusive
+@accessable
+async def _reset(app: Ariadne, sender: Group, data: BotDataManager):
     store.end(str(sender.id))
-    if sender.id in rooms:
+    if sender.id in (rooms := data.cache.setdefault("$rooms", [])):
         rooms.remove(sender.id)
     return await app.send_message(sender, "[ClosureTalk] 重置完毕")
 
 
 @alcommand(closure, private=False)
 @assign("bind")
+@exclusive
+@accessable
 async def _bind(app: Ariadne, sender: Group, target: Member, name: Match[str]):
     try:
         if char := store.add_char(str(sender.id), target.id, name.result):
@@ -70,6 +75,8 @@ async def _bind(app: Ariadne, sender: Group, target: Member, name: Match[str]):
 
 @alcommand(closure, private=False)
 @assign("create")
+@exclusive
+@accessable
 async def _create(app: Ariadne, sender: Group, count: Match[int]):
     try:
         store.start(str(sender.id), count.result)
@@ -80,11 +87,13 @@ async def _create(app: Ariadne, sender: Group, count: Match[int]):
 
 @alcommand(closure, private=False)
 @assign("start")
-async def _start(app: Ariadne, sender: Group, browser: PlaywrightBrowser):
+@exclusive
+@accessable
+async def _start(app: Ariadne, sender: Group, browser: PlaywrightBrowser, data: BotDataManager):
     if str(sender.id) not in store.session:
         return await app.send_message(sender, "[ClosureTalk] 会话未存在")
 
-    if sender.id in rooms:
+    if sender.id in (rooms := data.cache.setdefault("$rooms", [])):
         return
     rooms.append(sender.id)
     await app.send_message(sender, "[ClosureTalk] 记录开始！输入‘$结束‘或’$取消’结束记录")
@@ -144,18 +153,19 @@ async def _start(app: Ariadne, sender: Group, browser: PlaywrightBrowser):
 
 @listen(ActiveGroupMessage)
 @priority(24)
-async def _record_self(config: BotConfig, event: ActiveGroupMessage):
+@accessable
+async def _record_self(config: BotConfig, event: ActiveGroupMessage, data: BotDataManager):
     gid = event.subject.id
-    if gid not in rooms:
+    if gid not in data.cache.setdefault("$rooms", []):
         return
     msg = str(event.message_chain)
     if msg.startswith("[ClosureTalk]"):
         return
     try:
         try:
-            store.add_content(msg, str(gid), config.mirai.account)
+            store.add_content(msg, str(gid), config.account)
         except CharacterNotExist:
-            store.add_char(str(gid), config.mirai.account, config.bot_name)
-            store.add_content(msg, str(gid), config.mirai.account)
+            store.add_char(str(gid), config.account, config.bot_name)
+            store.add_content(msg, str(gid), config.account)
     except RecordMaxExceed:
         return False

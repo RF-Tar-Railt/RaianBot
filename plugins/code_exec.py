@@ -9,6 +9,8 @@ from app import (
     render_markdown,
     permission,
     reports_md,
+    exclusive,
+    accessable
 )
 from arclet.alconna import Alconna, Field, Args, Arparma, CommandMeta, Option, MultiVar
 from arclet.alconna.graia import alcommand, shortcuts, startswith
@@ -31,6 +33,8 @@ code = Alconna(
 )
 @alcommand(code, send_error=True)
 @permission("admin")
+@exclusive
+@accessable
 async def execc(app: Ariadne, sender: Sender, result: Arparma, interface: RaianBotInterface):
     codes = str(result.origin).split("\n")
     output = result.query("out.name", "res")
@@ -83,6 +87,8 @@ async def execc(app: Ariadne, sender: Sender, result: Arparma, interface: RaianB
 @listen(GroupMessage, FriendMessage)
 @permission("master")
 @startswith("shell", bind="echos")
+@exclusive
+@accessable
 async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
     process = await asyncio.create_subprocess_shell(
         str(echos),

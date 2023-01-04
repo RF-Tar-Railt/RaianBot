@@ -9,14 +9,14 @@ from graia.ariadne.message.element import Image, Source
 from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
 from playwright.async_api import Page, TimeoutError
-from app import Sender, RaianBotService
+from app import Sender, RaianBotService, accessable, exclusive, record
 from pathlib import Path
 from hashlib import md5
 from functools import partial
 from contextlib import suppress
 
 bot = RaianBotService.current()
-cache = Path(f"{bot.config.cache_dir}/plugins/op_query")
+cache = Path(f"{bot.config.plugin_cache_dir / 'op_query'}")
 cache.mkdir(parents=True, exist_ok=True)
 running = asyncio.Event()
 
@@ -54,6 +54,9 @@ def _handle(content: Optional[str] = None):
         meta=CommandMeta("查询干员信息", usage="大致按照prts的分区板块来查询", example="$干员艾雅法拉 档案"),
     )
 )
+@record("干员查询")
+@exclusive
+@accessable
 async def weather(app: Ariadne, sender: Sender, content: Match[str], result: Arparma, source: Source):
     name = result.header["operator"] or "艾雅法拉"
     if running.is_set():

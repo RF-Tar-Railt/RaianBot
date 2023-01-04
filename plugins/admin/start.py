@@ -16,7 +16,7 @@ from ..config.admin import AdminConfig
 async def _report(app: Ariadne, interface: RaianBotInterface):
     data = interface.data
     config = interface.config
-    admin: "AdminConfig" = interface.config.plugin.get(AdminConfig)
+    admin: "AdminConfig" = interface.base_config.plugin.get(AdminConfig)
     group_list: List[Group] = await app.get_group_list()
     groups = len(group_list)
     await app.send_friend_message(

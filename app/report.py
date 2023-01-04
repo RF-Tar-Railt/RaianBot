@@ -7,7 +7,7 @@ from pydantic import BaseModel
 def save_iterable(data: Iterable):
     for i in data:
         if isinstance(i, BaseModel):
-            yield i.dict()
+            yield i.json(ensure_ascii=False, indent=2)
         elif isinstance(i, dict):
             yield dict(save_dict(i))
         elif isinstance(i, (str, int, float, bool, type(None))):
@@ -21,7 +21,7 @@ def save_iterable(data: Iterable):
 def save_dict(data: dict):
     for k, v in data.items():
         if isinstance(v, BaseModel):
-            yield str(k), v.dict()
+            yield str(k), v.json(ensure_ascii=False, indent=2)
         elif isinstance(v,  (str, int, float, bool, type(None))):
             yield str(k), v
         elif isinstance(v, dict):

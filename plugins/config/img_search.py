@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field
 from typing import Optional
+from app.config import BasePluginConfig
+from pydantic import Field
 
 
-class Config(BaseModel):
+class Config(BasePluginConfig):
     saucenao: Optional[str] = Field(default=None)
     """saucenao的token, 请自行前往 https://saucenao.com 中获取"""
     ascii2d: bool = Field(default=True)

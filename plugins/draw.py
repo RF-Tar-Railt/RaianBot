@@ -8,7 +8,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.app import Ariadne
 
-from app import RaianBotInterface, Sender, Target, record, meta_export
+from app import RaianBotInterface, Sender, Target, record, meta_export, exclusive, accessable
 from library.rand import random_pick_small
 
 json_filename = "assets/data/draw_poetry.json"
@@ -29,6 +29,8 @@ meta_export(user_meta=[draw_info])
 
 @alcommand(Alconna("抽签", meta=CommandMeta("进行一次抽签, 可以解除")))
 @record("抽签")
+@exclusive
+@accessable
 async def draw(app: Ariadne, sender: Sender, target: Target, source: Source, bot: RaianBotInterface):
     """每日运势抽签"""
     today = datetime.now().day
@@ -57,6 +59,9 @@ async def draw(app: Ariadne, sender: Sender, target: Target, source: Source, bot
 
 
 @alcommand(Alconna("解签", meta=CommandMeta("解除上一次的抽签")))
+@record("抽签")
+@exclusive
+@accessable
 async def undraw(app: Ariadne, sender: Sender, target: Target, source: Source, bot: RaianBotInterface):
     if not bot.data.exist(target.id):
         return await app.send_message(sender, MessageChain("您还未找我签到~"), quote=source.id)

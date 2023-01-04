@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Union, Optional, Any
 from loguru import logger
 from graia.broadcast.builtin.decorators import Depend
@@ -18,20 +20,20 @@ def require_admin(only: bool = False, __record: Any = None):
     ):
         from .core import RaianBotInterface
 
-        bot = app.launch_manager.get_interface(RaianBotInterface)
+        interface = app.launch_manager.get_interface(RaianBotInterface)
         id_ = f"{id(event)}" if event else "_"
-        cache = bot.data.cache.setdefault("$admin", {})
-        if target.id in [bot.config.admin.master_id, bot.config.qq]:
-            bot.data.cache.pop("$admin", None)
+        cache = interface.data.cache.setdefault("$admin", {})
+        if target.id in [interface.config.admin.master_id, interface.config.account]:
+            interface.data.cache.pop("$admin", None)
             return True
         if not only and (
             (
                 isinstance(target, Member)
                 and target.permission in (MemberPerm.Administrator, MemberPerm.Owner)
             )
-            or target.id in bot.config.admin.admins
+            or target.id in interface.config.admin.admins
         ):
-            bot.data.cache.pop("$admin", None)
+            interface.data.cache.pop("$admin", None)
             return True
         text = (
             "权限不足！" if isinstance(sender, Friend) else [At(target.id), Plain("\n权限不足！")]
@@ -60,6 +62,29 @@ def require_function(name: str):
                 raise ExecutionStop
             elif group_data.in_blacklist or sender.id in data.cache.get("blacklist", []):
                 raise ExecutionStop
+        return True
+
+    return Depend(__wrapper__)
+
+
+def check_disabled(path: str):
+    def __wrapper__(app: Ariadne):
+        from .core import RaianBotInterface
+        config = app.launch_manager.get_interface(RaianBotInterface).config
+        if path in config.disabled:
+            raise ExecutionStop
+        return True
+
+    return Depend(__wrapper__)
+
+
+def check_exclusive():
+    def __wrapper__(app: Ariadne, target: Union[Friend, Member]):
+        from .core import RaianBotInterface
+
+        interface = app.launch_manager.get_interface(RaianBotInterface)
+        if target.id in interface.base_config.bots:
+            raise ExecutionStop
         return True
 
     return Depend(__wrapper__)

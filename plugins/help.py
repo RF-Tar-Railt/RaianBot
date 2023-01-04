@@ -1,5 +1,5 @@
 import random
-from app import RaianBotInterface, Sender, send_handler, render_markdown
+from app import RaianBotInterface, Sender, send_handler, render_markdown, accessable, exclusive
 from arclet.alconna import Field, Args, CommandMeta, command_manager, config
 from arclet.alconna.graia import Alconna, Match, alcommand, shortcuts
 from graia.ariadne.app import Ariadne
@@ -22,10 +22,12 @@ cmd_help = Alconna(
 
 @shortcuts(菜单=MessageChain(f"{cmd_help.headers[0]}帮助"))
 @alcommand(cmd_help)
+@exclusive
+@accessable
 async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianBotInterface):
     if not query.available:
         md = f"""\
-# {bot.config.bot_name} 帮助菜单
+# {bot.config.bot_name} {bot.config.account} 帮助菜单
 #{config.lang.manager_help_header}
 
 | id  | 命令 | 介绍 | 备注 |
@@ -43,7 +45,7 @@ async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianB
 
         md += (
             "\n\n---"
-            f"\n\n* 输入'命令名 {bot.config.command.help[0]}' 查看特定命令的语法"
+            f"\n\n* 输入'命令名 {bot.base_config.command.help[0]}' 查看特定命令的语法"
             "\n\n* 所有功能均无需 @机器人本身"
             "\n\n* 想给点饭钱的话，这里有赞助链接：https://afdian.net/@rf_tar_railt"
             "\n\n* 更多功能待开发，如有特殊需求可以向 3165388245 询问, 或前往 122680593 交流"

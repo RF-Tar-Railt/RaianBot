@@ -14,7 +14,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.util.interrupt import FunctionWaiter
 from loguru import logger
 
-from app import Sender, Target, record, RaianBotInterface
+from app import Sender, Target, record, RaianBotInterface, accessable, exclusive
 from plugins.config.img_search import ImgSearchConfig
 
 running = asyncio.Event()
@@ -28,8 +28,10 @@ search = Alconna(
 
 @alcommand(search, send_error=True)
 @record("搜图")
+@exclusive
+@accessable
 async def saucenao(
-    app: Ariadne, sender: Sender, target: Target, source: Source, img: Match[str], bot: RaianBotInterface
+    app: Ariadne, sender: Sender, target: Target, source: Source, img: Match[str], config: ImgSearchConfig
 ):
     """通过各API搜图源"""
 
@@ -65,7 +67,7 @@ async def saucenao(
         client = Network().start()
         sauce = SauceNAO(
             client=client,
-            api_key=bot.config.plugin.get(ImgSearchConfig).saucenao,
+            api_key=config.saucenao,
             numres=6,
             hide=0,
         )
@@ -73,13 +75,13 @@ async def saucenao(
             sauce_result: Optional[SauceNAOResponse] = await asyncio.wait_for(sauce.search(image_url), timeout=20)
         except Exception as e:
             logger.warning(e)
-        if bot.config.plugin.get(ImgSearchConfig).ascii2d:
+        if config.ascii2d:
             ascii2 = Ascii2D(client=client)
             try:
                 ascii2_result: Optional[Ascii2DResponse] = await asyncio.wait_for(ascii2.search(image_url), timeout=20)
             except Exception as e:
                 logger.warning(e)
-        if bot.config.plugin.get(ImgSearchConfig).iqdb:
+        if config.iqdb:
             iqdb = Iqdb(client=client)
             try:
                 iqdb_result: Optional[IqdbResponse] = await asyncio.wait_for(iqdb.search(image_url), timeout=20)

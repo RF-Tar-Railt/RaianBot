@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field, AnyUrl
 from typing import Optional
+from app.config import BasePluginConfig
+from pydantic import Field, AnyUrl
 
 
-class Config(BaseModel):
+class Config(BasePluginConfig):
     nickname: str
     """对话的触发词前缀"""
     tencent: bool = Field(default=True)

@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from app import RaianBotService, Sender, Target, record, meta_export
+from app import RaianBotService, Sender, Target, record, meta_export, exclusive, accessable, RaianBotInterface
 from arclet.alconna import Field, Args, CommandMeta
 from arclet.alconna.graia import Alconna, Match, alcommand
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
@@ -13,9 +13,8 @@ from graiax.fastapi import route
 from plugins.config.gacha import GachaConfig
 
 bot = RaianBotService.current()
-gacha = ArknightsGacha(
-    bot.config.plugin.get(GachaConfig).file
-)
+config = bot.config.plugin.get(GachaConfig)
+gacha = ArknightsGacha(config.file)
 
 
 class arkgacha_proba(NamedTuple):
@@ -55,36 +54,40 @@ async def get_sim_gacha(per: int = 2, status: int = 0):
     send_error=True,
 )
 @record("抽卡")
-async def gacha_(app: Ariadne, sender: Sender, target: Target, count: Match[int]):
+@exclusive
+@accessable
+async def gacha_(app: Ariadne, sender: Sender, target: Target, count: Match[int], interface: RaianBotInterface):
     """模拟抽卡"""
     count_ = min(max(count.result, 1), 300)
-    if bot.data.exist(target.id):
-        user = bot.data.get_user(target.id)
+    if interface.data.exist(target.id):
+        user = interface.data.get_user(target.id)
         proba = user.get(arkgacha_proba, arkgacha_proba(0, 2))
         guser = GachaUser(proba.six_per, proba.six_statis)
         data = gacha.gacha_with_img(guser, count_)
         user.set(arkgacha_proba(guser.six_statis, guser.six_per))
-        bot.data.update_user(user)
+        interface.data.update_user(user)
     else:
         guser = GachaUser()
         data = gacha.gacha_with_img(guser, count_)
     return await app.send_message(sender, MessageChain(Image(data_bytes=data)))
 
 
-@record("抽卡")
-@dispatch(CoolDown(1.5))
 @alcommand(Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="有1.5s的时间限制;灰色头像表示新干员但是头图未更新")))
-async def simulate(app: Ariadne, sender: Sender, target: Target):
+@dispatch(CoolDown(config.cooldown))
+@record("抽卡")
+@exclusive
+@accessable
+async def simulate(app: Ariadne, sender: Sender, target: Target, interface: RaianBotInterface):
     from arknights_toolkit.gacha import simulate_image
 
-    if bot.data.exist(target.id):
-        user = bot.data.get_user(target.id)
+    if interface.data.exist(target.id):
+        user = interface.data.get_user(target.id)
         proba = user.get(arkgacha_proba, arkgacha_proba(0, 2))
         guser = GachaUser(proba.six_per, proba.six_statis)
         ops = gacha.gacha(guser, 10)
         data = await simulate_image(ops[0])
         user.set(arkgacha_proba(guser.six_statis, guser.six_per))
-        bot.data.update_user(user)
+        interface.data.update_user(user)
     else:
         guser = GachaUser()
         ops = gacha.gacha(guser, 10)
@@ -92,8 +95,10 @@ async def simulate(app: Ariadne, sender: Sender, target: Target):
     return await app.send_message(sender, MessageChain(Image(data_bytes=data)))
 
 
-@record("抽卡")
 @alcommand(Alconna("卡池更新", meta=CommandMeta("更换卡池")))
+@record("抽卡")
+@exclusive
+@accessable
 async def change(app: Ariadne, sender: Sender):
     if new := (await gacha.update()):
         return await app.send_message(

@@ -1,31 +1,19 @@
-## 机器人名字, 请尽量不要与 prefix 重合
-bot_name: "Raian"
+## bot 默认登录账号
+default_account: 'NOT-A-NUMBER'
 ## 缓存数据存放的文件夹, 默认为 cache
 cache_dir: 'cache'
 ## mirai-api-http 相关配置
 mirai:
-  ## bot 登录账号
-  account: 'NOT-A-NUMBER'
   ## mirai-api-http 的链接
   host: "localhost"
   ## mirai-api-http 的端口
   port: 8080
   ## mirai-api-http 的验证码
   verify_key: "INITKEYWylsVdbr"
-## bot 权限相关配置
-admin:
-  ## bot 的控制者的账号
-  master_id: 'NOT-A-NUMBER'
-  ## bot 的控制者的名字
-  master_name: "admin"
-  ## bot 的管理者(除开控制者)的账号
-  admins:
-    - 'NOT-A-NUMBER'
 ## 浏览器相关配置
 browser:
   type: "chromium"
   channel: null
-
 ## bot 命令相关配置
 command:
   ## 命令前缀
@@ -47,7 +35,7 @@ command:
     - "-cp"
 ## bot 模块相关配置
 plugin:
-  ## 模块配置文件的根路径
+  ## 模块缓存的根路径
   root: "plugins"
   ## 模块存放的路径
   paths:
@@ -58,7 +46,7 @@ plugin:
     - 'plugins.ill'
     - 'plugins.img_search'
     - 'plugins.aidraw'
-## bot 对外接口相关配置
+## 对外接口相关配置
 api:
   ## FastAPI 服务的运行地址
   host: 'localhost'

@@ -3,13 +3,13 @@ from nepattern import BasePattern, Bind
 from arclet.alconna import Args, Arparma, CommandMeta, namespace, Empty, ArgFlag, Arg, MultiVar
 from arclet.alconna.tools import MarkdownTextFormatter
 from arclet.alconna.graia import Alconna, alcommand, AtID, Match
-from graia.ariadne.event.lifecycle import AccountShutdown
+from graia.ariadne.event.lifecycle import ApplicationShutdown
 from graiax.shortcut.saya import listen
 from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
 from contextlib import suppress
 
-from app import Sender, RaianBotService, record, Target
+from app import Sender, RaianBotService, record, Target, exclusive, accessable
 from library.dice import *
 
 with namespace("coc") as np:
@@ -103,12 +103,14 @@ with namespace("coc") as np:
     )
 
 bot = RaianBotService.current()
-card = Cards(f"{bot.config.cache_dir}/plugins/coc_cards.json")
+card = Cards(f"{bot.config.plugin_cache_dir / 'coc_cards.json' }")
 card.load()
 
 
 @alcommand(rd_c)
 @record("coc")
+@exclusive
+@accessable
 async def rd_handle(
     app: Ariadne, sender: Sender,
     result: Arparma, a_number: Match[int]
@@ -126,6 +128,8 @@ async def rd_handle(
 
 @alcommand(rhd_c, private=False)
 @record("coc")
+@exclusive
+@accessable
 async def rhd_handle(
     app: Ariadne, sender: Sender, target: Target,
     result: Arparma, a_number: Match[int]
@@ -140,110 +144,132 @@ async def rhd_handle(
 
 @alcommand(st_c)
 @record("coc")
+@exclusive
+@accessable
 async def st_handle(app: Ariadne, sender: Sender):
     return await app.send_message(sender, st())
 
 
 @alcommand(ti_c)
 @record("coc")
+@exclusive
+@accessable
 async def ti_handle(app: Ariadne, sender: Sender):
     return await app.send_message(sender, ti())
 
 
 @alcommand(li_c)
 @record("coc")
+@exclusive
+@accessable
 async def li_handle(app: Ariadne, sender: Sender):
     return await app.send_message(sender, li())
 
 
 @alcommand(en_c)
 @record("coc")
+@exclusive
+@accessable
 async def en_handle(app: Ariadne, sender: Sender, skill_level: Match[int]):
     return await app.send_message(sender, en(skill_level.result))
 
 
 @alcommand(coc_c)
 @record("coc")
+@exclusive
+@accessable
 async def coc_handle(app: Ariadne, sender: Sender, target: Target, val: Match[int]):
     arg = val.result if val.available else 20
     inv = Investigator()
     await app.send_message(sender, inv.age_change(arg))
     if 15 <= arg <= 90:
         if isinstance(sender, Group):
-            card.cache_update(inv.dump(), f"g{sender.id}", target.id)
+            card.cache_update(inv.dump(), f"{app.account}_g{sender.id}", target.id)
         else:
-            card.cache_update(inv.dump(), f"f{sender.id}")
+            card.cache_update(inv.dump(), f"f{app.account}_{sender.id}")
         await app.send_message(sender, inv.output())
 
 
 @alcommand(sc_c)
 @record("coc")
+@exclusive
+@accessable
 async def sc_handle(app: Ariadne, sender: Sender, target: Target, sf: Match[str], san: Match[int]):
     if isinstance(sender, Group):
-        res = card.sc_handler(sf.result.lower(), san.result if san.available else None, f"g{sender.id}", target.id)
+        res = card.sc_handler(sf.result.lower(), san.result if san.available else None, f"{app.account}_g{sender.id}", target.id)
     else:
-        res = card.sc_handler(sf.result.lower(), san.result if san.available else None, f"f{sender.id}")
+        res = card.sc_handler(sf.result.lower(), san.result if san.available else None, f"{app.account}_f{sender.id}")
     return await app.send_message(sender, res)
 
 
 @alcommand(set_c)
 @record("coc")
+@exclusive
+@accessable
 async def set_handle(app: Ariadne, sender: Sender, target: Target, result: Arparma):
     if isinstance(sender, Group):
         res = card.set_handler(
             result.all_matched_args.get("name"),
             result.all_matched_args.get("val"),
-            f"g{sender.id}", target.id
+            f"{app.account}_g{sender.id}", target.id
         )
     else:
         res = card.set_handler(
             result.all_matched_args.get("name"),
             result.all_matched_args.get("val"),
-            f"f{sender.id}"
+            f"{app.account}_f{sender.id}"
         )
     return await app.send_message(sender, res)
 
 
 @alcommand(show_c)
 @record("coc")
+@exclusive
+@accessable
 async def show_handle(app: Ariadne, sender: Sender, target: Target, uid: Match[int]):
     if isinstance(sender, Group):
-        res = card.show_handler(f"g{sender.id}", uid.result if uid.available else target.id)
+        res = card.show_handler(f"{app.account}_g{sender.id}", uid.result if uid.available else target.id)
     else:
-        res = card.show_handler(f"f{sender.id}")
+        res = card.show_handler(f"{app.account}_f{sender.id}")
     return await app.send_message(sender, '\n'.join(res))
 
 
 @alcommand(shows_c)
 @record("coc")
+@exclusive
+@accessable
 async def shows_handle(app: Ariadne, sender: Sender, target: Target, uid: Match[int]):
     if isinstance(sender, Group):
-        res = card.show_skill_handler(f"g{sender.id}", uid.result if uid.available else target.id)
+        res = card.show_skill_handler(f"{app.account}_g{sender.id}", uid.result if uid.available else target.id)
     else:
-        res = card.show_skill_handler(f"f{sender.id}")
+        res = card.show_skill_handler(f"{app.account}_f{sender.id}")
     return await app.send_message(sender, res)
 
 
 @alcommand(sa_c)
 @record("coc")
+@exclusive
+@accessable
 async def sa_handle(app: Ariadne, sender: Sender, target: Target, name: Match[str]):
     if isinstance(sender, Group):
-        res = card.sa_handler(name.result.lower(), f"g{sender.id}", target.id)
+        res = card.sa_handler(name.result.lower(), f"{app.account}_g{sender.id}", target.id)
     else:
-        res = card.sa_handler(name.result.lower(), f"f{sender.id}")
+        res = card.sa_handler(name.result.lower(), f"{app.account}_f{sender.id}")
     return await app.send_message(sender, res)
 
 
 @alcommand(del_c)
 @record("coc")
+@exclusive
+@accessable
 async def del_handle(app: Ariadne, sender: Sender, target: Target, data: Match[Tuple[str]]):
     if isinstance(sender, Group):
-        res = card.del_handler([i.lower() for i in data.result], f"g{sender.id}", target.id)
+        res = card.del_handler([i.lower() for i in data.result], f"{app.account}_g{sender.id}", target.id)
     else:
-        res = card.del_handler([i.lower() for i in data.result], f"f{sender.id}")
+        res = card.del_handler([i.lower() for i in data.result], f"{app.account}_f{sender.id}")
     return await app.send_message(sender, "\n".join(res))
 
 
-@listen(AccountShutdown)
+@listen(ApplicationShutdown)
 async def _save():
     card.save()

@@ -1,0 +1,19 @@
+## 机器人名字, 请尽量不要与 prefix 重合
+bot_name: "Raian"
+## bot 登录账号
+account: 'NOT-A-NUMBER'
+## bot 初始禁用的模块名称
+disabled:
+  - 'plugins.setu'
+  - 'plugins.ill'
+  - 'plugins.img_search'
+  - 'plugins.aidraw'
+## bot 权限相关配置
+admin:
+  ## bot 的控制者的账号
+  master_id: 'NOT-A-NUMBER'
+  ## bot 的控制者的名字
+  master_name: "admin"
+  ## bot 的管理者(除开控制者)的账号
+  admins:
+    - 'NOT-A-NUMBER'

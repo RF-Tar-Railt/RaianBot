@@ -9,7 +9,7 @@ from graia.ariadne.message.element import Image
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graiax.shortcut.saya import listen
 
-from app import permission, Sender, create_image
+from app import permission, Sender, create_image, accessable, exclusive
 
 python_version = platform.python_version()
 if platform.uname().system == 'Windows':
@@ -23,6 +23,8 @@ pid = os.getpid()
 @listen(GroupMessage, FriendMessage)
 @permission("admin")
 @startswith("/状态|/设备信息|/status")
+@exclusive
+@accessable
 async def status(app: Ariadne, sender: Sender):
     p = psutil.Process(pid)
     started_time = time.localtime(p.create_time())
