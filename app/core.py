@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import traceback
+from contextlib import suppress
 from types import TracebackType
-from typing import Literal 
+from typing import Literal
 
 from arclet.alconna import namespace
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher
@@ -120,7 +121,11 @@ class RaianBotService(Service):
 
         async with self.stage("cleanup"):
             for account, data in datas.items():
+                for k in list(data.cache.keys()):
+                    if k.startswith("$"):
+                        del data.cache[k]
                 data.save()
+                data.clear()
                 logger.debug(f"账号 {account} 数据保存完毕")
             logger.success("机器人数据保存完毕")
 
@@ -148,14 +153,15 @@ class RaianBotDispatcher(BaseDispatcher):
             if issubclass(interface.annotation, BasePluginConfig):
                 return self.service.config.plugin.get(interface.annotation)
 
-    async def afterExecution(
+    async def afterDispatch(
         self,
         interface: DispatcherInterface,
         exception: Exception | None,
         tb: TracebackType | None,
     ):
-        AccountDataInstance.reset(interface.local_storage["$raian_bot_data_token"])
-        BotConfigInstance.reset(interface.local_storage["$raian_bot_config_token"])
+        with suppress(KeyError, RuntimeError):
+            AccountDataInstance.reset(interface.local_storage["$raian_bot_data_token"])
+            BotConfigInstance.reset(interface.local_storage["$raian_bot_config_token"])
 
 def launch(debug_log: bool = True):
     """启动机器人"""

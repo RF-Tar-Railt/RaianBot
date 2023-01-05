@@ -72,8 +72,8 @@ async def gacha_(app: Ariadne, sender: Sender, target: Target, count: Match[int]
     return await app.send_message(sender, MessageChain(Image(data_bytes=data)))
 
 
-@alcommand(Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="有1.5s的时间限制;灰色头像表示新干员但是头图未更新")))
-@dispatch(CoolDown(config.cooldown))
+@alcommand(Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="灰色头像表示新干员但是头图未更新")))
+#@dispatch(CoolDown(config.cooldown))
 @record("抽卡")
 @exclusive
 @accessable

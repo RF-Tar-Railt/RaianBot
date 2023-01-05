@@ -24,9 +24,9 @@ weibo_fetch = Alconna(
     "微博",
     Args["user;?#微博用户名称", str, Field(completion=lambda: "比如说, 育碧")],
     Option("动态", Args["index#从最前动态排起的第几个动态", int, -1]["page#第几页动态", int, 1], help_text="从微博获取指定用户的动态"),
-    Option("关注|增加关注", Args["spec?", At], dest="follow", help_text="增加一位微博动态关注对象"),
-    Option("取消关注|解除关注", Args["spec?", At], dest="unfollow", help_text="解除一位微博动态关注对象"),
-    Option("列出", Args["spec?", At], dest="list", help_text="列出该群的微博动态关注对象"),
+    Option("关注|增加关注", Args["spec;?", At], dest="follow", help_text="增加一位微博动态关注对象"),
+    Option("取消关注|解除关注", Args["spec;?", At], dest="unfollow", help_text="解除一位微博动态关注对象"),
+    Option("列出", Args["spec;?", At], dest="list", help_text="列出该群的微博动态关注对象"),
     meta=CommandMeta("获取指定用户的微博资料", example="$微博 育碧\n$微博 育碧 动态 1\n$微博 育碧 关注\n$微博 育碧 取消关注"),
 )
 

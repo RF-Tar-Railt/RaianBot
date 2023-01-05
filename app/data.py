@@ -263,5 +263,14 @@ class BotDataManager:
     def func_description(self, name: str):
         return func.__doc__ if (func := self.__functions.get(name)) else "Unknown"
 
+    def clear(self):
+        self.__user_profiles.clear()
+        self.__group_profiles.clear()
+        self.__cache_data.clear()
+        self.disable_functions.clear()
+        self.__functions.clear()
+        self.__metas.clear()
+
+
 
 __all__ = ["BotDataManager", "GroupProfile", "UserProfile"]

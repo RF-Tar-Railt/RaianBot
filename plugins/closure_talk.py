@@ -11,7 +11,7 @@ from graiax.playwright import PlaywrightBrowser
 from graiax.shortcut.saya import listen, priority
 from library.ak_closure_talk import ArknightsClosureStore
 from library.ak_closure_talk.exceptions import *
-from app import BotConfig, RaianBotService, exclusive, accessable, BotDataManager
+from app import BotConfig, RaianBotService, exclusive, accessable, BotDataManager, record
 
 bot = RaianBotService.current()
 store = ArknightsClosureStore()
@@ -31,6 +31,7 @@ cache_dir.mkdir(parents=True, exist_ok=True)
 
 
 @alcommand(closure, private=False)
+@record("closure")
 @assign("$main")
 @exclusive
 @accessable
@@ -50,6 +51,7 @@ async def _help(app: Ariadne, sender: Group):
 
 
 @alcommand(closure, private=False)
+@record("closure")
 @assign("reset")
 @exclusive
 @accessable
@@ -61,6 +63,7 @@ async def _reset(app: Ariadne, sender: Group, data: BotDataManager):
 
 
 @alcommand(closure, private=False)
+@record("closure")
 @assign("bind")
 @exclusive
 @accessable
@@ -74,6 +77,7 @@ async def _bind(app: Ariadne, sender: Group, target: Member, name: Match[str]):
 
 
 @alcommand(closure, private=False)
+@record("closure")
 @assign("create")
 @exclusive
 @accessable
@@ -86,6 +90,7 @@ async def _create(app: Ariadne, sender: Group, count: Match[int]):
 
 
 @alcommand(closure, private=False)
+@record("closure")
 @assign("start")
 @exclusive
 @accessable
@@ -137,26 +142,29 @@ async def _start(app: Ariadne, sender: Group, browser: PlaywrightBrowser, data: 
     try:
         await app.send_message(sender, "[ClosureTalk] 记录结束，正在渲染中。。。")
         async with browser.page(
-                viewport={"width": 500, "height": 1},
-                device_scale_factor=1.5,
+            viewport={"width": 500, "height": 1},
+            device_scale_factor=1.5,
         ) as page:
             await page.goto(file.absolute().as_uri())
             # await page.set_content(store.export(str(sender.id)))
             img = await page.screenshot(type="jpeg", quality=80, full_page=True, scale="device")
             await app.send_message(sender, MessageChain(Image(data_bytes=img)))
     except Exception as e:
-        await app.send_friend_message(bot.config.admin.master_id, f'{e}')
+        await app.send_friend_message(bot.config.admin.master_id, f"{e}")
     finally:
         store.end(str(sender.id))
         rooms.remove(sender.id)
 
 
 @listen(ActiveGroupMessage)
+@record("closure", require=False)
 @priority(24)
 @accessable
 async def _record_self(config: BotConfig, event: ActiveGroupMessage, data: BotDataManager):
     gid = event.subject.id
     if gid not in data.cache.setdefault("$rooms", []):
+        return
+    if data.exist(gid) and ((prof := data.get_group(gid)).in_blacklist or "closure" in prof.disabled):
         return
     msg = str(event.message_chain)
     if msg.startswith("[ClosureTalk]"):

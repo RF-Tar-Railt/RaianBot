@@ -1,3 +1,4 @@
+from __future__ import annotations
 import re
 from datetime import datetime
 from pathlib import Path
@@ -459,3 +460,24 @@ async def _g_bl_remove(app: Ariadne, sender: Group, bot: RaianBotInterface):
             bot.data.cache["blacklist"].remove(sender.id)
         return await app.send_message(sender, "该群组移出黑名单成功!")
     return await app.send_message(sender, "该群组未列入黑名单!")
+
+
+@alcommand(Alconna("机器人列出", Args["spec;?", At], meta=CommandMeta(hide=True)), private=False, send_error=True)
+@permission("admin")
+@mention("spec")
+@exclusive
+async def _bot_list(app: Ariadne, sender: Group, interface: RaianBotInterface):
+    members = await app.get_member_list(sender)
+    bots: list[int] = await app.get_bot_list()
+    bot_profiles = {bot_id : await app.get_user_profile(bot_id) for bot_id in bots}
+    bot_in_group = [member for member in members if member.id in interface.base_config.bots]
+    bot_in_group.append(await app.get_member(sender, interface.config.account))
+    return await app.send_message(
+        sender,
+        MessageChain(
+            "所有登录的机器人：\n" +
+            "\n".join(f" - {prof.nickname}({id_})" for id_, prof in bot_profiles.items()) +
+            "\n当前群组内机器人列表：\n" +
+            "\n".join(f" - {bot.name}({bot.id})" for bot in bot_in_group)
+        )
+    )
