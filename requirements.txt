@@ -1,7 +1,7 @@
 arclet-alconna<2.0.0, >=1.4.3
-arclet-alconna-graia<1.0.0, >=0.10.2
+arclet-alconna-graia<1.0.0, >=0.10.6
 arclet-alconna-tools>=0.3.3
-graia-ariadne<0.11.0, >=0.9.4
+graia-ariadne<0.11.0, >=0.10.3
 graia-amnesia>=0.6.0
 graia-broadcast>=0.18.2
 graia-saya>=0.0.16

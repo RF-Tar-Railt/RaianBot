@@ -1,10 +1,8 @@
 import random
 
 
-build_dict = {64: -2, 84: -1, 124: 0, 164: 1,
-              204: 2, 284: 3, 364: 4, 444: 5, 524: 6}
-db_dict = {-2: "-2", -1: "-1", 0: "0", 1: "1d4",
-           2: "1d6", 3: "2d6", 4: "3d6", 5: "4d6", 6: "5d6"}
+build_dict = {64: -2, 84: -1, 124: 0, 164: 1, 204: 2, 284: 3, 364: 4, 444: 5, 524: 6}
+db_dict = {-2: "-2", -1: "-1", 0: "0", 1: "1d4", 2: "1d6", 3: "2d6", 4: "3d6", 5: "4d6", 6: "5d6"}
 
 
 def randattr(time: int = 3, ex: int = 0):
@@ -30,10 +28,7 @@ class Investigator(object):
 
     def body_build(self):
         build = self.str + self.con
-        for i, j in build_dict.items():
-            if build <= i:
-                return j
-        return -2
+        return next((j for i, j in build_dict.items() if build <= i), -2)
 
     def db(self) -> str:
         return db_dict[self.body_build()]

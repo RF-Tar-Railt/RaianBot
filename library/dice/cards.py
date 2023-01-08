@@ -3,8 +3,8 @@ from typing import Dict, List, Optional
 import ujson
 
 from .investigator import Investigator
-from .messages import help_sc, help_del_, help_sa
-from .dices import expr
+from .constant import help_sc, help_del_, help_sa
+from .rd import expr
 
 import diro
 
@@ -168,21 +168,30 @@ class Cards:
             r.append(help_del_)
         return r
 
-    def sa_handler(self, args: str, level: str = "0", uid: int = 0):
+    def ra_handler(self, args: str, exp: int = -1, level: str = "0", uid: int = 0):
         if not args:
             return help_sa
-        elif not (card_data := self.get(level, uid)):
-            return "请先使用set指令保存人物卡后再使用快速检定功能。"
-        for attr, alias in attrs_dict.items():
-            if args in alias:
-                arg = alias[0]
-                break
+        if card_data := self.get(level, uid):
+            for attr, alias in attrs_dict.items():
+                if args in alias:
+                    arg = alias[0]
+                    value = card_data[arg]
+                    break
+            else:
+                inv = Investigator().load(card_data)
+                if inv.skills.get(args):
+                    value = inv.skills[args]
+                elif exp < 0:
+                    return "请输入正确的别名，或传入检定值"
+                else:
+                    value = exp
+        elif exp < 0:
+            return "请先使用set指令保存人物卡后使用快速检定功能，或传入检定值"
         else:
-            return "请输入正确的别名"
-        dices = diro.parse("")
-        value = card_data[arg]
+            value = exp
+        dices = diro.parse("1D100")
         assert isinstance(value, int)
-        return expr(dices, value)
+        return f"{args}检定:\n{expr(dices, value)}"
 
     def sc_handler(self, sf: str, san: Optional[int] = None, level: str = "0", uid: int = 0) -> str:
         try:

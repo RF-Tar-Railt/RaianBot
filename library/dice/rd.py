@@ -1,332 +1,206 @@
+# 参考[OlivaDiceDocs](https://oliva.dicer.wiki/userdoc)实现的nonebot2骰娘插件
+import contextlib
 import random
-from typing import List
-from enum import IntEnum
-
-Value_Err = ValueError("Input a wrong number")
-Input_Err = ValueError("Input a wrong pattern")
-
-ZeroDice_Err = ValueError("Can't input zero in dice")
-ZeroType_Err = ValueError("Can't input zero in type")
-DiceTooBig_Err = ValueError("Too big for dice")
-TypeTooBig_Err = ValueError("Too big for type")
-AddDiceVal_Err = ValueError("Input a wrong A number")
-# Dice Type
+from typing import Optional
+import diro
+from .constant import *
 
 
-class DiceType(IntEnum):
-    Normal_Dice = 0
-    B_Dice = 1
-    P_Dice = 2
-    Fudge_Dice = 3
-    WW_Dice = 4
+def to_circled(num: int, c: int) -> str:
+    if num < 1 or num > 10:
+        return "?"
+    return str(num) if num < c else chr(0xA2) + chr(0xD8 + num)
 
 
-class RD:
-    ww_count: int
-    ww_add_value: int
+def roll_success_level(res: int, rate: int, rule: int = 0) -> int:
+    """
+    成功等级, 0-大失败，1-失败，2-成功，3-困难成功，4-极难成功，5-大成功
 
-    pattern: str
-    result_record_matrix: List[List[int]]
-    result_record: List[int]
-    negative_record: List[bool]
-    multiplier_record: List[int]
-    divider_record: List[int]
-
-    bnp_record: List[int]
-    total: int
-
-    def __init__(self, pattern: str, default_dice: int = 100):
-        self.ww_count = 0
-        self.ww_add_value = 10
-        self.total = 0
-        self.result_record_matrix = []
-        self.result_record = []
-        self.negative_record = []
-        self.multiplier_record = []
-        self.divider_record = []
-        self.bnp_record = []
-
-        _dice = ""
-        cache = ''
-        _opera = "+-X/"
-        for c in pattern:
-            if c in {"*", "x", "X"}:
-                if cache in _opera:
-                    _dice = _dice[:-1]
-                    break
-                c = 'X'
-            if c == '/' and cache in _opera:
-                _dice = _dice[:-1]
-                break
-            if c == '+' and cache in _opera:
-                continue
-            if c == '-':
-                if cache in _opera:
-                    if cache in {'+', '-'}:
-                        _dice = _dice[:-1] + {'+': '-', '-': '+'}[cache]
-                    elif cache in {'X', '/'}:
-                        _dice = _dice[:-1]
-                        break
-                    continue
-            elif c in {'a', 'A'}:
-                c = c.lower()
-            else:
-                c = c.upper()
-            cache = c
-            _dice += c
-        if not _dice:
-            _dice += f"D{default_dice}"
-        if _dice[0] == 'a':
-            _dice = f'1{_dice}'
-        if _dice[0] == 'D' and _dice[1] == 'F':
-            _dice = f'4{_dice}'
-        if _dice[0] == 'F':
-            _dice = f'4D{_dice}'
-        _dice = _dice.replace('XX', 'X', 2).replace('//', '/', 2)
-        for i in range(1, len(_dice)):
-            if _dice[i] == 'F' and (
-                _dice[i-1].isdigit() or _dice[i-1] in {"+", "-"}
-            ):
-                t = list(_dice)
-                t.insert(i, 'D')
-                _dice = ''.join(t)
-        _dice = _dice.replace("-a", "-a1").replace("+a", "+a1").replace(
-            "+DF", "+DF4").replace("D+", f"D+{default_dice}").replace("D-", f"D-{default_dice}")
-        if _dice.endswith('D'):
-            _dice += f'{default_dice}'
-        if _dice.endswith('K'):
-            _dice += '1'
-        if _dice.startswith('+'):
-            _dice = _dice[1:]
-        if _dice.isdigit():
-            _dice = f'{_dice}D{default_dice}'
-        self.pattern = _dice
-
-    def roll(self):
-        """
-        运行一次掷骰, 不会捕捉报错
-        """
-        self.total = 0
-        self.result_record_matrix.clear()
-        self.negative_record.clear()
-        self.multiplier_record.clear()
-        self.result_record.clear()
-        self.bnp_record.clear()
-        dice = self.pattern
-        int_read_dice_loc = 0
-        if dice.startswith('-'):
-            self.negative_record.append(True)
-            int_read_dice_loc = 1
+    Args:
+        res: 骰子结果
+        rate: 检测值
+        rule: 规则
+    """
+    if rule == 0:
+        return _roll_success_level_rule0(res, rate)
+    elif rule == 1:
+        return _roll_success_level_rule1(res, rate)
+    elif rule == 2:
+        return _roll_success_level_rule2(res, rate)
+    elif rule == 3:
+        return _roll_success_level_rule3(res, rate)
+    elif rule == 4:
+        return _roll_success_level_rule4(res, rate)
+    elif rule == 5:
+        return _roll_success_level_rule5(res, rate)
+    elif rule == 6:
+        if res > rate:
+            return 0 if res == 100 or res % 11 == 0 else 1
         else:
-            self.negative_record.append(False)
-        if dice.endswith(('+', '-', 'X', '/')):
-            raise Input_Err
-        while dice.find('+', int_read_dice_loc) > -1 or dice.find('-', int_read_dice_loc) > -1:
-            int_symbol_position = max(dice.find('+', int_read_dice_loc), dice.find('-', int_read_dice_loc))
-            self._roll_dice(dice[int_read_dice_loc:int_symbol_position])
-            int_read_dice_loc = int_symbol_position + 1
-            if dice[int_symbol_position:int_read_dice_loc] == '+':
-                self.negative_record.append(False)
-            else:
-                self.negative_record.append(True)
-        self._roll_dice(dice[int_read_dice_loc:])
-        if self.ww_count:
-            self._roll_ww()
-        return self
-
-    def _roll_ww(self):
-        _result_record = []
-        _result = 0
-        _negative = False
-        if self.ww_count < 0:
-            _negative = True
-            self.ww_count = -self.ww_count
-        while self.ww_count != 0:
-            _result_record.append(self.ww_count)
-            add_num = 0
-            int_cnt = self.ww_count
-            while int_cnt > 0:
-                int_cnt -= 1
-                result_once = random.randint(1, 10)
-                _result_record.append(result_once)
-                if result_once >= 8:
-                    _result += 1
-                if result_once >= self.ww_add_value:
-                    add_num += 1
-            if self.ww_count > 10:
-                _result_record = _result_record[:-self.ww_count] + sorted(_result_record[-self.ww_count:])
-            self.ww_count = add_num
-        self.total += (-_result) if _negative else _result
-        self.bnp_record.insert(0, DiceType.WW_Dice)
-        self.negative_record.insert(0, _negative)
-        self.result_record_matrix.insert(0, _result_record)
-        self.result_record.insert(0, _result)
-        self.multiplier_record.insert(0, 1)
-        self.divider_record.insert(0, 1)
-        return
-
-    def _roll_dice(self, pattern: str):
-        _negative = self.negative_record[-1]
-
-        _divider = 1
-        while (op_position := ''.join(reversed(pattern)).find('/')) > -1:
-            _rate = pattern[op_position + 1:]
-            rate = RD(_rate)
-            try:
-                rate.roll()
-            except ValueError as e:
-                raise Input_Err from e
-            else:
-                if not rate.total:
-                    raise Input_Err
-                _divider *= rate.total
-            pattern = pattern[:op_position]
-        _multiplier = 1
-        while (op_position := ''.join(reversed(pattern)).find('X')) > -1:
-            _rate = pattern[op_position + 1:]
-            rate = RD(_rate)
-            try:
-                rate.roll()
-                _multiplier *= rate.total
-            except ValueError as e:
-                raise Input_Err from e
-            pattern = pattern[:op_position]
-        self.divider_record.append(_divider)
-        self.multiplier_record.append(_multiplier)
-        if (pos_a := pattern.find('a')) > -1:
-            _dice_cnt = pattern[:pos_a]
-            if not _dice_cnt.isdigit():
-                raise Input_Err
-            if len(_dice_cnt) > 3:
-                raise DiceTooBig_Err
-            dice_cnt = int(_dice_cnt)
-            if not dice_cnt:
-                raise ZeroDice_Err
-            if _negative:
-                dice_cnt = (-dice_cnt)
-            self.ww_count += dice_cnt
-            _add_value = pattern[pos_a + 1:]
-            if len(_add_value) > 2:
-                raise AddDiceVal_Err
-            if not _add_value.isdigit():
-                raise Input_Err
-            if _add_value:
-                self.ww_add_value = int(_add_value)
-                if self.ww_add_value < 5 or self.ww_add_value > 11:
-                    raise AddDiceVal_Err
-            self.negative_record.pop()
-            return
-        if pattern.endswith('F'):
-            self.bnp_record.append(DiceType.Fudge_Dice)
-            _dice_num = pattern[:-2] if pattern.endswith('DF') else pattern[:-1]
-            if not _dice_num.isdigit():
-                raise Value_Err
-            if len(_dice_num) > 2:
-                raise DiceTooBig_Err
-            dice_num = int(_dice_num)
-            if not dice_num:
-                raise ZeroDice_Err
-            temp_record = []
-            while dice_num > 0:
-                dice_num -= 1
-                _sum = random.randint(0, 2) - 1
-                temp_record.append(_sum)
-            self.result_record_matrix.append(temp_record)
-            self.result_record.append(sums := sum(temp_record))
-            self.total += (-sums) if _negative else sums
-            return
-        # P
-        # B
-        self.bnp_record.append(DiceType.Normal_Dice)
-        if pattern.startswith('X'):
-            raise Input_Err
-        exist_d = False
-        exist_k = False
-        for c in filter(lambda x: not x.isdigit(), pattern.upper()):
-            if c == 'D' and exist_d or c not in ['D', 'K']:
-                raise Input_Err
-            elif c == 'D':
-                exist_d = True
-            elif (not exist_d) or exist_k:
-                raise Input_Err
-            else:
-                exist_k = True
-        if not exist_d:
-            if len(pattern) > 5 or not pattern:
-                raise Value_Err
-            _res = int(pattern)
-            res = _res * _multiplier // _divider
-            self.total += (-res) if _negative else res
-            self.result_record.append(res)
-            self.result_record_matrix.append([_res])
-            return
-        if not exist_k:
-            _dice_cnt = pattern[:pattern.find('D')]
-            _dice_type = pattern[pattern.find('D') + 1:]
-            if len(_dice_cnt) > 3 or (len(_dice_cnt) == 3 and _dice_cnt != '100'):
-                raise DiceTooBig_Err
-            if len(_dice_type) > 4 or (len(_dice_type) == 3 and _dice_type != '100'):
-                raise TypeTooBig_Err
-            dice_cnt = 1 if len(_dice_cnt) == 0 else int(_dice_cnt)
-            dice_type = int(_dice_type)
-            if not dice_cnt:
-                raise ZeroDice_Err
-            if not dice_type:
-                raise ZeroType_Err
-            temp_record = []
-            _res = 0
-            while dice_cnt > 0:
-                dice_cnt -= 1
-                res_once = random.randint(1, dice_type)
-                temp_record.append(res_once)
-                _res += res_once
-            res = _res * _multiplier // _divider
-            self.total += (-res) if _negative else res
-            if len(temp_record) > 20:
-                temp_record.sort()
-            self.result_record_matrix.append(temp_record)
-            self.result_record.append(res)
-            return
-        _k_num = pattern[pattern.find('K') + 1:]
-        if len(_k_num) > 3:
-            raise Value_Err
-        k_num = int(_k_num)
-        _dice_cnt = pattern[:pattern.find('K')][:pattern.find('D')]
-        _dice_type = pattern[:pattern.find('K')][pattern.find('D') + 1:]
-        if len(_dice_cnt) > 3 or (len(_dice_cnt) == 3 and _dice_cnt != '100'):
-            raise DiceTooBig_Err
-        if len(_dice_type) > 4:
-            raise TypeTooBig_Err
-        dice_cnt = 1 if len(_dice_cnt) == 0 else int(_dice_cnt)
-        dice_type = int(_dice_type)
-        if k_num <= 0 or dice_cnt == 0:
-            raise ZeroDice_Err
-        if k_num > dice_cnt:
-            raise Value_Err
-        if dice_type == 0:
-            raise ZeroType_Err
-        temp_record = []
-        while dice_cnt > 0:
-            dice_cnt -= 1
-            res_once = random.randint(1, dice_type)
-            if len(temp_record) != int(k_num):
-                temp_record.append(res_once)
-            elif res_once > min(*temp_record):
-                temp_record[temp_record.index(min(*temp_record))] = res_once
-        _res = sum(temp_record)
-        res = _res * _multiplier // _divider
-        self.total += (-res) if _negative else res
-        self.result_record.append(_res)
-        if len(temp_record) > 20:
-            temp_record.sort()
-        self.result_record_matrix.append(temp_record)
-        return
+            return 5 if res == 1 or res % 11 == 0 else 2
+    else:
+        return -1
 
 
-if __name__ == '__main__':
-    rd = RD("1d10+2d6+3")
-    print(rd.pattern)
-    rd.roll()
-    print(rd.total)
-    print(rd.result_record)
-    print(rd.result_record_matrix)
+def _roll_success_level_rule5(res, rate):
+    if res >= 99:
+        return 0
+    if res <= 2 and res < rate / 10:
+        return 5
+    if res <= rate / 5:
+        return 4
+    if res <= rate / 2:
+        return 3
+    if res <= rate:
+        return 2
+    return 1 if rate >= 50 or res < 96 else 0
+
+
+def _roll_success_level_rule4(res, rate):
+    if res == 100:
+        return 0
+    if res <= 5 and res <= rate / 10:
+        return 5
+    if res <= rate / 5:
+        return 4
+    if res <= rate / 2:
+        return 3
+    if res <= rate:
+        return 2
+    return 1 if rate >= 50 or res < 96 + rate / 10 else 0
+
+
+def _roll_success_level_rule3(res, rate):
+    if res >= 96:
+        return 0
+    if res <= 5:
+        return 5
+    if res <= rate / 5:
+        return 4
+    if res <= rate / 2:
+        return 3
+    return 2 if res <= rate else 1
+
+
+def _roll_success_level_rule2(res, rate):
+    if res == 100:
+        return 0
+    if res <= 5 and res <= rate:
+        return 5
+    if res <= rate / 5:
+        return 4
+    if res <= rate / 2:
+        return 3
+    if res <= rate:
+        return 2
+    return 1 if res < 96 else 0
+
+
+def _roll_success_level_rule1(res, rate):
+    if res == 100:
+        return 0
+    if res == 1 or (res <= 5 and rate >= 50):
+        return 5
+    if res <= rate / 5:
+        return 4
+    if res <= rate / 2:
+        return 3
+    if res <= rate:
+        return 2
+    return 1 if rate >= 50 or res < 96 else 0
+
+
+def _roll_success_level_rule0(res, rate):
+    if res == 100:
+        return 0
+    if res == 1:
+        return 5
+    if res <= rate / 5:
+        return 4
+    if res <= rate / 2:
+        return 3
+    if res <= rate:
+        return 2
+    return 1 if rate >= 50 or res < 96 else 0
+
+
+def long_insane():
+    sym_res = random.randint(1, 10)
+    res = f"调查员的疯狂发作-总结症状:1D10={sym_res}\n症状: \n"
+    fmap = {"dur" : f"1D10={random.randint(1, 10)}"}
+    j = random.randint(1, 100)
+    if sym_res == 10:
+        fmap["detail_roll"] = f"1D100={j}"
+        fmap["detail"] = Panic[j]
+    elif sym_res == 9:
+        fmap["detail_roll"] = f"1D100={j}"
+        fmap["detail"] = Fear[j]
+    return f"{res}{LongInsanity[sym_res].format(**fmap)}"
+
+
+def temp_insane():
+    sym_res = random.randint(1, 10)
+    res = f"调查员的疯狂发作-临时症状:1D10={sym_res}\n症状: \n"
+    fmap = {"dur" : f"1D10={random.randint(1, 10)}"}
+    j = random.randint(1, 100)
+    if sym_res == 10:
+        fmap["detail_roll"] = f"1D100={j}"
+        fmap["detail"] = Panic[j]
+    elif sym_res == 9:
+        fmap["detail_roll"] = f"1D100={j}"
+        fmap["detail"] = Fear[j]
+    return f"{res}{TempInsanity[sym_res].format(**fmap)}"
+
+def dhr(t, o):
+    return 100 if t == 0 and o == 0 else t * 10 + o
+
+def st():
+    result = random.randint(1, 20)
+    if result < 4:
+        rstr = "右腿"
+    elif result < 7:
+        rstr = "左腿"
+    elif result < 11:
+        rstr = "腹部"
+    elif result < 16:
+        rstr = "胸部"
+    elif result < 18:
+        rstr = "右臂"
+    elif result < 20:
+        rstr = "左臂"
+    else:
+        rstr = "头部"
+    return f"D20={result}: 命中了{rstr}"
+
+
+def en(arg: int) -> str:
+    check = random.randint(1, 100)
+    if check <= arg and check <= 95:
+        return f"判定值{check}，判定失败，技能无成长。"
+    plus = random.randint(1, 10)
+    r = f"判定值1D100={check}，判定成功，技能成长{arg}+{plus}={arg + plus}"
+    return r + "\n温馨提示：如果技能提高到90%或更高，增加2D6理智点数。"
+
+
+def expr(d: diro.Diro, anum: Optional[int], rule: int = 0) -> str:
+    d.roll()
+    result = d.calc()
+    s = f"{d.expr()}={(d.detail_expr())}={result}"
+    if anum:
+        sl = roll_success_level(result, anum, rule)
+        s += f"\n检定值 {anum}, {SuccessLevel[sl]}"
+    return s
+
+
+def rd0(pattern: str, anum: Optional[int] = None, rule: int = 0) -> str:
+    d_str = pattern.lower().split("#")
+    rd = diro.parse(d_str.pop(0))
+    time = 1
+    if d_str:
+        with contextlib.suppress(ValueError):
+            time = int(d_str[0])
+    r = expr(rd, anum, rule)
+    for _ in range(time - 1):
+        r += "\n"
+        r += expr(rd, anum)
+    return r

@@ -2,9 +2,10 @@ from typing import Tuple
 from nepattern import BasePattern, Bind
 from arclet.alconna import Args, Arparma, CommandMeta, namespace, Empty, ArgFlag, Arg, MultiVar
 from arclet.alconna.tools import MarkdownTextFormatter
-from arclet.alconna.graia import Alconna, alcommand, AtID, Match
+from arclet.alconna.graia import Alconna, alcommand, AtID, Match, Header
 from graia.ariadne.event.lifecycle import ApplicationShutdown
 from graiax.shortcut.saya import listen
+from graia.broadcast.exceptions import ExecutionStop
 from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
 from contextlib import suppress
@@ -15,6 +16,15 @@ from library.dice import *
 with namespace("coc") as np:
     np.headers = [".", "。"]
     np.formatter_type = MarkdownTextFormatter
+
+    draw_c = Alconna(
+        "draw",
+        Args["key#牌堆名称", str]["cnt#抽牌数量", int, 1],
+        meta=CommandMeta(
+            "抽牌",
+            example=".draw 调查员信息 1",
+        )
+    )
 
     rd_c = Alconna(
         "r( )?{dabp}",
@@ -57,10 +67,27 @@ with namespace("coc") as np:
     st_c = Alconna("st", meta=CommandMeta("射击命中判定", usage="自动掷骰1d20"))
     ti_c = Alconna("ti", meta=CommandMeta("临时疯狂症状", usage="自动掷骰1d10"))
     li_c = Alconna("li", meta=CommandMeta("总结疯狂症状", usage="自动掷骰1d10"))
+    dnd_c = Alconna(
+        "dnd",
+        Args["val#生成数量", int, 1],
+        meta=CommandMeta(
+            "龙与地下城(DND)人物作成",
+            example=".dnd 5",
+        ),
+    )
     coc_c = Alconna(
-        "coc",
-        Args["val;?", int],
-        meta=CommandMeta("coc角色作成", example=".coc 20")
+        "coc{num:[6|7]}?{d:d}?",
+        Args["val#生成数量", int, 1],
+        meta=CommandMeta(
+            "克苏鲁的呼唤(COC)人物作成, 默认生成7版人物卡",
+            usage="接d为详细作成，一次只能作成一个",
+            example=".coc6d",
+        ),
+    )
+    wcoc_c = Alconna(
+        "wcoc",
+        Args["age;?", int],
+        meta=CommandMeta("coc7角色作成并存入角色卡", example=".wcoc 16")
     )
     en_c = Alconna(
         "en",
@@ -84,9 +111,9 @@ with namespace("coc") as np:
         Args["uid;?", AtID],
         meta=CommandMeta("查看指定调查员的技能表", usage="不传入 uid 则查询自身技能表"),
     )
-    sa_c = Alconna(
-        "sa",
-        Args["name#属性名称，如name、名字、str、力量", str],
+    ra_c = Alconna(
+        "ra",
+        Args["attr#属性名称，如name、名字、str、力量", str]["exp", int, -1],
         meta=CommandMeta("快速检定")
     )
     del_c = Alconna(
@@ -105,6 +132,28 @@ with namespace("coc") as np:
 bot = RaianBotService.current()
 card = Cards(f"{bot.config.plugin_cache_dir / 'coc_cards.json' }")
 card.load()
+
+
+@alcommand(draw_c)
+@record("coc")
+@exclusive
+@accessable
+async def draw_handle(app: Ariadne, sender: Sender, key: Match[str], cnt: Match[int]):
+    return await app.send_message(sender, draw(key.result, cnt.result))
+
+@alcommand(ra_c)
+@record("coc")
+@exclusive
+@accessable
+async def ra_handle(app: Ariadne, sender: Sender, target: Target, attr: Match[str], exp: Match[int]):
+    if attr.result.isdigit():
+        return
+    if isinstance(sender, Group):
+        res = card.ra_handler(attr.result.lower(), exp.result, f"{app.account}_g{sender.id}", target.id)
+    else:
+        res = card.ra_handler(attr.result.lower(), exp.result, f"{app.account}_g{sender.id}")
+    await app.send_message(sender, res)
+    raise ExecutionStop
 
 
 @alcommand(rd_c)
@@ -155,7 +204,7 @@ async def st_handle(app: Ariadne, sender: Sender):
 @exclusive
 @accessable
 async def ti_handle(app: Ariadne, sender: Sender):
-    return await app.send_message(sender, ti())
+    return await app.send_message(sender, temp_insane())
 
 
 @alcommand(li_c)
@@ -163,7 +212,7 @@ async def ti_handle(app: Ariadne, sender: Sender):
 @exclusive
 @accessable
 async def li_handle(app: Ariadne, sender: Sender):
-    return await app.send_message(sender, li())
+    return await app.send_message(sender, long_insane())
 
 
 @alcommand(en_c)
@@ -173,13 +222,34 @@ async def li_handle(app: Ariadne, sender: Sender):
 async def en_handle(app: Ariadne, sender: Sender, skill_level: Match[int]):
     return await app.send_message(sender, en(skill_level.result))
 
-
 @alcommand(coc_c)
 @record("coc")
 @exclusive
 @accessable
-async def coc_handle(app: Ariadne, sender: Sender, target: Target, val: Match[int]):
-    arg = val.result if val.available else 20
+async def coc_handle(app: Ariadne, sender: Sender, val: Match[int], header: Header):
+    if header.result.get("d"):
+        if header.result.get("num") == "6":
+            return await app.send_message(sender, coc6d())
+        return await app.send_message(sender, coc7d())
+    if header.result.get("num") == "6":
+        return await app.send_message(sender, coc6(val.result))
+    return await app.send_message(sender, coc7(val.result))
+
+
+@alcommand(dnd_c)
+@record("coc")
+@exclusive
+@accessable
+async def dnd_handle(app: Ariadne, sender: Sender, val: Match[int]):
+    return await app.send_message(sender, dnd(val.result))
+
+
+@alcommand(wcoc_c)
+@record("coc")
+@exclusive
+@accessable
+async def wcoc_handle(app: Ariadne, sender: Sender, target: Target, age: Match[int]):
+    arg = age.result if age.available else 20
     inv = Investigator()
     await app.send_message(sender, inv.age_change(arg))
     if 15 <= arg <= 90:
@@ -243,18 +313,6 @@ async def shows_handle(app: Ariadne, sender: Sender, target: Target, uid: Match[
         res = card.show_skill_handler(f"{app.account}_g{sender.id}", uid.result if uid.available else target.id)
     else:
         res = card.show_skill_handler(f"{app.account}_f{sender.id}")
-    return await app.send_message(sender, res)
-
-
-@alcommand(sa_c)
-@record("coc")
-@exclusive
-@accessable
-async def sa_handle(app: Ariadne, sender: Sender, target: Target, name: Match[str]):
-    if isinstance(sender, Group):
-        res = card.sa_handler(name.result.lower(), f"{app.account}_g{sender.id}", target.id)
-    else:
-        res = card.sa_handler(name.result.lower(), f"{app.account}_f{sender.id}")
     return await app.send_message(sender, res)
 
 

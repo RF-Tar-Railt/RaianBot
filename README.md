@@ -41,13 +41,18 @@ RaianBot
 │   ├─── plugins 
 │   │   ├─── weibo_data.json     插件运行时产生的临时文件或缓存数据
 │   │   └─── ...
-│   ├─── users_data.json         用户数据文件
-│   ├─── groups_data.json        群组数据文件
-│   └─── basic_data.json         基础数据文件
+│   ├─── {account}
+│   │   ├─── users_data.json     用户数据文件
+│   │   ├─── groups_data.json    群组数据文件
+│   │   └─── basic_data.json     基础数据文件
+│   └─── ...
 ├─── config
+│   ├─── bots
+│   │   ├─── {account}.yml       账号配置文件
+│   │   └─── ...
 │   ├─── plugins                 机器人插件的配置目录 (可以在主配置文件中自行变更)
 │   │   └─── ...                 各插件的配置 (如需要)
-│   └─── bot_config.yml          机器人主配置文件
+│   └─── config.yml              主配置文件
 ├─── logs                        机器人日志目录
 │   ├─── latest.log
 │   └─── ...

@@ -1,15 +1,15 @@
 [project]
 name = "raian-bot"
-version = "0.18.0"
+version = "0.18.1"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
     "arclet-alconna<2.0.0, >=1.4.3",
-    "arclet-alconna-graia<1.0.0, >=0.10.5",
+    "arclet-alconna-graia<1.0.0, >=0.10.6",
     "arclet-alconna-tools>=0.3.3",
-    "graia-ariadne<0.11.0, >=0.10.2",
+    "graia-ariadne<0.11.0, >=0.10.3",
     "graia-amnesia>=0.6.0",
     "graia-broadcast>=0.18.2",
     "graia-saya>=0.0.16",
