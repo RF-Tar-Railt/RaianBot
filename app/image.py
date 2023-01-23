@@ -67,7 +67,7 @@ async def create_image(
     font: str = "simhei.ttf",
     font_size: int = 20,
     cut: int = 80,
-    mode: str = "RGBA",
+    mode: str = "RGB",
     background: tuple[int, int, int] | tuple[int, int, int, float] | str = "white",
 ) -> bytes:
     return await ParallelExecutor().to_thread(_create_image, text, font, font_size, cut, mode, background)
@@ -78,7 +78,7 @@ def _create_image(
     font: str,
     font_size: int = 20,
     cut: int = 80,
-    mode: str = "RGBA",
+    mode: str = "RGB",
     background: tuple[int, int, int] | tuple[int, int, int, float] | str = "white",
 ) -> bytes:
     new_font = ImageFont.truetype(font, font_size)
@@ -93,8 +93,8 @@ def _create_image(
     imageio = BytesIO()
     image.save(
         imageio,
-        format="PNG",
-        quality=90,
+        format="JPEG",
+        quality=95,
         subsampling=2,
         qtables="web_high",
     )

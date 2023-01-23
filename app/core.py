@@ -71,8 +71,9 @@ class RaianBotService(Service):
         super().__init__()
         self.config = config
         BotInstance.set(self)
-        for bot_config in config.bots.values():
-            BotDataManager(bot_config)
+        DataInstance.set(
+            {account: BotDataManager(bot_config) for account, bot_config in config.bots.items()}
+        )
 
     def get_interface(self, _: type[RaianBotInterface]) -> RaianBotInterface:
         return RaianBotInterface(self)

@@ -110,7 +110,7 @@ class Cards:
                 self.update(card_data, level, uid)
                 inv = Investigator().load(card_data)
                 return "成功从缓存保存人物卡属性：\n" + inv.output()
-            return "未找到缓存数据，请先使用coc指令生成角色"
+            return "未找到缓存数据，请先使用wcoc指令生成角色"
         else:
             if card_data := self.get(level, uid):
                 inv = Investigator().load(card_data)
@@ -190,8 +190,7 @@ class Cards:
         else:
             value = exp
         dices = diro.parse("1D100")
-        assert isinstance(value, int)
-        return f"{args}检定:\n{expr(dices, value)}"
+        return f"{args}检定:\n{expr(dices, value)}" if isinstance(value, int) else "请输入正确的别名，或传入检定值"
 
     def sc_handler(self, sf: str, san: Optional[int] = None, level: str = "0", uid: int = 0) -> str:
         try:

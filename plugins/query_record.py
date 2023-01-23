@@ -4,6 +4,8 @@ from app import RaianBotService, Sender, Target, accessable, exclusive, record
 from arclet.alconna import Arg, Args, CommandMeta, Option
 from arclet.alconna.graia import Alconna, Match, alcommand, assign
 from arknights_toolkit.record import ArkRecord
+from arknights_toolkit.init import update_pool_info
+from arknights_toolkit.img_resource import update_operators
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
@@ -12,6 +14,7 @@ alc = Alconna(
     "抽卡查询",
     Args["count#最近x抽", int, -1],
     Option("绑定", Args[Arg("token", str, seps="\n")]),
+    Option("更新"),
     meta=CommandMeta(
         "明日方舟抽卡数据查询，数据来源为方舟官网",
         usage="""
@@ -43,7 +46,7 @@ querier = ArkRecord(
 @accessable
 async def query(app: Ariadne, target: Target, sender: Sender, count: Match[int]):
     try:
-        querier.database.read_token_from_db(str(target.id))
+        querier.database.read_token_from_db(f"{app.account}_{target.id}")
     except (AssertionError, RuntimeError):
         return await app.send_message(
             sender,
@@ -59,10 +62,23 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 """,
         )
     try:
-        file = querier.user_analysis(f"{app.account}_{target.id}", count.result)
+        warn, file = querier.user_analysis(f"{app.account}_{target.id}", count.result)
+        if warn:
+            await app.send_message(sender, warn)
         return await app.send_message(sender, MessageChain(Image(path=file)))
     except RuntimeError as e:
         return await app.send_message(sender, str(e))
+
+
+@alcommand(alc)
+@assign("更新")
+@record("抽卡查询")
+@exclusive
+@accessable
+async def update(app: Ariadne, sender: Sender):
+    update_pool_info()
+    update_operators()
+    return await app.send_message(sender, "更新完成")
 
 
 @alcommand(alc)

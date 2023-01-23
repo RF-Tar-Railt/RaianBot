@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from pydantic.class_validators import validator
 
 from .logger import logger
-from .context import DataInstance, MainConfigInstance
+from .context import MainConfigInstance
 from .config import BotConfig
 
 TMeta = TypeVar("TMeta", bound=tuple)
@@ -91,7 +91,7 @@ class BotDataManager:
     def __init__(self, config: BotConfig):
         base = MainConfigInstance.get(None)
         base_dir_path = Path(base.cache_dir)
-        base_dir_path.mkdir(exist_ok=True, parents=True)
+        (base_dir_path / str(config.account)).mkdir(exist_ok=True, parents=True)
         self.__loaded = False
         self.__functions = {}
         self.__metas = {"group_meta": {}, "user_meta": {}}
@@ -105,10 +105,10 @@ class BotDataManager:
         self.__user_profiles = {}
         self.__cache_data = {"all_joined_group": [], "blacklist": []}
 
-        if data := DataInstance.get(None):
-            data[config.account] = self
-        else:
-            DataInstance.set({config.account: self})
+        # if data := DataInstance.get(None):
+        #     data[config.account] = self
+        # else:
+        #     DataInstance.set({config.account: self})
 
     def add_meta(self, **kwargs: list[type[TMeta]]):
         for k, v in kwargs.items():

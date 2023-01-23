@@ -1,4 +1,5 @@
 from unwind import get_report, ReportFlag
+from pprint import pformat
 from typing import List, Iterable
 from ujson import dumps
 from pydantic import BaseModel
@@ -74,7 +75,7 @@ def reports_md(exception: BaseException) -> str:
 
 
 def generate_reports(exception: BaseException) -> List[str]:
-    strings = [f"报错: {exception.__class__.__name__} {exception}"]
+    strings = [f"报错: {exception.__class__.__name__} \n{pformat(exception, indent=2)}"]
     for index, report in enumerate(get_report(exception)):
         if report.flag == ReportFlag.ACTIVE:
             strings.append(
@@ -91,7 +92,7 @@ def generate_reports(exception: BaseException) -> List[str]:
                 f"原因: 操作出错 {report.flag}\n"
                 f"位置: {report.info.name}, line {report.info.line_index}, in {report.info.file}\n"
                 f"代码: {report.info.code_line}\n"
-                f"参数: {report.args}\n"
+                f"参数: {pformat(report.args)}\n"
             )
         else:
             strings.append(
@@ -100,6 +101,6 @@ def generate_reports(exception: BaseException) -> List[str]:
                 f"位置: {report.info.name}, line {report.info.line_index}, in {report.info.file}\n"
                 f"代码: {report.info.code_line}\n"
                 f"执行对象: {report.callable}\n"
-                f"参数: {report.args}\n"
+                f"参数: {pformat(report.args)}\n"
             )
     return strings

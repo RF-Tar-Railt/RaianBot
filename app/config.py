@@ -192,14 +192,15 @@ def load_config(root_dir: str = "config") -> RaianConfig:
                 name = config_file.name
                 if name == "config.yml":
                     continue
-                if name == "{example_account}.yml":
-                    logger.warning(f"请将 {root_dir}/bots/{name} 重命名为你的机器人账号")
-                    continue
-                if config_file.is_dir() or not config_file.stem.isdigit():
+                if name == "{example_account}.yml" or config_file.is_dir() or not config_file.stem.isdigit():
                     logger.warning(f"请将 {root_dir}/bots/{name} 重命名为你的机器人账号")
                     continue
                 with config_file.open(encoding="utf-8") as f:
-                    configs[int(config_file.stem)] = BotConfig.parse_obj(yaml.safe_load(f.read()))
+                    _bot_config = BotConfig.parse_obj(yaml.safe_load(f))
+                    if _bot_config.account != int(config_file.stem):
+                        logger.warning(f"请将 {root_dir}/bots/{name} 重命名为你的机器人账号")
+                        continue
+                    configs[_bot_config.account] = _bot_config
             if configs and main_config.default_account in configs:
                 main_config.bots.update(configs)
                 MainConfigInstance.set(main_config)

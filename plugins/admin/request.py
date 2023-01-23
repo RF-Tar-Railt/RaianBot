@@ -1,14 +1,27 @@
 from typing import NamedTuple
 
 from app import RaianBotInterface
+from arclet.alconna import Alconna, Args
+from arclet.alconna.graia import alcommand, Match
 from graia.ariadne import Ariadne
 from graia.ariadne.event.mirai import BotInvitedJoinGroupRequestEvent, NewFriendRequestEvent
 from graia.ariadne.message.chain import MessageChain
 from graiax.shortcut.saya import listen
+from graia.ariadne.model.relationship import Friend
 
 
 class mute(NamedTuple):
     rest_count: int
+
+
+@alcommand(Alconna("自动同意请求", Args["opt", {"on": True, "off": False, ...: True}]), guild=False)
+async def auto_accept(app: Ariadne, sender: Friend, opt: Match[bool], interface: RaianBotInterface):
+    if opt.result:
+        await app.send_message(sender, "已开启自动同意请求")
+        interface.data.cache["auto_accept"] = True
+    else:
+        await app.send_message(sender, "已关闭自动同意请求")
+        interface.data.cache["auto_accept"] = False
 
 
 @listen(NewFriendRequestEvent)
@@ -26,6 +39,12 @@ async def get_friend_accept(app: Ariadne, event: NewFriendRequestEvent, interfac
             f"\n申请消息：{event.message.upper()}"
         ),
     )
+    if interface.data.cache.get("auto_accept", False):
+        await event.accept("同意请求")
+        await app.send_friend_message(
+            config.admin.master_id,
+            "已自动同意请求"
+        )
 
 
 @listen(BotInvitedJoinGroupRequestEvent)
@@ -52,11 +71,21 @@ async def bot_invite(app: Ariadne, event: BotInvitedJoinGroupRequestEvent, inter
                 event.supplicant,
                 MessageChain(f"该群被禁言次数达到上限, 已拒绝申请\n" f"请联系群主或管理员向机器人报备禁言理由"),
             )
-        # await event.accept("")
-        return await app.send_friend_message(
+        if interface.data.cache.get("auto_accept", False):
+            await event.accept("")
+            await app.send_friend_message(
+                config.admin.master_id,
+                "已自动同意请求"
+            )
+            return await app.send_friend_message(
+                event.supplicant,
+                MessageChain(
+                    f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in data.cache.setdefault('blacklist', {}) else 'accepted.'}"
+                ),
+            )
+        await app.send_friend_message(
             event.supplicant,
-            MessageChain(
-                f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in data.cache.setdefault('blacklist', {}) else 'accepted.'}"
-            ),
+            "请等待机器人管理员处理该请求"
         )
+        return
     return await event.reject("请先加机器人好友")

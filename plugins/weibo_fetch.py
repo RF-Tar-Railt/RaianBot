@@ -1,3 +1,4 @@
+import contextlib
 from datetime import datetime
 from typing import NamedTuple, List
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -6,6 +7,7 @@ from arclet.alconna.graia import Alconna, Match, alcommand, assign, mention
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Source, Image, At
 from graia.ariadne.model import Friend
+from graia.ariadne.connection.util import UploadMethod
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.util.validator import Quoting
 from graia.ariadne.app import Ariadne
@@ -13,7 +15,7 @@ from graiax.playwright import PlaywrightBrowser
 from graiax.fastapi import route
 from graiax.shortcut.interrupt import FunctionWaiter
 from graiax.shortcut.saya import every
-from playwright.async_api import TimeoutError, Page
+from playwright.async_api import Page
 
 from app import RaianBotService, Sender, Target, record, meta_export, exclusive, accessable, RaianBotInterface
 from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser
@@ -40,8 +42,17 @@ class weibo_followers(NamedTuple):
 meta_export(group_meta=[weibo_followers])
 
 
-async def _handle_dynamic(page: Page, data: WeiboDynamic, time: datetime, target: int, name: str):
-    try:
+async def _handle_dynamic(
+    app: Ariadne,
+    page: Page,
+    data: WeiboDynamic,
+    time: datetime,
+    target: int,
+    name: str,
+    method: UploadMethod = UploadMethod.Group,
+):
+    first = MessageChain(data.text or "表情")
+    with contextlib.suppress(Exception):
         await page.click("html")
         await page.goto(data.url, timeout=60000, wait_until="networkidle")
         elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
@@ -51,16 +62,21 @@ async def _handle_dynamic(page: Page, data: WeiboDynamic, time: datetime, target
         assert bounding
         assert bounding1
         bounding["height"] += bounding1["height"]
-        first = MessageChain(Image(data_bytes=await page.screenshot(full_page=True, clip=bounding)))
-    except (TimeoutError, TypeError):
-        first = None
-    nodes = [MessageChain(*(Image(url=i) for i in data.img_urls))] if data.img_urls else []
-    nodes.insert(0, first or MessageChain(data.text or "表情"))
+        first = MessageChain(await app.upload_image(await page.screenshot(full_page=True, clip=bounding), method))
+    imgs = []
+    for url in data.img_urls:
+        with contextlib.suppress(Exception):
+            async with app.service.client_session.get(url) as response:
+                response.raise_for_status()
+                imgs.append(await app.upload_image((await response.read()), method))
+    nodes: List[MessageChain] = [first, MessageChain(*imgs)] if imgs else [first]
     if data.video_url:
         nodes.append(MessageChain(f"视频链接: {data.video_url}"))
     if data.retweet:
-        nodes.append(MessageChain(Forward(*(await _handle_dynamic(page, data.retweet, time, target, name)))))
-    return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
+        nodes.extend(await _handle_dynamic(app, page, data.retweet, time, target, name, method))
+        # nodes.append(MessageChain(Forward(*(await _handle_dynamic(page, data.retweet, time, target, name)))))
+    return nodes
+    # return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
 
 
 @route.route(["GET"], "/weibo/check", response_model=WeiboUser)
@@ -109,14 +125,16 @@ async def wfetch(
         browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
         async with browser.page(viewport={"width": 800, "height": 2400}) as _page:
             nodes = await _handle_dynamic(
+                app,
                 _page,
                 dynamic,
                 source.time,
                 target.id,
                 getattr(target, "name", getattr(target, "nickname", "")),
+                UploadMethod.Friend if isinstance(target, Friend) else UploadMethod.Group,
             )
             for node in nodes:
-                res = await app.send_message(sender, node.message_chain)
+                res = await app.send_message(sender, node)
             # res = await app.send_message(sender, MessageChain(Forward(*nodes)))
 
             async def waiter(w_sender: Sender, message: MessageChain):
@@ -240,14 +258,14 @@ async def update():
                             dy, name = dynamics[uid]
                         elif res := await api.update(int(uid)):
                             dynamics[uid] = (
-                                dy := await _handle_dynamic(page, res, now, config.account, config.bot_name),
+                                dy := await _handle_dynamic(app, page, res, now, config.account, config.bot_name),
                                 name := res.user.name,
                             )
                         else:
                             continue
                         await app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
                         for node in dy:
-                            await app.send_group_message(prof.id, node.message_chain)
+                            await app.send_group_message(prof.id, node)
                         # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
                     except (ValueError, TypeError, IndexError, KeyError):
                         api.data.followers[uid] = wp

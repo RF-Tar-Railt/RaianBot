@@ -19,7 +19,7 @@ def coc7(num: int) -> str:
         mans += f"共计:{all_total-luc}/{all_total}"
         all_total = 0
         num -= 1
-    return mans
+    return mans[1:]
 
 
 def coc6d():
@@ -192,7 +192,7 @@ def dnd(num: int) -> str:
         output += f"共计:{all_total}"
         all_total = 0
         num -= 1
-    return output
+    return output[1:]
 
 
 def coc6(num: int) -> str:
@@ -216,7 +216,7 @@ def coc6(num: int) -> str:
         rd_coc.roll()
         mans += f" {_property[8]}:{rd_coc.calc()}"
         num -= 1
-    return mans
+    return mans[1:]
 
 
 # class PlayerCard:
