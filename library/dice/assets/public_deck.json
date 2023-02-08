@@ -290,7 +290,7 @@
     "{first_name_jp}{last_name_jp}"
   ],
   "随机姓名_enzh": ["{first_name_enzh}·{last_name_enzh}"],
-  "random_name": ["{随机姓名_cn}", "{随机姓名_enzh}", "{first_name_en}", "{last_name_en}", "{随机姓名_jp}"],
+  "random_name": ["{随机姓名_cn}", "{随机姓名_en}", "{随机姓名_enzh}", "{first_name_en}", "{last_name_en}", "{随机姓名_jp}"],
   "随机姓名": [
     "{random_name}", "{random_name}", "{random_name}", "{random_name}", "{random_name}", "{random_name}",
     "{random_name}", "{random_name}", "{random_name}", "{random_name}"

@@ -6,7 +6,8 @@ from types import TracebackType
 from typing import Literal
 
 from arclet.alconna import namespace
-from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher
+from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, AlconnaGraiaService
+from arclet.alconna.ariadne import AlconnaAriadneAdapter
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
 from creart import it
 from fastapi import FastAPI
@@ -191,6 +192,7 @@ def launch(debug_log: bool = True):
             # user_data_dir=Path(config.cache_dir) / "browser"
         )
     )
+    manager.add_service(AlconnaGraiaService(AlconnaAriadneAdapter, enable_cache=True, cache_dir=config.cache_dir))
     manager.add_service(FastAPIService(fastapi))
     manager.add_service(UvicornService(config.api.host, config.api.port))
     manager.add_service(bot_service := RaianBotService(config))

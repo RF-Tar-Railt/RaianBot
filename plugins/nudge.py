@@ -1,5 +1,6 @@
 from arclet.alconna import Args, Field, CommandMeta
-from arclet.alconna.graia import Alconna, Match, alcommand, AtID
+from arclet.alconna.graia import Alconna, Match, alcommand
+from arclet.alconna.ariadne import AtID
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.event.mirai import NudgeEvent

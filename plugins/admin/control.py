@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List
 
 from app import RaianBotInterface, Sender, exclusive, extract_plugin_config, permission, render_markdown, send_handler
-from arclet.alconna import Args, CommandMeta, Field, Option
+from arclet.alconna import Args, CommandMeta, Field, Option, Subcommand
 from arclet.alconna.graia import Alconna, Match, alcommand, assign, mention
 from creart import it
 from graia.ariadne.app import Ariadne
@@ -73,11 +73,17 @@ function_control = Alconna(
 group_control = Alconna(
     "群组",
     Option("当前状态|状态|信息", Args["spec;?", At], dest="status", help_text="查看当前群组信息"),
-    Option("黑名单 列入|加入", Args["spec;?", At], dest="add", help_text="将当前群组加入黑名单"),
-    Option("黑名单 解除|移出|移除", Args["spec;?", At], dest="remove", help_text="将当前群组移出黑名单"),
+
     Option("退出", Args["spec;?", At], dest="quit", help_text="退出指定群组"),
     Option("检查", Args["spec;?", At], dest="check", help_text="检查指定群组是否在黑名单中"),
     Option("列出", Args["spec;?", At], dest="list", help_text="列出指定群组的信息"),
+    Subcommand(
+        "黑名单",
+        Option("列入|加入", Args["spec;?", At], dest="add", help_text="将当前群组加入黑名单"),
+        Option("解除|移出|移除", Args["spec;?", At], dest="remove", help_text="将当前群组移出黑名单"),
+        dest="bl",
+        help_text="黑名单相关操作",
+    ),
     meta=CommandMeta("操作当前群组", example="$群管 当前状态\n$群管 黑名单 加入"),
 )
 
@@ -434,7 +440,7 @@ async def _g_list(app: Ariadne, sender: Sender, bot: RaianBotInterface):
 @alcommand(group_control, private=False, send_error=True)
 @permission("admin")
 @mention("spec")
-@assign("add")
+@assign("bl.add")
 @exclusive
 async def _g_bl_add(app: Ariadne, sender: Group, bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)
@@ -449,7 +455,7 @@ async def _g_bl_add(app: Ariadne, sender: Group, bot: RaianBotInterface):
 @alcommand(group_control, private=False, send_error=True)
 @permission("admin")
 @mention("spec")
-@assign("remove")
+@assign("bl.remove")
 @exclusive
 async def _g_bl_remove(app: Ariadne, sender: Group, bot: RaianBotInterface):
     group = bot.data.get_group(sender.id)

@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 from datetime import datetime
 from typing import NamedTuple, List
@@ -8,14 +9,14 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Forward, ForwardNode, Source, Image, At
 from graia.ariadne.model import Friend
 from graia.ariadne.connection.util import UploadMethod
+from graia.ariadne.event.lifecycle import ApplicationShutdown
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.util.validator import Quoting
 from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
 from graiax.fastapi import route
 from graiax.shortcut.interrupt import FunctionWaiter
-from graiax.shortcut.saya import every
-from playwright.async_api import Page
+from graiax.shortcut.saya import every, listen
 
 from app import RaianBotService, Sender, Target, record, meta_export, exclusive, accessable, RaianBotInterface
 from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser
@@ -34,6 +35,9 @@ weibo_fetch = Alconna(
 
 api = WeiboAPI(f"{bot.config.plugin_cache_dir / 'weibo_data.json'}")
 
+@listen(ApplicationShutdown)
+async def _save():
+    await api.close()
 
 class weibo_followers(NamedTuple):
     data: List[int]
@@ -44,7 +48,6 @@ meta_export(group_meta=[weibo_followers])
 
 async def _handle_dynamic(
     app: Ariadne,
-    page: Page,
     data: WeiboDynamic,
     time: datetime,
     target: int,
@@ -52,17 +55,19 @@ async def _handle_dynamic(
     method: UploadMethod = UploadMethod.Group,
 ):
     first = MessageChain(data.text or "表情")
+    browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
     with contextlib.suppress(Exception):
-        await page.click("html")
-        await page.goto(data.url, timeout=60000, wait_until="networkidle")
-        elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
-        elem1 = page.locator("//article[@class='weibo-main']").first
-        bounding = await elem.bounding_box()
-        bounding1 = await elem1.bounding_box()
-        assert bounding
-        assert bounding1
-        bounding["height"] += bounding1["height"]
-        first = MessageChain(await app.upload_image(await page.screenshot(full_page=True, clip=bounding), method))
+        async with browser.page(viewport={"width": 800, "height": 2400}) as page:
+            await page.click("html")
+            await page.goto(data.url, timeout=60000, wait_until="networkidle")
+            elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
+            elem1 = page.locator("//article[@class='weibo-main']").first
+            bounding = await elem.bounding_box()
+            bounding1 = await elem1.bounding_box()
+            assert bounding
+            assert bounding1
+            bounding["height"] += bounding1["height"]
+            first = MessageChain(await app.upload_image(await page.screenshot(full_page=True, clip=bounding), method))
     imgs = []
     for url in data.img_urls:
         with contextlib.suppress(Exception):
@@ -73,7 +78,7 @@ async def _handle_dynamic(
     if data.video_url:
         nodes.append(MessageChain(f"视频链接: {data.video_url}"))
     if data.retweet:
-        nodes.extend(await _handle_dynamic(app, page, data.retweet, time, target, name, method))
+        nodes.extend(await _handle_dynamic(app, data.retweet, time, target, name, method))
         # nodes.append(MessageChain(Forward(*(await _handle_dynamic(page, data.retweet, time, target, name)))))
     return nodes
     # return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
@@ -121,33 +126,30 @@ async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = Fals
 async def wfetch(
     app: Ariadne, target: Target, sender: Sender, source: Source, user: Match[str], index: Match[int], page: Match[int]
 ):
-    if dynamic := await api.get_dynamic(user.result, index=index.result, page=page.result):
-        browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
-        async with browser.page(viewport={"width": 800, "height": 2400}) as _page:
-            nodes = await _handle_dynamic(
-                app,
-                _page,
-                dynamic,
-                source.time,
-                target.id,
-                getattr(target, "name", getattr(target, "nickname", "")),
-                UploadMethod.Friend if isinstance(target, Friend) else UploadMethod.Group,
-            )
-            for node in nodes:
-                res = await app.send_message(sender, node)
-            # res = await app.send_message(sender, MessageChain(Forward(*nodes)))
+    if not (dynamic := await api.get_dynamic(user.result, index=index.result, page=page.result)):
+        return await app.send_message(sender, MessageChain("获取失败啦"))
+    nodes = await _handle_dynamic(
+        app,
+        dynamic,
+        source.time,
+        target.id,
+        getattr(target, "name", getattr(target, "nickname", "")),
+        UploadMethod.Friend if isinstance(target, Friend) else UploadMethod.Group,
+    )
+    for node in nodes:
+        res = await app.send_message(sender, node)
+    # res = await app.send_message(sender, MessageChain(Forward(*nodes)))
 
-            async def waiter(w_sender: Sender, message: MessageChain):
-                if w_sender == sender and message.startswith("链接"):
-                    return True
+    async def waiter(w_sender: Sender, message: MessageChain):
+        if w_sender == sender and (message.startswith("链接") or message.startswith("link")):
+            return True
 
-            resp = await FunctionWaiter(waiter, [GroupMessage, FriendMessage], decorators=[Quoting(res)]).wait(
-                30, False
-            )
-            if not resp:
-                return
-            return await app.send_message(sender, MessageChain(dynamic.url))
-    return await app.send_message(sender, MessageChain("获取失败啦"))
+    resp = await FunctionWaiter(waiter, [GroupMessage, FriendMessage], decorators=[Quoting(res)]).wait(
+        30, False
+    )
+    if not resp:
+        return
+    return await app.send_message(sender, MessageChain(dynamic.url))
 
 
 @alcommand(weibo_fetch)
@@ -236,39 +238,38 @@ async def wlist(app: Ariadne, target: Target, sender: Sender, source: Source, in
 @record("微博动态自动获取", False)
 async def update():
     dynamics = {}
-    browser: PlaywrightBrowser = Ariadne.current().launch_manager.get_interface(PlaywrightBrowser)
-    async with browser.page(viewport={"width": 800, "height": 2400}) as page:
-        for account, app in Ariadne.instances.items():
-            interface = app.launch_manager.get_interface(RaianBotInterface).bind(account)
-            data = interface.data
-            config = interface.config
-            for gid in data.groups:
-                if not data.exist(int(gid)):
-                    continue
-                prof = data.get_group(int(gid))
-                if "微博动态自动获取" in prof.disabled:
-                    continue
-                if not (followers := prof.get(weibo_followers)):
-                    continue
-                for uid in followers.data:
-                    wp = (await api.get_profile(int(uid))).copy()
-                    try:
-                        now = datetime.now()
-                        if uid in dynamics:
-                            dy, name = dynamics[uid]
-                        elif res := await api.update(int(uid)):
-                            dynamics[uid] = (
-                                dy := await _handle_dynamic(app, page, res, now, config.account, config.bot_name),
-                                name := res.user.name,
-                            )
-                        else:
-                            continue
-                        await app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
-                        for node in dy:
-                            await app.send_group_message(prof.id, node)
-                        # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
-                    except (ValueError, TypeError, IndexError, KeyError):
-                        api.data.followers[uid] = wp
-                        await api.data.save()
+    for account, app in Ariadne.instances.items():
+        interface = app.launch_manager.get_interface(RaianBotInterface).bind(account)
+        data = interface.data
+        config = interface.config
+        for gid in data.groups:
+            if not data.exist(int(gid)):
+                continue
+            prof = data.get_group(int(gid))
+            if "微博动态自动获取" in prof.disabled:
+                continue
+            if not (followers := prof.get(weibo_followers)):
+                continue
+            for uid in followers.data:
+                wp = (await api.get_profile(int(uid))).copy()
+                try:
+                    now = datetime.now()
+                    if uid in dynamics:
+                        dy, name = dynamics[uid]
+                    elif res := await api.update(int(uid)):
+                        dynamics[uid] = (
+                            dy := await _handle_dynamic(app, res, now, config.account, config.bot_name),
+                            name := res.user.name,
+                        )
+                    else:
                         continue
+                    await app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
+                    for node in dy:
+                        await app.send_group_message(prof.id, node)
+                    await asyncio.sleep(1)
+                    # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
+                except (ValueError, TypeError, IndexError, KeyError):
+                    api.data.followers[uid] = wp
+                    await api.data.save()
+                    continue
     dynamics.clear()

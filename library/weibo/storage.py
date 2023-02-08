@@ -14,11 +14,11 @@ class BaseWeiboData(metaclass=ABCMeta):
         self.path = Path(filepath)
 
     @abstractmethod
-    def load(self):
+    def load(self) -> None:
         ...
 
     @abstractmethod
-    async def save(self):
+    def save(self) -> None:
         ...
 
 
@@ -37,7 +37,7 @@ class DefaultWeiboData(BaseWeiboData):
                 self.mapping = {}
                 self.followers = {}
 
-    async def save(self):
+    def save(self):
         with self.path.open('w+', encoding='UTF-8') as f_obj:
             ujson.dump(
                 {

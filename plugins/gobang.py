@@ -33,7 +33,6 @@ async def gobang(app: Ariadne, sender: Sender, first: Match[bool], rand: Match[b
     async with browser.page() as page:
         page: Page
         over = False
-
         async def callback(msg: ConsoleMessage):
             nonlocal over, start
             if msg.type == "log":

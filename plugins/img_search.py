@@ -6,7 +6,8 @@ from PicImageSearch.saucenao import SauceNAOResponse
 from PicImageSearch.ascii2d import Ascii2DResponse
 from PicImageSearch.iqdb import IqdbResponse
 from arclet.alconna import Args, CommandMeta
-from arclet.alconna.graia import Alconna, Match, ImgOrUrl, alcommand
+from arclet.alconna.graia import Alconna, Match, alcommand
+from arclet.alconna.ariadne import ImgOrUrl
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.element import Image, Source, Forward, ForwardNode, Plain
@@ -14,7 +15,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.util.interrupt import FunctionWaiter
 from loguru import logger
 
-from app import Sender, Target, record, RaianBotInterface, accessable, exclusive
+from app import Sender, Target, record, accessable, exclusive
 from plugins.config.img_search import ImgSearchConfig
 
 running = asyncio.Event()

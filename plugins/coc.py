@@ -2,7 +2,8 @@ from typing import Tuple
 from nepattern import BasePattern, Bind
 from arclet.alconna import Args, Arparma, CommandMeta, namespace, Empty, ArgFlag, Arg, MultiVar
 from arclet.alconna.tools import MarkdownTextFormatter
-from arclet.alconna.graia import Alconna, alcommand, AtID, Match, Header
+from arclet.alconna.graia import Alconna, alcommand, Match, Header
+from arclet.alconna.ariadne import AtID
 from graia.ariadne.event.lifecycle import ApplicationShutdown
 from graiax.shortcut.saya import listen
 from graia.broadcast.exceptions import ExecutionStop
@@ -16,6 +17,15 @@ from library.dice import *
 with namespace("coc") as np:
     np.headers = [".", "。"]
     np.formatter_type = MarkdownTextFormatter
+
+    name_c = Alconna(
+        "name",
+        Args["key#名字格式", ["cn", "en", "jp", "enzh"], "$r"]["cnt#名字数量", int, 1],
+        meta=CommandMeta(
+            "随机名字",
+            example=".name 5"
+        )
+    )
 
     draw_c = Alconna(
         "draw",
@@ -133,6 +143,14 @@ bot = RaianBotService.current()
 card = Cards(f"{bot.config.plugin_cache_dir / 'coc_cards.json' }")
 card.load()
 
+@alcommand(name_c)
+@record("coc")
+@exclusive
+@accessable
+async def name_handle(app: Ariadne, sender: Sender, key: Match[str], cnt: Match[int]):
+    if key.result == "$r" or key.result.isdigit():
+        return await app.send_message(sender, draw("随机姓名", cnt.result))
+    return await app.send_message(sender, draw(f"随机姓名_{key.result}", cnt.result))
 
 @alcommand(draw_c)
 @record("coc")
