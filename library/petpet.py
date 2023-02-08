@@ -52,11 +52,9 @@ class PetGenerator:
         return gif_frame
 
     def generate(self, data: bytes, flip=False, squish=0) -> BytesIO:
-        gif_frames = []
         avatar = Image.open(BytesIO(data))
-        # 生成每一帧
-        for i in range(5):
-            gif_frames.append(self._generate_per_frame(avatar, i, squish=squish, flip=flip))
+        gif_frames = [self._generate_per_frame(avatar, i, squish=squish, flip=flip) for i in range(5)]
+
         image = BytesIO()
         gif_frames[0].save(
             image,
