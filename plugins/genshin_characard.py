@@ -36,7 +36,6 @@ async def init():
 
 @alcommand(cmd, send_error=True)
 @record("原神角色卡查询")
-@dispatch(CoolDown(5))
 @exclusive
 @accessable
 async def genshin_chara_card(app: Ariadne, sender: Sender, source: Source, uid: Match[str], name: Match[str]):

@@ -15,7 +15,7 @@ from graia.ariadne.message.element import At, Face, Image, Plain, Quote, Source,
 from graia.ariadne.model import Friend
 from graia.ariadne.util.cooldown import CoolDown
 from graia.broadcast.exceptions import PropagationCancelled
-from graiax.shortcut.saya import dispatch, listen, priority
+from graiax.shortcut.saya import listen, priority
 from library.aiml.entry import AIML
 from library.chat import TencentChatBot
 from library.rand import random_pick_small
@@ -24,7 +24,7 @@ from PIL import Image as Img
 from plugins.config.dialog import DialogConfig
 
 bot = RaianBotService.current()
-
+cd = CoolDown(0.1)
 json_filename = "assets/data/dialog_templates.json"
 with open(json_filename, "r", encoding="UTF-8") as f_obj:
     dialog_templates = ujson.load(f_obj)["templates"]
@@ -204,7 +204,6 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 
 
 @listen(GroupMessage, FriendMessage)
-@dispatch(CoolDown(0.1))
 @priority(22)
 @record("ai")
 @exclusive
@@ -218,6 +217,9 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
     for n in cmds:
         if re.search(f".*{n}.*", str(message)):
             raise PropagationCancelled
+    async with cd.trigger(sender.id, int) as res:
+        if not res[1]:
+            return
     if isinstance(target, Friend):
         reply = await random_ai(
             app, sender, target, str(message.include(Plain, Face)).strip(" +")[:120], gpt=0.5, tx=0.4
@@ -234,7 +236,7 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         if reply:
             await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
         return
-    for elem in bot.config.command_prefix:
+    for elem in bot.config.command.headers:
         message = message.replace(elem, "")
     if random.randint(0, 2000) == datetime.now().microsecond // 5000:
         reply = await random_ai(
