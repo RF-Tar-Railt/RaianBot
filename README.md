@@ -94,6 +94,9 @@ RaianBot
 - 查询干员信息
 - AI作画 （需要适配）
 - 猜干员游戏
+- 流浪地球倒计时梗图
+- 地下城资格抽签
+- 原神角色卡
 
 ## 下载
 
@@ -113,6 +116,7 @@ git clone https://github.com/RF-Tar-Railt/RaianBot.git
 1. 确保安装并配置好了`java`环境, 推荐`java17`或`openj9`
 2. 解压缩`mcl.zip`, 或前往[`mirai-console-loader`](https://github.com/iTXTech/mirai-console-loader)下载mcl
 , 并在[`mirai-api-http`](https://github.com/project-mirai/mirai-api-http/releases)处下载mirai-api-http.jar(当前bot使用版本为2.6.2), 然后放入`.mcl/plugins/`下
+3. 下载 [`mirai-login-solver-sakura`](https://github.com/KasukuSakura/mirai-login-solver-sakura)，放入`.mcl/plugins/`下
 
 **bot部分**
 1. 安装`python`环境，至少要求`python 3.8`及以上版本
@@ -126,16 +130,18 @@ pip install -r requirements.txt
 
 **mirai部分**
 1. 先运行一遍mcl, 以自动生成配置文件, 确认生成后关闭mcl
-2. 前往`mcl/config/net.mamoe.mirai-api-http`下, 打开`config.yml`文件
+2. 前往`mcl/config/net.mamoe.mirai-api-http`下, 打开`setting.yml`文件
 3. 修改其中的`verifyKey`, 适当修改`adapterSettings`下的`host`与`port`
 4. 前往`mcl/config/Console`下, 打开`AutoLogin.yml`文件
 5. 按提示修改其中的`account`与`password`
 
 **bot部分**
 1. bot 的初始配置位于 `./config/` 下
-2. 首先更改 `bot_config.yml`，按照提示逐个修改. 其中`mirai.verify_key`, `mirai.host`, `mirai.port`应与`config.yml`内的相同
-3. 其次适当调整各插件的配置文件, 默认位置为 `./config/plugins/`
+2. 首先更改 `config/config.yml`，按照提示逐个修改. 其中`mirai.verify_key`, `mirai.host`, `mirai.port`应与`mcl/config/net.mamoe.mirai-api-http/setting.yml`内的相同
+3. 其次更改 `config/bots/` 下的配置文件，文件名应为 `<bot账号>.yml` (如 "114514.yml")，多个账号则对应多个文件
+4. 适当调整各插件的配置文件, 默认位置为 `./config/plugins/`
 
+(或先配置 bot部分，然后运行 `./mah_setting.py`)
 ### 运行程序
 
 **mirai部分**

@@ -32,10 +32,11 @@ dependencies = [
     "graiax-text2img-playwright>=0.2",
     "diro-py>=0.1.1",
     "httpx>=0.23.0",
-    "arknights-toolkit>=0.4.2",
+    "arknights-toolkit>=0.4.3",
     "graiax-fastapi>=0.2.0",
     "uvicorn>=0.18.3",
-    "graiax-shortcut>=0.2.1"
+    "graiax-shortcut>=0.2.1",
+    "pypinyin>=0.48.0",
 ]
 requires-python = ">=3.8"
 readme = "README.md"

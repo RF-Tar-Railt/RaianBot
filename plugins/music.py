@@ -22,8 +22,8 @@ MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"
 
 
 @alcommand(music)
-@accessable
 @exclusive
+@accessable
 async def song(app: Ariadne, sender: Sender, target: Target, name: Match[str], singer: Match[str], config: MusicConfig):
     _singer = f"{singer.result} " if singer.available else ""
     api = config.api
