@@ -227,8 +227,8 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         if reply:
             await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
         return
-    if (message.has(At) and message.get_first(At).target == bot.config.mirai.account) or (
-        message.has(Quote) and message.get_first(Quote).sender_id == bot.config.mirai.account
+    if (message.has(At) and message.get_first(At).target == app.account) or (
+        message.has(Quote) and message.get_first(Quote).sender_id == app.account
     ):
         reply = await random_ai(
             app, sender, target, str(message.include(Plain, Face)).strip(" +")[:120], gpt=0.6, tx=0.3
