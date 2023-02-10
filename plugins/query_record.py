@@ -27,6 +27,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 
 ***请在浏览器中获取token，避免在QQ打开的网页中获取，否则可能获取无效token***
 
+再通过 ’渊白抽卡查询 绑定 token‘ 命令来绑定
         """,
     ),
 )
@@ -59,6 +60,8 @@ token获取方法：在官网登录后，根据你的服务器，选择复制以
 B服：https://web-api.hypergryph.com/account/info/ak-b
 
 请在浏览器中获取token，避免在QQ打开的网页中获取，否则可能获取无效token
+
+再通过 ’渊白抽卡查询 绑定 token‘ 命令来绑定
 """,
         )
     try:

@@ -47,6 +47,8 @@ async def draw(app: Ariadne, sender: Sender, arp: Arparma):
         f"{await trans.trans(f'''{start}{count['num']}{count['unit']}''', 'en')}"
     )
     if arp.components.get("gif"):
+        if int(count["num"]) > 60:
+            return await app.send_message(sender, "这个数字太大了！")
         data = gen_gif(content, start, int(count["num"]), count["unit"], en)
         return await app.send_message(sender, MessageChain(Image(data_bytes=data)))
     img = gen_counting_down(content, start, int(count["num"]), count["unit"], en)

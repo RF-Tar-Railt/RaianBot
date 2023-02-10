@@ -7,8 +7,12 @@ from graia.broadcast.exceptions import ExecutionStop
 from graia.ariadne.model import Friend, Member, Group, MemberPerm
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain
-from graia.ariadne.event.message import MessageEvent
+from graia.ariadne.event import MiraiEvent
+from graia.ariadne.event.message import MessageEvent, GroupMessage
 from graia.ariadne.app import Ariadne
+from datetime import datetime
+from app import DataInstance
+import random
 
 
 def require_admin(only: bool = False, __record: Any = None):
@@ -27,17 +31,12 @@ def require_admin(only: bool = False, __record: Any = None):
             interface.data.cache.pop("$admin", None)
             return True
         if not only and (
-            (
-                isinstance(target, Member)
-                and target.permission in (MemberPerm.Administrator, MemberPerm.Owner)
-            )
+            (isinstance(target, Member) and target.permission in (MemberPerm.Administrator, MemberPerm.Owner))
             or target.id in interface.config.admin.admins
         ):
             interface.data.cache.pop("$admin", None)
             return True
-        text = (
-            "权限不足！" if isinstance(sender, Friend) else [At(target.id), Plain("\n权限不足！")]
-        )
+        text = "权限不足！" if isinstance(sender, Friend) else [At(target.id), Plain("\n权限不足！")]
         logger.debug(f"permission denied for {sender.id} in {__record}")
         if id_ not in cache:
             cache.clear()
@@ -70,6 +69,7 @@ def require_function(name: str):
 def check_disabled(path: str):
     def __wrapper__(app: Ariadne):
         from .core import RaianBotInterface
+
         config = app.launch_manager.get_interface(RaianBotInterface).config
         if path in config.disabled:
             raise ExecutionStop
@@ -79,12 +79,29 @@ def check_disabled(path: str):
 
 
 def check_exclusive():
-    def __wrapper__(app: Ariadne, target: Union[Friend, Member]):
+    def __wrapper__(app: Ariadne, target: Union[Friend, Member], event: MiraiEvent):
         from .core import RaianBotInterface
 
         interface = app.launch_manager.get_interface(RaianBotInterface)
+
         if target.id in interface.base_config.bots:
             raise ExecutionStop
+
+        if isinstance(event, GroupMessage) and len(interface.base_config.bots) > 1:
+            seed = int(event.source.id + datetime.now().timestamp())
+            bots = {k : v for k, v in DataInstance.get().items() if v.exist(event.sender.group.id)}
+            if len(bots) > 1:
+                default = DataInstance.get()[interface.base_config.default_account]
+                excl = default.cache.setdefault("$exclusive", {})
+                if str(event.source.id) not in excl:
+                    excl.clear()
+                    rand = random.Random()
+                    rand.seed(seed)
+                    choice = rand.choice(list(bots.keys()))
+                    excl[str(event.source.id)] = choice
+                if excl[str(event.source.id)] != app.account:
+                    raise ExecutionStop
+
         return True
 
     return Depend(__wrapper__)

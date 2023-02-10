@@ -69,6 +69,7 @@ async def gacha_(app: Ariadne, sender: Sender, target: Target, count: Match[int]
     else:
         guser = GachaUser()
         data = gacha.gacha_with_img(guser, count_)
+        await app.send_message(sender, "您未签到，抽卡水位是继承不了的说")
     return await app.send_message(sender, MessageChain(Image(data_bytes=data)))
 
 
@@ -93,6 +94,7 @@ async def simulate(app: Ariadne, sender: Sender, target: Target, interface: Raia
         guser = GachaUser()
         ops = gacha.gacha(guser, 10)
         data = await simulate_image(ops[0])
+        await app.send_message(sender, "您未签到，抽卡水位是继承不了的说")
     return await app.send_message(sender, MessageChain(Image(data_bytes=data)))
 
 

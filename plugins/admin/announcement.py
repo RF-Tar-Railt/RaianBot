@@ -38,6 +38,6 @@ async def announcement(
             await app.send_friend_message(
                 friend, MessageChain(f"{group.id} 的公告发送失败\n{err}")
             )
-        await asyncio.sleep(random.uniform(2, 3))
+        await asyncio.sleep(random.uniform(5, 7))
     tt = time.time()
     await app.send_friend_message(friend, MessageChain(f"群发已完成，耗时 {tt - ft:.6f} 秒"))

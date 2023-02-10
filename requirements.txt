@@ -3,8 +3,8 @@ aiohttp==3.8.3
 aiosignal==1.2.0
 anyio==3.6.1
 arclet-alconna==1.5.6
-arclet-alconna-ariadne==0.11.6
-arclet-alconna-graia==0.11.6
+arclet-alconna-ariadne==0.11.7
+arclet-alconna-graia==0.11.7
 arclet-alconna-tools==0.4.0
 arknights-toolkit==0.4.3
 asttokens==2.0.8
