@@ -27,7 +27,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 
 ***请在浏览器中获取token，避免在QQ打开的网页中获取，否则可能获取无效token***
 
-再通过 ’渊白抽卡查询 绑定 token‘ 命令来绑定
+再通过 ’渊白抽卡查询 绑定 【token】‘ 命令来绑定
         """,
     ),
 )
@@ -38,6 +38,8 @@ querier = ArkRecord(
     f"{bot.config.plugin_cache_dir / 'gacha_record'}",
     f"{bot.config.plugin_cache_dir / 'arkrecord.db'}",
 )
+
+alc.shortcut("方舟卡池更新", {"command": f"{bot.config.command.headers[0]}抽卡查询 更新"})
 
 
 @alcommand(alc)
@@ -61,7 +63,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 
 请在浏览器中获取token，避免在QQ打开的网页中获取，否则可能获取无效token
 
-再通过 ’渊白抽卡查询 绑定 token‘ 命令来绑定
+再通过 ’渊白抽卡查询 绑定 【token】‘ 命令来绑定
 """,
         )
     try:

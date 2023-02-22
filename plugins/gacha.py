@@ -8,7 +8,6 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.util.cooldown import CoolDown
-from graiax.shortcut.saya import dispatch
 from graiax.fastapi import route
 from plugins.config.gacha import GachaConfig
 

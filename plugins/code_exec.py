@@ -29,7 +29,11 @@ code = Alconna(
 
 
 @shortcuts(
-    命令概览=MessageChain(f"{code.headers[0]}执行\nfrom arclet.alconna import command_manager\nprint(command_manager)"),  # type: ignore
+    {
+        "命令概览" :{
+            "command": MessageChain(f"{code.headers[0]}执行\nfrom arclet.alconna import command_manager\nprint(command_manager)")
+        }
+    }
 )
 @alcommand(code, send_error=True)
 @permission("admin")

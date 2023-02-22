@@ -56,7 +56,15 @@ def accessable(path: str | T_Callable | None = None):
         buffer.setdefault("decorators", []).append(check_disabled(path))
         return func
 
-    return wrapper(path) if callable(path) else wrapper
+    def _wrapper(func: T_Callable) -> T_Callable:
+        buffer = ensure_buffer(func)
+        file = inspect.getsourcefile(func)
+        _path = Path(file)
+        p = f"{_path.parts[-2]}.{_path.stem}"
+        buffer.setdefault("decorators", []).append(check_disabled(p))
+        return func
+
+    return _wrapper(path) if callable(path) else wrapper
 
 
 def permission(level: Literal["admin", "master"] = "admin"):

@@ -11,7 +11,7 @@ from graia.ariadne.model import Group
 from graia.ariadne.app import Ariadne
 from contextlib import suppress
 
-from app import Sender, RaianBotService, record, Target, exclusive, accessable
+from app import Sender, RaianBotService, record, Target, exclusive, accessable, send_handler
 from library.dice import *
 
 with namespace("coc") as np:
@@ -29,7 +29,7 @@ with namespace("coc") as np:
 
     draw_c = Alconna(
         "draw",
-        Args["key#牌堆名称", str]["cnt#抽牌数量", int, 1],
+        Args["key#牌堆名称", str, ""]["cnt#抽牌数量", int, 1],
         meta=CommandMeta(
             "抽牌",
             example=".draw 调查员信息 1",
@@ -157,7 +157,9 @@ async def name_handle(app: Ariadne, sender: Sender, key: Match[str], cnt: Match[
 @exclusive
 @accessable
 async def draw_handle(app: Ariadne, sender: Sender, key: Match[str], cnt: Match[int]):
-    return await app.send_message(sender, draw(key.result, cnt.result))
+    if not key.result:
+        return await app.send_message(sender, await send_handler(draw_c.get_help()))
+    await app.send_message(sender, draw(key.result, cnt.result))
 
 @alcommand(ra_c)
 @record("coc")

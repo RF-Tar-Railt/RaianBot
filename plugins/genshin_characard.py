@@ -14,8 +14,7 @@ from graiax.playwright import PlaywrightBrowser
 from graia.ariadne.event.lifecycle import AccountLaunch
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source, Image
-from graia.ariadne.util.cooldown import CoolDown
-from graiax.shortcut.saya import dispatch, listen
+from graiax.shortcut.saya import listen
 
 
 characters = {}

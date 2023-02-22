@@ -1,6 +1,6 @@
 from contextlib import suppress
 from typing import NamedTuple
-
+from datetime import timedelta
 from app import RaianBotInterface, meta_export, permission
 from arclet.alconna.graia import startswith
 from graia.ariadne import Ariadne
@@ -42,6 +42,9 @@ async def handle_mute(app: Ariadne, group: Group, interface: RaianBotInterface):
     config = interface.config
     data = interface.data
     admin: "AdminConfig" = interface.base_config.plugin.get(AdminConfig)
+    bot = await app.get_member(group, app.account)
+    if bot.mute_time < timedelta(minutes=10).total_seconds():
+        return
     members = await app.get_member_list(group)
     prof = data.get_group(group.id)
     count = prof.get(mute, mute(admin.mute_max))

@@ -41,7 +41,7 @@ async def report(app: Ariadne, event: ExceptionThrown, interface: RaianBotInterf
         return
     if isinstance(event.exception, RemoteException):
         msg = event.exception.args[1]['msg']
-        if 'resultType=46' in msg and isinstance(event.event, GroupMessage):
+        if 'LIMITED_MESSAGING' in msg and isinstance(event.event, GroupMessage):
             await app.modify_member_info(
                 app.account,
                 MemberInfo(name=f"{interface.base_config.command.headers[0]} - 检测到机器人被风控，请暂停使用"),
@@ -71,7 +71,7 @@ async def report(app: Ariadne, event: ExceptionThrowed, interface: RaianBotInter
         return
     if isinstance(event.exception, RemoteException):
         msg = event.exception.args[1]['msg']
-        if 'resultType=46' in msg and isinstance(event.event, GroupMessage):
+        if 'LIMITED_MESSAGING' in msg and isinstance(event.event, GroupMessage):
             await app.modify_member_info(
                 app.account,
                 MemberInfo(name=f"{interface.base_config.command.headers[0]} - 检测到机器人被风控，请暂停使用"),

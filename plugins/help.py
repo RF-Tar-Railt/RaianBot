@@ -20,7 +20,15 @@ cmd_help = Alconna(
 )
 
 
-@shortcuts(菜单=MessageChain(f"{cmd_help.headers[0]}帮助"))
+@shortcuts(
+    {
+        "help":{"command": MessageChain(f"{cmd_help.headers[0]}帮助")},
+        "帮助": {"command": MessageChain(f"{cmd_help.headers[0]}帮助")},
+        "帮助(\d+)": {"command": MessageChain(f"{cmd_help.headers[0]}帮助"), "args": ["{0}"]},
+        "菜单": {"command": MessageChain(f"{cmd_help.headers[0]}帮助")},
+        "获取(.+)帮助": {"command": MessageChain(f"{cmd_help.headers[0]}帮助"), "args": ["{0}"]},
+    }
+)
 @alcommand(cmd_help)
 @exclusive
 @accessable

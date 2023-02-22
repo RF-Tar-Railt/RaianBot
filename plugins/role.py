@@ -74,10 +74,10 @@ async def _r_set(app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match
     group = bot.data.get_group(sender.id)
     _roles = group.get(roles, roles({}))
     _tag = tag.result
-    _targets = targets.result
+    _targets = [i.target for i in (targets.result or []) if i.target != app.account]
     if not _tag or not _targets:
         return await app.send_group_message(sender, MessageChain("请输入正确参数"))
-    _roles.data[_tag] = [i.target for i in _targets]
+    _roles.data[_tag] = _targets
     await app.send_group_message(sender, MessageChain(f"分组 {_tag} 设置成功"))
     group.set(_roles)
     bot.data.update_group(group)
@@ -95,12 +95,12 @@ async def _r_append(
     if not (_roles := group.get(roles)):
         return await app.send_group_message(sender, MessageChain("请先设置新分组"))
     _tag = tag.result
-    _targets = targets.result
+    _targets = [i.target for i in (targets.result or []) if i.target != app.account]
     if not _tag or not _targets:
         return await app.send_group_message(sender, MessageChain("请输入正确参数"))
     if _tag not in _roles.data:
         return await app.send_group_message(sender, MessageChain(f"请先设置新分组: {_tag}"))
-    _roles.data[_tag] = list(set(_roles.data[_tag] + [i.target for i in _targets]))
+    _roles.data[_tag] = list(set(_roles.data[_tag] + _targets))
     await app.send_group_message(sender, MessageChain(f"分组 {_tag} 增加成员成功"))
     group.set(_roles)
     bot.data.update_group(group)
