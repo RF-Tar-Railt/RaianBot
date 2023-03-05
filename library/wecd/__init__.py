@@ -75,7 +75,7 @@ def gen_gif(
         format="GIF",
         append_images=frames,
         save_all=True,
-        duration=1,
+        duration=1000, # ms
         loop=0,
         quality=90,
         # optimize=False,

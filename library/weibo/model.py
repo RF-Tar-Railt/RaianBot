@@ -13,13 +13,22 @@ class WeiboUser(BaseModel):
     latest: str = Field(default='')
 
     __mapping = {
+        "info": 100505,
         "profile": 230283,
         "weibo": 107603,
         "video": 231567,
         "album": 107803
     }
 
-    def contain_id(self, keys: Literal["profile", "weibo", "video", "album"]) -> str:
+    @property
+    def info_link(self):
+        return f"https://m.weibo.cn/u/{self.id}"
+
+    @property
+    def info_data(self):
+        return f"https://m.weibo.cn/api/container/getIndex?{self.contain_id('info')}"
+
+    def contain_id(self, keys: Literal["info", "profile", "weibo", "video", "album"]) -> str:
         return f"{self.__mapping[keys]}{self.id}"
 
 

@@ -1,9 +1,9 @@
-from typing import Union, Type, Optional, Dict, Any, Literal
+from typing import Union, Type, Optional, Dict, Any, Literal, List
 import aiohttp
-from contextlib import suppress
 from pyquery import PyQuery as Query
 from .storage import DefaultWeiboData, BaseWeiboData
 from .model import WeiboUser, WeiboDynamic
+from .exceptions import RespStatusError, RespDataError, RespDataErrnoError
 
 
 class WeiboAPI:
@@ -28,44 +28,54 @@ class WeiboAPI:
         self.data.save()
         await self.session.close()
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
+
     async def _call(self, params: dict, timeout: int = 10) -> Optional[Dict[str, Any]]:
         base_url = "https://m.weibo.cn/api/container/getIndex?"
-        headers = {"Host": "m.weibo.cn", "Referer": "https://m.weibo.cn/u/XXX", "User-Agent": self.user_agent}
-        with suppress(Exception):
-            async with self.session.get(base_url, params=params, headers=headers, timeout=timeout) as resp:
-                if resp.status != 200:
-                    return
-                data = await resp.json()
-                if data.get("ok") != 1:
-                    return
-                if data["data"].get("errno"):
-                    return
-                return data["data"]
+        headers = {
+            "Host": "m.weibo.cn",
+            "authority": "m.weibo.cn",
+            "cache-control": "max-age=0",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "same-origin",
+            "sec-fetch-site": "same-origin",
+            "Referer": "https://m.weibo.cn/u/XXX",
+            "User-Agent": self.user_agent
+        }
+        async with self.session.get(base_url, params=params, headers=headers, timeout=timeout) as resp:
+            if resp.status != 200:
+                raise RespStatusError(f"Error: {resp.status}")
+            data = await resp.json()
+            if data.get("ok") != 1:
+                raise RespDataError(f"Error: {data}")
+            if data["data"].get("errno"):
+                raise RespDataErrnoError(f"Error: {data['data']['errno']}")
+            return data["data"]
 
-    async def search_user(self, target: str) -> Optional[int]:
-        """依据用户名返回用户id(str)"""
+    async def search_users(self, target: str) -> List[int]:
+        """搜索用户名，返回可能的所有用户的ids"""
         if target in self.data.mapping:
-            return int(self.data.mapping[target])
+            return [int(self.data.mapping[target])]
         params = {"containerid": f"100103type%3D3%26q%3D{target}%26t%3D0"}
-        if not (d_data := await self._call(params)):
-            return
-        return int(d_data["cards"][1]["card_group"][0]["user"]["id"])
+        d_data = await self._call(params)
+        return [int(i["user"]["id"]) for i in d_data["cards"][1]["card_group"]]
 
     async def get_profile(
         self,
-        target: Union[str, int],
+        uid: int,
         save: bool = False,
         cache: bool = True,
-    ):
-        if isinstance(target, str):
-            target = await self.search_user(target)
-        if cache and str(target) in self.data.followers:
-            return self.data.followers[str(target)]
-        params = {"type": "uid", "value": target}
-        if not (d_data := await self._call(params)):
-            return
+    ) -> WeiboUser:
+        if cache and str(uid) in self.data.followers:
+            return self.data.followers[str(uid)]
+        params = {"type": "uid", "value": uid}
+        d_data = await self._call(params)
         user = WeiboUser(
-            id=target,
+            id=uid,
             name=d_data["userInfo"]["screen_name"],
             avatar=d_data["userInfo"]["avatar_hd"],
             statuses=d_data["userInfo"]["statuses_count"],
@@ -74,13 +84,30 @@ class WeiboAPI:
         )
         if user.visitable:
             params["containerid"] = user.contain_id("weibo")
-            if d_data := await self._call(params):
-                user.total = d_data["cardlistInfo"]["total"]
+            cdata = await self._call(params)
+            user.total = cdata["cardlistInfo"]["total"]
+        self.data.mapping[user.name] = str(uid)
         if save:
-            self.data.followers[str(target)] = user
-            self.data.mapping[user.name] = str(target)
+            self.data.followers[str(uid)] = user
             self.data.save()
         return user
+
+    async def get_profile_by_name(
+        self,
+        name: str,
+        index: int = 0,
+        save: bool = False,
+        cache: bool = True,
+    ) -> WeiboUser:
+        index = max(index, 0)
+        if cache and name in self.data.mapping:
+            return await self.get_profile(int(self.data.mapping[name]), save, cache)
+        return await self.get_profile((await self.search_users(name))[index], save, cache)
+
+    async def get_profiles(self, name: str) -> List[WeiboUser]:
+        ids = await self.search_users(name)
+        return [await self.get_profile(i) for i in ids]
+
 
     def _handler_dynamic(self, data: Dict) -> WeiboDynamic:
         text: str = Query(data["text"]).text(squash_space=False) + "\n"
@@ -98,7 +125,7 @@ class WeiboAPI:
 
     async def get_dynamic(
         self,
-        target: Union[str, int, WeiboUser],
+        target: Union[int, WeiboUser],
         keyword: Literal["profile", "weibo", "video", "album"] = "weibo",
         index: int = -1,
         page: int = 1,
@@ -106,8 +133,7 @@ class WeiboAPI:
         cache: bool = False,
     ) -> Optional[WeiboDynamic]:
         if not isinstance(target, WeiboUser):
-            if not (target := await self.get_profile(target, save, cache)):
-                return
+            target = await self.get_profile(target, save, cache)
         params = {
             "type": "uid",
             "value": target.id,
@@ -135,8 +161,7 @@ class WeiboAPI:
         return res
 
     async def update(self, target: int) -> Optional[WeiboDynamic]:
-        if not (profile := await self.get_profile(target)):
-            return
+        profile = await self.get_profile(target)
         dynamic_total = profile.total
         params = {"type": "uid", "value": profile.id, "containerid": profile.contain_id("weibo")}
         if not (d_data := await self._call(params)):

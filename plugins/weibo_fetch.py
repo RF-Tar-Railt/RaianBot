@@ -12,6 +12,7 @@ from graia.ariadne.connection.util import UploadMethod
 from graia.ariadne.event.lifecycle import ApplicationShutdown
 from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.util.validator import Quoting
+from graia.ariadne.util.interrupt import FunctionWaiter
 from graia.ariadne.app import Ariadne
 from graiax.playwright import PlaywrightBrowser
 from graiax.fastapi import route
@@ -25,7 +26,7 @@ bot = RaianBotService.current()
 
 weibo_fetch = Alconna(
     "微博",
-    Args["user;?#微博用户名称", str, Field(completion=lambda: "比如说, 育碧")],
+    Args["user;?#微博用户名称", str, Field(completion=lambda: "比如说, 育碧")]["select#选择第几个用户", int, -1],
     Option("动态", Args["index#从最前动态排起的第几个动态", int, -1]["page#第几页动态", int, 1], help_text="从微博获取指定用户的动态"),
     Option("关注|增加关注", Args["spec;?", At], dest="follow", help_text="增加一位微博动态关注对象"),
     Option("取消关注|解除关注", Args["spec;?", At], dest="unfollow", help_text="解除一位微博动态关注对象"),
@@ -85,8 +86,11 @@ async def _handle_dynamic(
 
 
 @route.route(["GET"], "/weibo/check", response_model=WeiboUser)
-async def get_check(user: str):
-    return JSONResponse((await api.get_profile(user, save=False, cache=False)).dict(), headers={"charset": "utf-8"})
+async def get_check(user: str, index: int = 0):
+    return JSONResponse(
+        (await api.get_profile_by_name(user, index, save=False, cache=False)).dict(),
+        headers={"charset": "utf-8"}
+    )
 
 
 @alcommand(weibo_fetch)
@@ -94,10 +98,16 @@ async def get_check(user: str):
 @assign("$main")
 @accessable
 @exclusive
-async def wget(app: Ariadne, sender: Sender, user: Match[str]):
+async def wget(app: Ariadne, sender: Sender, target: Target, user: Match[str], select: Match[int]):
     if not user.available or not user.result:
         return await app.send_message(sender, MessageChain("不对劲。。。"))
-    if prof := await api.get_profile(user.result, save=False, cache=False):
+    _index = select.result
+    profiles = await api.get_profiles(user.result)
+    count = len(profiles)
+    if count < 0:
+        return await app.send_message(sender, MessageChain("获取失败啦"))
+    if count == 1 or 0 <= _index < count:
+        prof = profiles[_index]
         return await app.send_message(
             sender,
             MessageChain(
@@ -108,14 +118,45 @@ async def wget(app: Ariadne, sender: Sender, user: Match[str]):
                 f"是否可见: {'是' if prof.visitable else '否'}",
             ),
         )
-    return await app.send_message(sender, MessageChain("获取失败啦"))
+    await app.send_message(sender, MessageChain("查找到多名用户，请选择其中一位，限时 15秒"))
+    await app.send_message(
+        sender,
+        "\n".join(
+            f"{str(index).rjust(len(str(count)), '0')}. {slot.name} - {slot.description}"
+            for index, slot in enumerate(profiles)
+        ),
+    )
+
+    async def waiter(waiter_sender: Sender, waiter_target: Target, message: MessageChain):
+        if sender.id == waiter_sender.id and waiter_target.id == target.id:
+            return int(str(message)) if str(message).isdigit() else False
+
+    res = await FunctionWaiter(
+        waiter, [FriendMessage, GroupMessage], block_propagation=isinstance(sender, Friend)
+    ).wait(15)
+    if res:
+        _index = res
+    if _index >= count:
+        return await app.send_message(sender, "别捣乱！")
+    prof = profiles[_index]
+    return await app.send_message(
+        sender,
+        MessageChain(
+            Image(url=prof.avatar),
+            f"用户名: {prof.name}\n",
+            f"介绍: {prof.description}\n",
+            f"动态数: {prof.statuses}\n",
+            f"是否可见: {'是' if prof.visitable else '否'}",
+        ),
+    )
 
 
 @route.route(["GET"], "/weibo/get", response_model=WeiboDynamic)
 async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = False):
+    prof = await api.get_profile_by_name(user, save=False, cache=False)
     if jump:
-        return RedirectResponse((await api.get_dynamic(user, index=index, page=page)).url)
-    return JSONResponse((await api.get_dynamic(user, index=index, page=page)).dict(), headers={"charset": "utf-8"})
+        return RedirectResponse((await api.get_dynamic(prof, index=index, page=page)).url)
+    return JSONResponse((await api.get_dynamic(prof, index=index, page=page)).dict(), headers={"charset": "utf-8"})
 
 
 @alcommand(weibo_fetch)
@@ -124,9 +165,17 @@ async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = Fals
 @accessable
 @exclusive
 async def wfetch(
-    app: Ariadne, target: Target, sender: Sender, source: Source, user: Match[str], index: Match[int], page: Match[int]
+    app: Ariadne,
+    target: Target,
+    sender: Sender,
+    source: Source,
+    user: Match[str],
+    select: Match[int],
+    index: Match[int],
+    page: Match[int]
 ):
-    if not (dynamic := await api.get_dynamic(user.result, index=index.result, page=page.result)):
+    prof = await api.get_profile_by_name(user.result, index=select.result, save=False, cache=True)
+    if not (dynamic := await api.get_dynamic(prof, index=index.result, page=page.result)):
         return await app.send_message(sender, MessageChain("获取失败啦"))
     nodes = await _handle_dynamic(
         app,
@@ -158,19 +207,26 @@ async def wfetch(
 @assign("follow")
 @accessable
 @exclusive
-async def wfollow(app: Ariadne, sender: Sender, source: Source, user: Match[str], interface: RaianBotInterface):
+async def wfollow(
+    app: Ariadne,
+    sender: Sender,
+    source: Source,
+    user: Match[str],
+    select: Match[int],
+    interface: RaianBotInterface
+):
     if isinstance(sender, Friend):
         return
     if not interface.data.exist(sender.id):
         return
-    prof = interface.data.get_group(sender.id)
-    follower = await api.get_profile(user.result, save=True)
-    followers = prof.get(weibo_followers, weibo_followers([]))
+    data = interface.data.get_group(sender.id)
+    follower = await api.get_profile_by_name(user.result, index=select.result, save=True)
+    followers = data.get(weibo_followers, weibo_followers([]))
     if int(follower.id) in followers.data:
         return await app.send_message(sender, MessageChain(f"该群已关注 {follower.name}！请不要重复关注"))
     followers.data.append(int(follower.id))
-    prof.set(followers)
-    interface.data.update_group(prof)
+    data.set(followers)
+    interface.data.update_group(data)
     return await app.send_message(sender, MessageChain(f"关注 {follower.name} 成功！"), quote=source.id)
 
 
@@ -180,13 +236,20 @@ async def wfollow(app: Ariadne, sender: Sender, source: Source, user: Match[str]
 @assign("unfollow")
 @accessable
 @exclusive
-async def wunfollow(app: Ariadne, sender: Sender, source: Source, user: Match[str], interface: RaianBotInterface):
+async def wunfollow(
+    app: Ariadne,
+    sender: Sender,
+    source: Source,
+    user: Match[str],
+    select: Match[int],
+    interface: RaianBotInterface
+):
     if isinstance(sender, Friend):
         return
     if not interface.data.exist(sender.id):
         return
     prof = interface.data.get_group(sender.id)
-    follower = await api.get_profile(user.result, save=False)
+    follower = await api.get_profile_by_name(user.result, index=select.result, save=True)
     followers = prof.get(weibo_followers, weibo_followers([]))
     if int(follower.id) not in followers.data:
         return await app.send_message(sender, MessageChain(f"该群未关注 {follower.name}！"))
@@ -238,6 +301,7 @@ async def wlist(app: Ariadne, target: Target, sender: Sender, source: Source, in
 @record("微博动态自动获取", False)
 async def update():
     dynamics = {}
+    visited = {}
     for account, app in Ariadne.instances.items():
         interface = app.launch_manager.get_interface(RaianBotInterface).bind(account)
         data = interface.data
@@ -251,6 +315,8 @@ async def update():
             if not (followers := prof.get(weibo_followers)):
                 continue
             for uid in followers.data:
+                if uid in visited.get(gid, []):
+                    continue
                 wp = (await api.get_profile(int(uid))).copy()
                 try:
                     now = datetime.now()
@@ -267,9 +333,11 @@ async def update():
                     for node in dy:
                         await app.send_group_message(prof.id, node)
                     await asyncio.sleep(1)
+                    visited.setdefault(gid, []).append(uid)
                     # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
                 except (ValueError, TypeError, IndexError, KeyError):
                     api.data.followers[uid] = wp
                     await api.data.save()
                     continue
     dynamics.clear()
+    visited.clear()
