@@ -102,9 +102,11 @@ async def wget(app: Ariadne, sender: Sender, target: Target, user: Match[str], s
     if not user.available or not user.result:
         return await app.send_message(sender, MessageChain("不对劲。。。"))
     _index = select.result
-    profiles = await api.get_profiles(user.result)
-    count = len(profiles)
-    if count < 0:
+    count = -1
+    with contextlib.suppress(asyncio.TimeoutError):
+        profiles = await api.get_profiles(user.result)
+        count = len(profiles)
+    if count <= 0:
         return await app.send_message(sender, MessageChain("获取失败啦"))
     if count == 1 or 0 <= _index < count:
         prof = profiles[_index]
@@ -135,10 +137,10 @@ async def wget(app: Ariadne, sender: Sender, target: Target, user: Match[str], s
         waiter, [FriendMessage, GroupMessage], block_propagation=isinstance(sender, Friend)
     ).wait(15)
     if res:
-        _index = res
+        _index = max(res, 0)
     if _index >= count:
         return await app.send_message(sender, "别捣乱！")
-    prof = profiles[_index]
+    prof = profiles[max(_index, 0)]
     return await app.send_message(
         sender,
         MessageChain(
@@ -335,7 +337,7 @@ async def update():
                     await asyncio.sleep(1)
                     visited.setdefault(gid, []).append(uid)
                     # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
-                except (ValueError, TypeError, IndexError, KeyError):
+                except (ValueError, TypeError, IndexError, KeyError, asyncio.TimeoutError):
                     api.data.followers[uid] = wp
                     await api.data.save()
                     continue

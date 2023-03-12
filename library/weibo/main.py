@@ -1,9 +1,11 @@
+import asyncio
 from typing import Union, Type, Optional, Dict, Any, Literal, List
 import aiohttp
 from pyquery import PyQuery as Query
+from contextlib import suppress
 from .storage import DefaultWeiboData, BaseWeiboData
 from .model import WeiboUser, WeiboDynamic
-from .exceptions import RespStatusError, RespDataError, RespDataErrnoError
+from .exceptions import RespStatusError, RespDataError, RespDataErrnoError, WeiboError
 
 
 class WeiboAPI:
@@ -38,11 +40,6 @@ class WeiboAPI:
         base_url = "https://m.weibo.cn/api/container/getIndex?"
         headers = {
             "Host": "m.weibo.cn",
-            "authority": "m.weibo.cn",
-            "cache-control": "max-age=0",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "same-origin",
-            "sec-fetch-site": "same-origin",
             "Referer": "https://m.weibo.cn/u/XXX",
             "User-Agent": self.user_agent
         }
@@ -58,8 +55,6 @@ class WeiboAPI:
 
     async def search_users(self, target: str) -> List[int]:
         """搜索用户名，返回可能的所有用户的ids"""
-        if target in self.data.mapping:
-            return [int(self.data.mapping[target])]
         params = {"containerid": f"100103type%3D3%26q%3D{target}%26t%3D0"}
         d_data = await self._call(params)
         return [int(i["user"]["id"]) for i in d_data["cards"][1]["card_group"]]
@@ -106,7 +101,11 @@ class WeiboAPI:
 
     async def get_profiles(self, name: str) -> List[WeiboUser]:
         ids = await self.search_users(name)
-        return [await self.get_profile(i) for i in ids]
+        res = []
+        for i in ids:
+            with suppress(Exception):
+                res.append(await self.get_profile(i))
+        return res
 
 
     def _handler_dynamic(self, data: Dict) -> WeiboDynamic:
@@ -140,7 +139,9 @@ class WeiboAPI:
             "containerid": target.contain_id(keyword),
             "page": page,
         }
-        if not (d_data := await self._call(params)):
+        try:
+            d_data = await self._call(params)
+        except (WeiboError, asyncio.TimeoutError):
             return
         if index > len(d_data["cards"]) - 1:
             return
@@ -164,7 +165,9 @@ class WeiboAPI:
         profile = await self.get_profile(target)
         dynamic_total = profile.total
         params = {"type": "uid", "value": profile.id, "containerid": profile.contain_id("weibo")}
-        if not (d_data := await self._call(params)):
+        try:
+            d_data = await self._call(params)
+        except (WeiboError, asyncio.TimeoutError):
             return
         if d_data["cardlistInfo"]["total"] > dynamic_total:
             profile.total = d_data["cardlistInfo"]["total"]

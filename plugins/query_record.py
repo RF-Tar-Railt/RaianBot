@@ -49,7 +49,7 @@ alc.shortcut("方舟卡池更新", {"command": f"{bot.config.command.headers[0]}
 @accessable
 async def query(app: Ariadne, target: Target, sender: Sender, count: Match[int]):
     try:
-        querier.database.read_token_from_db(f"{app.account}_{target.id}")
+        querier.database.read_token_from_db(f"{target.id}")
     except (AssertionError, RuntimeError):
         return await app.send_message(
             sender,
@@ -67,7 +67,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 """,
         )
     try:
-        warn, file = querier.user_analysis(f"{app.account}_{target.id}", count.result)
+        warn, file = querier.user_analysis(f"{target.id}", count.result)
         if warn:
             await app.send_message(sender, warn)
         return await app.send_message(sender, MessageChain(Image(path=file)))
@@ -95,7 +95,7 @@ async def bind(app: Ariadne, target: Target, sender: Sender, token: Match[str]):
     if "content" in token.result:
         token.result = re.match(".+\{content:(?P<token>.+)}.+", token.result)["token"]
     try:
-        res = querier.user_token_save(token.result, f"{app.account}_{target.id}")
+        res = querier.user_token_save(token.result, f"{target.id}")
     except RuntimeError as e:
         return await app.send_message(sender, str(e))
     return await app.send_message(sender, res)
