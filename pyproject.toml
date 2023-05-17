@@ -1,25 +1,25 @@
 [project]
 name = "raian-bot"
-version = "0.20.0"
+version = "0.21.0"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna<2.0.0, >=1.6.4",
-    "arclet-alconna-graia<1.0.0, >=0.12.0",
-    "arclet-alconna-ariadne<1.0.0, >=0.12.0",
-    "arclet-alconna-tools>=0.5.0",
+    "arclet-alconna<2.0.0, >=1.7.2",
+    "arclet-alconna-graia<1.0.0, >=0.13.0",
+    "arclet-alconna-ariadne<1.0.0, >=0.13.0",
+    "arclet-alconna-tools>=0.6.0",
     "graia-ariadne<0.11.0, >=0.10.3",
     "graia-amnesia>=0.6.0",
-    "graia-broadcast>=0.18.2",
+    "graia-broadcast>=0.19.2",
     "graia-saya>=0.0.16",
     "graia-scheduler>=0.0.8",
     "unwind~=0.4.0",
     "Pillow>=9.0.1",
     "aiohttp~=3.8.1",
     "pyquery~=1.4.3",
-    "pydantic>=1.9.0",
+    "pydantic<2.0, >=1.9.0",
     "picimagesearch>=3.7.0",
     "PyYAML~=6.0",
     "loguru>=0.6.0",
@@ -32,7 +32,7 @@ dependencies = [
     "graiax-text2img-playwright>=0.2",
     "diro-py>=0.1.1",
     "httpx>=0.23.0",
-    "arknights-toolkit>=0.4.3",
+    "arknights-toolkit>=0.5.7",
     "graiax-fastapi>=0.2.0",
     "uvicorn>=0.18.3",
     "graiax-shortcut>=0.2.1",

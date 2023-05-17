@@ -1,8 +1,8 @@
 from typing import Tuple
 from nepattern import BasePattern, Bind
-from arclet.alconna import Args, Arparma, CommandMeta, namespace, Empty, ArgFlag, Arg, MultiVar
+from arclet.alconna import Alconna, Args, Arparma, CommandMeta, namespace, Empty, ArgFlag, Arg, MultiVar
 from arclet.alconna.tools import MarkdownTextFormatter
-from arclet.alconna.graia import Alconna, alcommand, Match, Header
+from arclet.alconna.graia import alcommand, Match, Header
 from arclet.alconna.ariadne import AtID
 from graia.ariadne.event.lifecycle import ApplicationShutdown
 from graiax.shortcut.saya import listen

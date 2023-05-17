@@ -1,5 +1,5 @@
-from arclet.alconna import Args, CommandMeta, AllParam, Field, Option, set_default
-from arclet.alconna.graia import Alconna, alcommand, assign, Match
+from arclet.alconna import Alconna, Args, CommandMeta, AllParam, Field, Option, OptionResult
+from arclet.alconna.graia import alcommand, assign, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, AtAll, Image, Plain
 from graia.ariadne.app import Ariadne
@@ -10,14 +10,10 @@ from app import Sender, record, render_markdown, accessable, exclusive
 m2i = Alconna(
     "文转图",
     Args["mode", "md|chain|html", "chain"],
-    Option("--width|w", Args["width", int]),
-    Option("--height|h", Args["height", int]),
+    Option("--width|w", Args["width", int], default=OptionResult(args={"width": 640})),
+    Option("--height|h", Args["height", int], default=OptionResult(args={"height": 480})),
     Args["content", AllParam, Field(completion=lambda: "插入个图片？")],
     meta=CommandMeta("文字转图片", usage="可以选择 md 或 chain 模式", example="$文转图 --width 640 \\n# H1"),
-    behaviors=[
-        set_default(value=640, arg="width", option="width"),
-        set_default(value=480, arg="height", option="height"),
-    ],
 )
 
 

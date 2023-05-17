@@ -1,11 +1,12 @@
+import json
 import re
-
+from pathlib import Path
 from app import RaianBotService, Sender, Target, accessable, exclusive, record
-from arclet.alconna import Arg, Args, CommandMeta, Option
-from arclet.alconna.graia import Alconna, Match, alcommand, assign
+from arclet.alconna import  Alconna, Arg, Args, CommandMeta, Option, Arparma
+from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.record import ArkRecord
-from arknights_toolkit.init import update_pool_info
-from arknights_toolkit.img_resource import update_operators
+from arknights_toolkit.update.record import generate
+from arknights_toolkit.images import update_operators
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
@@ -14,7 +15,7 @@ alc = Alconna(
     "抽卡查询",
     Args["count#最近x抽", int, -1],
     Option("绑定", Args[Arg("token", str, seps="\n")]),
-    Option("更新"),
+    Option("更新", Args["name?#卡池名", str]["limit", bool, True]),
     meta=CommandMeta(
         "明日方舟抽卡数据查询，数据来源为方舟官网",
         usage="""
@@ -27,7 +28,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 
 ***请在浏览器中获取token，避免在QQ打开的网页中获取，否则可能获取无效token***
 
-再通过 ’渊白抽卡查询 绑定 【token】‘ 命令来绑定
+再通过 ’渊白抽卡查询 绑定 <你的token>‘ 命令来绑定
         """,
     ),
 )
@@ -36,6 +37,7 @@ bot = RaianBotService.current()
 
 querier = ArkRecord(
     f"{bot.config.plugin_cache_dir / 'gacha_record'}",
+    f"{bot.config.plugin_cache_dir / 'recordpool.json'}",
     f"{bot.config.plugin_cache_dir / 'arkrecord.db'}",
 )
 
@@ -63,7 +65,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 
 请在浏览器中获取token，避免在QQ打开的网页中获取，否则可能获取无效token
 
-再通过 ’渊白抽卡查询 绑定 【token】‘ 命令来绑定
+再通过 ’渊白抽卡查询 绑定 <你的token>‘ 命令来绑定
 """,
         )
     try:
@@ -80,8 +82,15 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 @record("抽卡查询")
 @exclusive
 @accessable
-async def update(app: Ariadne, sender: Sender):
-    update_pool_info()
+async def update(app: Ariadne, sender: Sender, arp: Arparma):
+    if not arp.other_args.get("name"):
+        await generate(Path(f"{bot.config.plugin_cache_dir / 'recordpool.json'}").absolute())
+    else:
+        with open(
+            f"{bot.config.plugin_cache_dir / 'recordpool.json'}", "r", encoding="utf-8"
+        ) as f:
+            pool = json.load(f)
+        pool[arp.name] = {"is_exclusive": arp.limit}
     update_operators()
     return await app.send_message(sender, "更新完成")
 

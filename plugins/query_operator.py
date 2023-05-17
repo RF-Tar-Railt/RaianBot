@@ -1,9 +1,7 @@
 import asyncio
-import re
-from typing import Optional
-from arknights_toolkit.info import *
-from arclet.alconna import Args, Arparma, Field, CommandMeta
-from arclet.alconna.graia import Alconna, alcommand, Match
+from library.queryop import handle
+from arclet.alconna import Alconna, Args, Arparma, Field, CommandMeta
+from arclet.alconna.graia import alcommand, Match
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Source
 from graia.ariadne.app import Ariadne
@@ -12,7 +10,6 @@ from playwright.async_api import Page, TimeoutError
 from app import Sender, RaianBotService, accessable, exclusive, record
 from pathlib import Path
 from hashlib import md5
-from functools import partial
 from contextlib import suppress
 
 bot = RaianBotService.current()
@@ -20,31 +17,7 @@ cache = Path(f"{bot.config.plugin_cache_dir / 'op_query'}")
 cache.mkdir(parents=True, exist_ok=True)
 running = asyncio.Event()
 
-_table = {
-    "总览": full_page,
-    "((干员)?信息|展示)": information,
-    "(模板|职业)?特性": feature,
-    "属性": attributes,
-    "攻击范围": attack_range,
-    "天赋": talent,
-    "潜能(提升)?": latent,
-    "技能(信息)?": skills,
-    "后勤技能": logistics,
-    "精二": partial(information, upgraded=True),
-    "精英化(材料)?": upgrade,
-    "技能升级材料": material,
-    "(.*?)专(一|二|三|精)(材料)?": material,
-    "档案": document
-}
 
-
-def _handle(content: Optional[str] = None):
-    if not content:
-        return full_page
-    for pat, func in _table.items():
-        if re.fullmatch(pat, content):
-            return func
-    return full_page
 
 
 @alcommand(
@@ -75,7 +48,7 @@ async def weather(app: Ariadne, sender: Sender, content: Match[str], result: Arp
                     return await app.send_message(sender, MessageChain("不对劲。。。"))
             try:
                 running.set()
-                func = _handle(content.result)
+                func = handle(content.result)
                 data = await func(page, name)
                 with path.open("wb+") as f:
                     f.write(data)

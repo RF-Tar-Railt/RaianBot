@@ -32,6 +32,9 @@ code = Alconna(
     {
         "命令概览" :{
             "command": MessageChain(f"{code.headers[0]}执行\nfrom arclet.alconna import command_manager\nprint(command_manager)")
+        },
+        "echo": {
+            "command": MessageChain(f"{code.headers[0]}执行\nprint(\\'{{*}}\\')"),
         }
     }
 )

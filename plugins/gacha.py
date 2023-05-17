@@ -1,7 +1,7 @@
 from typing import NamedTuple
 from app import RaianBotService, Sender, Target, record, meta_export, exclusive, accessable, RaianBotInterface
-from arclet.alconna import Field, Args, CommandMeta
-from arclet.alconna.graia import Alconna, Match, alcommand
+from arclet.alconna import Alconna, Field, Args, CommandMeta
+from arclet.alconna.graia import Match, alcommand
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
 from fastapi.responses import JSONResponse, Response
 from graia.ariadne.app import Ariadne
@@ -13,7 +13,7 @@ from plugins.config.gacha import GachaConfig
 
 bot = RaianBotService.current()
 config = bot.config.plugin.get(GachaConfig)
-gacha = ArknightsGacha(config.file)
+gacha = ArknightsGacha(f"{bot.config.plugin_cache_dir / 'gachapool.json'}")
 cd = CoolDown(config.cooldown)
 
 class arkgacha_proba(NamedTuple):
@@ -37,7 +37,7 @@ async def get_gacha(count: int = 10, per: int = 2, status: int = 0, img: bool = 
 
 @route.route(["GET"], "/gacha/sim")
 async def get_sim_gacha(per: int = 2, status: int = 0):
-    from arknights_toolkit.gacha import simulate_image
+    from arknights_toolkit.gacha.simulate import simulate_image
 
     guser = GachaUser(per, status)
     data = gacha.gacha(guser, 10)
@@ -77,7 +77,7 @@ async def gacha_(app: Ariadne, sender: Sender, target: Target, count: Match[int]
 @exclusive
 @accessable
 async def simulate(app: Ariadne, sender: Sender, target: Target, interface: RaianBotInterface):
-    from arknights_toolkit.gacha import simulate_image
+    from arknights_toolkit.gacha.simulate import simulate_image
     async with cd.trigger(target.id, int) as res:
         if not res[1]:
             return

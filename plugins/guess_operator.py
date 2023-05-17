@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import Union
 
 from app import RaianBotInterface, Sender, record, accessable, exclusive
-from arclet.alconna import Args, CommandMeta, Option, Kw
-from arclet.alconna.graia import Alconna, Match, alcommand, assign
+from arclet.alconna import Alconna, Args, CommandMeta, Option, Kw
+from arclet.alconna.graia import Match, alcommand, assign
+from arknights_toolkit.update.main import fetch
 from arknights_toolkit.wordle import Guess, OperatorWordle
-from arknights_toolkit import initialize
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
@@ -41,7 +41,7 @@ async def guess_info(app: Ariadne, sender: Sender):
 @exclusive
 @accessable
 async def guess_update(app: Ariadne, sender: Sender):
-    initialize()
+    await fetch(0)
     return await app.send_message(sender, "更新完毕")
 
 

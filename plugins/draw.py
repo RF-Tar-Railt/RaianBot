@@ -2,8 +2,8 @@ import json
 import random
 from datetime import datetime
 from typing import NamedTuple, TYPE_CHECKING, Literal
-from arclet.alconna import CommandMeta
-from arclet.alconna.graia import Alconna, alcommand
+from arclet.alconna import Alconna, CommandMeta
+from arclet.alconna.graia import alcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.app import Ariadne

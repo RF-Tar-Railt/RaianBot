@@ -9,6 +9,9 @@ from arclet.alconna import namespace
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, AlconnaGraiaService
 from arclet.alconna.ariadne import AlconnaAriadneAdapter
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
+from arknights_toolkit.update.record import generate as generate_record
+from arknights_toolkit.update.gacha import generate as generate_gacha
+from arknights_toolkit.update.main import fetch
 from creart import it
 from fastapi import FastAPI
 from graia.broadcast import Broadcast
@@ -26,15 +29,12 @@ from launart import ExportInterface, Service, Launart
 from loguru import logger
 import pkgutil
 from pathlib import Path
-from arknights_toolkit import initialize
 
 from .config import BotConfig, extract_plugin_config, RaianConfig, load_config, BasePluginConfig
 from .context import BotInstance, DataInstance, MainConfigInstance, AccountDataInstance, BotConfigInstance
 from .data import BotDataManager
 from .logger import set_output
 from .utils import send_handler
-
-AlconnaDispatcher.default_send_handler = send_handler
 
 
 class RaianBotInterface(ExportInterface["RaianBotService"]):
@@ -99,6 +99,10 @@ class RaianBotService(Service):
                 data.load()
                 logger.debug(f"账号 {account} 数据加载完毕")
             logger.success("机器人数据加载完毕")
+            if not await fetch():
+                logger.error("方舟数据获取失败")
+                manager.status.exiting = True
+                return
             saya = it(Saya)
             with saya.module_context():
                 for module_info in pkgutil.iter_modules(self.config.plugin.paths):
@@ -198,6 +202,7 @@ def launch(debug_log: bool = True):
     manager.add_service(bot_service := RaianBotService(config))
     bcc.prelude_dispatchers.append(RaianBotDispatcher(bot_service))
     Ariadne.config(launch_manager=manager, default_account=config.default_account)
+    AlconnaDispatcher.default_send_handler = send_handler
     set_output("DEBUG" if debug_log else "INFO")
     for account in config.bots:
         Ariadne(
@@ -208,10 +213,6 @@ def launch(debug_log: bool = True):
                 WebsocketClientConfig(config.mirai_addr),
             )
         )
-    try:
-        initialize()
-    except Exception as e:
-        logger.error(f"方舟资源初始化失败：{e}")
     logger.success("------------------机器人初始化完毕--------------------")
     try:
         Ariadne.launch_blocking()

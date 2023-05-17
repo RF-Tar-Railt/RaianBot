@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
+from typing import Optional
 
 import ujson
 from app import RaianBotInterface, RaianBotService, Sender, Target, exclusive, record, accessable
@@ -37,7 +38,7 @@ tcbot = None
 if config.tencent:
     tcbot = TencentChatBot(nickname, bot.config.tencent.secret_id, bot.config.tencent.secret_key)
 aiml = None
-if not tcbot or not config.gpt_api:
+if not tcbot and not config.gpt_api:
     aiml = AIML(
         trans,
         gender=" girl",
@@ -208,7 +209,14 @@ async def ematch(app: Ariadne, target: Target, sender: Sender, message: MessageC
 @record("ai")
 @exclusive
 @accessable
-async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageChain, source: Source):
+async def aitalk(
+    app: Ariadne,
+    target: Target,
+    sender: Sender,
+    message: MessageChain,
+    source: Source,
+    quote: Optional[Quote]
+):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
     message = message.copy()
     if target.id == 2854196310:  # Q群管家
@@ -227,8 +235,9 @@ async def aitalk(app: Ariadne, target: Target, sender: Sender, message: MessageC
         if reply:
             await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
         return
+    print(quote)
     if (message.has(At) and message.get_first(At).target == app.account) or (
-        message.has(Quote) and message.get_first(Quote).sender_id == app.account
+        quote and quote.sender_id == app.account
     ):
         reply = await random_ai(
             app, sender, target, str(message.include(Plain, Face)).strip(" +")[:120], gpt=0.6, tx=0.3
