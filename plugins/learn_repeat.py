@@ -57,7 +57,7 @@ async def _serialize_message(content: MessageChain):
 @exclusive
 @accessable
 async def shelp(app: Ariadne, sender: Group):
-    return await app.send_message(sender, await send_handler(repeat.get_help()))
+    return await app.send_message(sender, await send_handler("help", repeat.get_help()))
 
 
 @alcommand(repeat, private=False)

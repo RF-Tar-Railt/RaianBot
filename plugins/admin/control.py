@@ -241,7 +241,7 @@ async def _m_reload(app: Ariadne, sender: Sender, path: Match[str], bot: RaianBo
 @assign("$main")
 @exclusive
 async def _m_main(app: Ariadne, sender: Sender):
-    return await app.send_message(sender, await send_handler(module_control.get_help()))
+    return await app.send_message(sender, await send_handler("help", module_control.get_help()))
 
 
 @alcommand(module_control, send_error=True)
@@ -294,7 +294,7 @@ async def _m_disable(app: Ariadne, sender: Sender, path: Match[str], bot: RaianB
 @assign("$main")
 @exclusive
 async def _f_main(app: Ariadne, sender: Sender):
-    return await app.send_message(sender, await send_handler(function_control.get_help()))
+    return await app.send_message(sender, await send_handler("help", function_control.get_help()))
 
 
 @alcommand(function_control, private=False, send_error=True)
@@ -365,7 +365,7 @@ async def _f(app: Ariadne, sender: Group, name: Match[str], bot: RaianBotInterfa
 @assign("$main")
 @exclusive
 async def _g_main(app: Ariadne, sender: Sender):
-    return await app.send_message(sender, await send_handler(group_control.get_help()))
+    return await app.send_message(sender, await send_handler("help", group_control.get_help()))
 
 
 @alcommand(group_control, private=False, send_error=True)

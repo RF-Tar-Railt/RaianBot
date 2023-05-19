@@ -1,6 +1,7 @@
 import random
 from app import RaianBotInterface, Sender, send_handler, render_markdown, accessable, exclusive
-from arclet.alconna import Alconna, Field, Args, CommandMeta, command_manager, config
+from arclet.alconna import Alconna, Field, Args, CommandMeta, command_manager
+from tarina import lang
 from arclet.alconna.graia import Match, alcommand, shortcuts
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
@@ -36,7 +37,7 @@ async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianB
     if not query.available:
         md = f"""\
 # {bot.config.bot_name} {bot.config.account} 帮助菜单
-#{config.lang.manager_help_header}
+#{lang.require('manager', 'help_header')}
 
 | id  | 命令 | 介绍 | 备注 |
 | --- | --- | --- | --- |
@@ -71,6 +72,6 @@ async def send_help(app: Ariadne, sender: Sender, query: Match[str], bot: RaianB
                 )
             )
             text = command_manager.get_command(cmds[0]).get_help()
-        return await app.send_message(sender, await send_handler(text))
+        return await app.send_message(sender, await send_handler("help", text))
     except (IndexError, TypeError):
         return await app.send_message(sender, MessageChain("查询失败！"))

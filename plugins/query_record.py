@@ -69,7 +69,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 """,
         )
     try:
-        warn, file = querier.user_analysis(f"{target.id}", count.result)
+        warn, file = await querier.user_analysis(f"{target.id}", count.result)
         if warn:
             await app.send_message(sender, warn)
         return await app.send_message(sender, MessageChain(Image(path=file)))
@@ -102,7 +102,7 @@ async def update(app: Ariadne, sender: Sender, arp: Arparma):
 @accessable
 async def bind(app: Ariadne, target: Target, sender: Sender, token: Match[str]):
     if "content" in token.result:
-        token.result = re.match(".+\{content:(?P<token>.+)}.+", token.result)["token"]
+        token.result = re.match(".*content:(?P<token>[^{}]+).*", token.result)["token"]
     try:
         res = querier.user_token_save(token.result, f"{target.id}")
     except RuntimeError as e:

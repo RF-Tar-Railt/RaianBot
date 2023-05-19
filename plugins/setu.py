@@ -20,7 +20,6 @@ setu = Alconna(
 @accessable
 async def send_setu(app: Ariadne, sender: Sender, result: Arparma):
     """随机涩图发送"""
-    print(sender)
     data = {"r18": 2 if result.find("r18") else 0}
     if result.find("tag"):
         data["tag"] = list(result.query_with(tuple, "tag.tags", ()))

@@ -158,7 +158,7 @@ async def name_handle(app: Ariadne, sender: Sender, key: Match[str], cnt: Match[
 @accessable
 async def draw_handle(app: Ariadne, sender: Sender, key: Match[str], cnt: Match[int]):
     if not key.result:
-        return await app.send_message(sender, await send_handler(draw_c.get_help()))
+        return await app.send_message(sender, await send_handler("help", draw_c.get_help()))
     await app.send_message(sender, draw(key.result, cnt.result))
 
 @alcommand(ra_c)

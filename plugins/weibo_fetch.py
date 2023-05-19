@@ -93,7 +93,7 @@ async def get_check(user: str, index: int = 0):
     )
 
 
-@alcommand(weibo_fetch)
+@alcommand(weibo_fetch, comp_session={})
 @record("微博功能")
 @assign("$main")
 @accessable

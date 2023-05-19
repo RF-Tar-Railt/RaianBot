@@ -81,8 +81,10 @@ def exclusive(func: T_Callable) -> T_Callable:
     return func
 
 
-async def send_handler(output: str):
+async def send_handler(t: str, output: str):
     # length = (output.count("\n") + 5) * 16
+    if t != "help":
+        return MessageChain(output)
     if not output.startswith("#"):
         output = f"# {output}"
         output = (

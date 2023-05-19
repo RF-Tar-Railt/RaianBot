@@ -235,7 +235,6 @@ async def aitalk(
         if reply:
             await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
         return
-    print(quote)
     if (message.has(At) and message.get_first(At).target == app.account) or (
         quote and quote.sender_id == app.account
     ):

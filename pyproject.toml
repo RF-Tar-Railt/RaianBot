@@ -1,6 +1,6 @@
 [project]
 name = "raian-bot"
-version = "0.21.0"
+version = "0.21.1"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
@@ -32,7 +32,7 @@ dependencies = [
     "graiax-text2img-playwright>=0.2",
     "diro-py>=0.1.1",
     "httpx>=0.23.0",
-    "arknights-toolkit>=0.5.7",
+    "arknights-toolkit>=0.5.10",
     "graiax-fastapi>=0.2.0",
     "uvicorn>=0.18.3",
     "graiax-shortcut>=0.2.1",

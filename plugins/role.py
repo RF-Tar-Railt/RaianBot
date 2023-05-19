@@ -33,7 +33,7 @@ role = Alconna(
 @exclusive
 @accessable
 async def _r_help(app: Ariadne, sender: Group):
-    return await app.send_message(sender, await send_handler(role.get_help()))
+    return await app.send_message(sender, await send_handler("help", role.get_help()))
 
 
 @alcommand(role, private=False)
