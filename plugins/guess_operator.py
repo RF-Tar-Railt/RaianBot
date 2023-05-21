@@ -103,7 +103,8 @@ async def guess(
             current_bot.data.cache["$guess"].remove(id_)
             return await app.send_message(
                 sender,
-                f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！\n答案为{ans.select}",
+                f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！" +
+                f"\n答案为{ans.select}" if ans else ""
             )
         try:
             if simple.result:

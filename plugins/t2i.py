@@ -17,7 +17,7 @@ m2i = Alconna(
 )
 
 
-@alcommand(m2i, comp_session={})
+@alcommand(m2i)
 @record("t2i")
 @assign("mode", "chain", True)
 @exclusive
@@ -54,7 +54,7 @@ async def chain(app: Ariadne, sender: Sender, message: MessageChain, width: Matc
     )
 
 
-@alcommand(m2i, comp_session={})
+@alcommand(m2i)
 @record("t2i")
 @assign("mode", "html")
 @exclusive
@@ -74,7 +74,7 @@ async def html(app: Ariadne, sender: Sender, message: MessageChain, width: Match
     )
 
 
-@alcommand(m2i, comp_session={})
+@alcommand(m2i)
 @record("t2i")
 @assign("mode", "md")
 @exclusive

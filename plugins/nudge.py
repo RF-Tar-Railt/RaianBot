@@ -46,18 +46,12 @@ async def draw(
 async def draw(app: Ariadne, event: NudgeEvent, bot: RaianBotInterface):
     if event.supplicant in bot.base_config.bots or event.target != bot.config.account:
         return
-    async with cd.trigger(event.group_id or event.friend_id, int) as res:
+    async with cd.trigger(event.subject.id, int) as res:
         if not res[1]:
-            if event.group_id:
-                return await app.send_group_message(event.group_id, "戳太快了！")
-            else:
-                return await app.send_friend_message(event.friend_id, "戳太快了！")
+            return await app.send_message(event.subject, "戳太快了！")
     async with app.service.client_session.get(
             f"https://q1.qlogo.cn/g?b=qq&nk={event.supplicant}&s=640"
     ) as resp:
         data = await resp.read()
     image = pet.generate(data)
-    if event.group_id:
-        return await app.send_group_message(event.group_id, MessageChain(Image(data_bytes=image.getvalue())))
-    elif event.friend_id:
-        return await app.send_friend_message(event.friend_id, MessageChain(Image(data_bytes=image.getvalue())))
+    return await app.send_message(event.subject, MessageChain(Image(data_bytes=image.getvalue())))

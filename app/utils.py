@@ -83,7 +83,16 @@ def exclusive(func: T_Callable) -> T_Callable:
 
 async def send_handler(t: str, output: str):
     # length = (output.count("\n") + 5) * 16
-    if t != "help":
+    if t == "shortcut":
+        return MessageChain(output)
+    if t == "completion":
+        output = (
+            output.replace("\n\n", "\n")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&#123;", "{")
+            .replace("&#125;", "}")
+        )
         return MessageChain(output)
     if not output.startswith("#"):
         output = f"# {output}"

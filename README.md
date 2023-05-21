@@ -114,9 +114,9 @@ git clone https://github.com/RF-Tar-Railt/RaianBot.git
 
 **mirai部分**
 1. 确保安装并配置好了`java`环境, 推荐`java17`或`openj9`
-2. 解压缩`mcl.zip`, 或前往[`mirai-console-loader`](https://github.com/iTXTech/mirai-console-loader)下载mcl
-, 并在[`mirai-api-http`](https://github.com/project-mirai/mirai-api-http/releases)处下载mirai-api-http.jar(当前bot使用版本为2.6.2), 然后放入`.mcl/plugins/`下
-3. 下载 [`mirai-login-solver-sakura`](https://github.com/KasukuSakura/mirai-login-solver-sakura)，放入`.mcl/plugins/`下
+2. 前往[`mirai-console-loader`](https://github.com/iTXTech/mirai-console-loader)下载 mcl, 并使用 `mcl -u` 命令更新 `mirai`
+, 并在[`mirai-api-http`](https://github.com/project-mirai/mirai-api-http/releases)处下载mirai-api-http.jar(当前bot使用版本为2.9.1), 然后放入`.mcl/plugins/`下
+3. 下载 [`mirai-console-dev-qrlogin`](https://github.com/MrXiaoM/mirai-console-dev-qrlogin)，放入`.mcl/plugins/`下
 
 **bot部分**
 1. 安装`python`环境，至少要求`python 3.8`及以上版本
@@ -132,8 +132,8 @@ pip install -r requirements.txt
 1. 先运行一遍mcl, 以自动生成配置文件, 确认生成后关闭mcl
 2. 前往`mcl/config/net.mamoe.mirai-api-http`下, 打开`setting.yml`文件
 3. 修改其中的`verifyKey`, 适当修改`adapterSettings`下的`host`与`port`
-4. 前往`mcl/config/Console`下, 打开`AutoLogin.yml`文件
-5. 按提示修改其中的`account`与`password`
+~~4. 前往`mcl/config/Console`下, 打开`AutoLogin.yml`文件~~
+~~5. 按提示修改其中的`account`与`password`~~
 
 **bot部分**
 1. bot 的初始配置位于 `./config/` 下
@@ -146,7 +146,8 @@ pip install -r requirements.txt
 
 **mirai部分**
 1. 在`mcl`文件夹下双击运行`mcl.cmd`文件
-2. 若提示弹窗验证, 请按以下方法操作: [链接](https://docs.mirai.mamoe.net/mirai-login-solver-selenium)
+2. 在命令框内输入`qrlogin <bot账号>` (如 "qrlogin 114514"), 然后扫描弹出的二维码
+~~2. 若提示弹窗验证, 请按以下方法操作: [链接](https://docs.mirai.mamoe.net/mirai-login-solver-selenium)~~
 3. 命令框内出现正常对话信息则代表登录成功
 
 **bot部分**

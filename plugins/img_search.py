@@ -54,10 +54,10 @@ async def saucenao(
         image_url = img.result
     else:
         waite = await app.send_message(sender, MessageChain("请发送图片以继续，发送取消可终止搜图"))
-        image_url = await FunctionWaiter(waiter1, [GroupMessage, FriendMessage]).wait(20, "None")
-        if not image_url:
+        image_url = await FunctionWaiter(waiter1, [GroupMessage, FriendMessage]).wait(20, None)
+        if image_url is False:
             return await app.send_message(sender, MessageChain("已取消"))
-        if image_url == "None":
+        if image_url is None:
             return await app.send_message(sender, MessageChain("等待超时"), quote=waite.id)
     await app.send_message(sender, MessageChain("正在搜索，请稍后"), quote=source.id)
     running.set()

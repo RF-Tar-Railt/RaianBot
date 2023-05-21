@@ -21,7 +21,6 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.saya import Saya
 from graia.scheduler import GraiaScheduler
-from graia.scheduler.service import SchedulerService
 from graiax.fastapi import FastAPIBehaviour, FastAPIService
 from graiax.playwright import PlaywrightService
 from launart import ExportInterface, Service, Launart
@@ -198,7 +197,7 @@ def launch(debug_log: bool = True):
     manager.add_service(AlconnaGraiaService(AlconnaAriadneAdapter, enable_cache=True, cache_dir=config.cache_dir))
     manager.add_service(FastAPIService(fastapi))
     manager.add_service(UvicornService(config.api.host, config.api.port))
-    manager.add_service(SchedulerService(it(GraiaScheduler)))
+    # manager.add_service(SchedulerService(it(GraiaScheduler)))
     manager.add_service(bot_service := RaianBotService(config))
     bcc.prelude_dispatchers.append(RaianBotDispatcher(bot_service))
     Ariadne.config(launch_manager=manager, default_account=config.default_account)

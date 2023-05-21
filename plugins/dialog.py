@@ -3,12 +3,15 @@ import re
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import ujson
 from app import RaianBotInterface, RaianBotService, Sender, Target, exclusive, record, accessable
 from arclet.alconna import command_manager
-from arclet.alconna.graia import endswith, startswith, success_record
+from arclet.alconna.graia import endswith, startswith
+from arclet.alconna.graia.service import AlconnaGraiaInterface
+from arclet.alconna.graia.dispatcher import result_cache
+from arclet.alconna.ariadne import AlconnaAriadneAdapter
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
@@ -151,13 +154,22 @@ async def random_ai(app: Ariadne, sender: Sender, target: Target, msg: str, **kw
 @priority(20)
 @exclusive
 @accessable
-async def smatch(app: Ariadne, target: Target, sender: Sender, message: MessageChain):
+async def smatch(
+    app: Ariadne,
+    target: Target,
+    sender: Sender,
+    message: MessageChain,
+    alcif: AlconnaGraiaInterface,
+    event: Union[GroupMessage, FriendMessage],
+):
     """依据语料进行匹配回复"""
     cmds = [i.name for i in command_manager.get_commands()]
     if msg := str(message.include(Plain)).strip(" +"):
-        if len(success_record):
-            success_record.clear()
-            raise PropagationCancelled
+        adapter: AlconnaAriadneAdapter = alcif.adapter
+        source = adapter.source_id(event)
+        for alc, cache in result_cache.items():
+            if source in cache and ((res := cache[source].result()) and res.result.matched):
+                raise PropagationCancelled
         for n in cmds:
             if re.search(f".*{n}.*", msg):
                 raise PropagationCancelled
