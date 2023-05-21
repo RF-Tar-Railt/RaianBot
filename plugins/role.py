@@ -27,7 +27,7 @@ role = Alconna(
 )
 
 
-@alcommand(role, private=False)
+@alcommand(role, private=False, comp_session={})
 @record("role")
 @assign("$main")
 @exclusive
@@ -36,7 +36,7 @@ async def _r_help(app: Ariadne, sender: Group):
     return await app.send_message(sender, await send_handler("help", role.get_help()))
 
 
-@alcommand(role, private=False)
+@alcommand(role, private=False, comp_session={})
 @record("role")
 @assign("列出")
 @exclusive
@@ -65,7 +65,7 @@ async def _r_list(app: Ariadne, target: Member, sender: Group, source: Source, b
         bot.data.update_group(group)
 
 
-@alcommand(role, private=False)
+@alcommand(role, private=False, comp_session={})
 @assign("设置")
 @record("role")
 @exclusive
@@ -83,7 +83,7 @@ async def _r_set(app: Ariadne, sender: Group, bot: RaianBotInterface, tag: Match
     bot.data.update_group(group)
 
 
-@alcommand(role, private=False)
+@alcommand(role, private=False, comp_session={})
 @assign("增加")
 @record("role")
 @exclusive
@@ -106,7 +106,7 @@ async def _r_append(
     bot.data.update_group(group)
 
 
-@alcommand(role, private=False)
+@alcommand(role, private=False, comp_session={})
 @record("role")
 @assign("删除")
 @exclusive
@@ -133,7 +133,7 @@ async def _r_remove(
     bot.data.update_group(group)
 
 
-@alcommand(role, private=False)
+@alcommand(role, private=False, comp_session={})
 @assign("呼叫")
 @record("role")
 @exclusive

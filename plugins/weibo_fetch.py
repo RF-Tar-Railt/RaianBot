@@ -161,7 +161,7 @@ async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = Fals
     return JSONResponse((await api.get_dynamic(prof, index=index, page=page)).dict(), headers={"charset": "utf-8"})
 
 
-@alcommand(weibo_fetch)
+@alcommand(weibo_fetch, comp_session={})
 @record("微博功能")
 @assign("动态")
 @accessable
@@ -203,7 +203,7 @@ async def wfetch(
     return await app.send_message(sender, MessageChain(dynamic.url))
 
 
-@alcommand(weibo_fetch)
+@alcommand(weibo_fetch, comp_session={})
 @record("微博功能")
 @mention("spec")
 @assign("follow")
@@ -232,7 +232,7 @@ async def wfollow(
     return await app.send_message(sender, MessageChain(f"关注 {follower.name} 成功！"), quote=source.id)
 
 
-@alcommand(weibo_fetch)
+@alcommand(weibo_fetch, comp_session={})
 @record("微博功能")
 @mention("spec")
 @assign("unfollow")
@@ -261,7 +261,7 @@ async def wunfollow(
     return await app.send_message(sender, MessageChain(f"解除关注 {follower.name} 成功！"), quote=source.id)
 
 
-@alcommand(weibo_fetch)
+@alcommand(weibo_fetch, comp_session={})
 @record("微博功能")
 @mention("spec")
 @assign("list")

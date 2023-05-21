@@ -9,8 +9,6 @@ from arclet.alconna import namespace
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, AlconnaGraiaService
 from arclet.alconna.ariadne import AlconnaAriadneAdapter
 from arclet.alconna.tools.formatter import MarkdownTextFormatter
-from arknights_toolkit.update.record import generate as generate_record
-from arknights_toolkit.update.gacha import generate as generate_gacha
 from arknights_toolkit.update.main import fetch
 from creart import it
 from fastapi import FastAPI
@@ -23,6 +21,7 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.saya import Saya
 from graia.scheduler import GraiaScheduler
+from graia.scheduler.service import SchedulerService
 from graiax.fastapi import FastAPIBehaviour, FastAPIService
 from graiax.playwright import PlaywrightService
 from launart import ExportInterface, Service, Launart
@@ -199,6 +198,7 @@ def launch(debug_log: bool = True):
     manager.add_service(AlconnaGraiaService(AlconnaAriadneAdapter, enable_cache=True, cache_dir=config.cache_dir))
     manager.add_service(FastAPIService(fastapi))
     manager.add_service(UvicornService(config.api.host, config.api.port))
+    manager.add_service(SchedulerService(it(GraiaScheduler)))
     manager.add_service(bot_service := RaianBotService(config))
     bcc.prelude_dispatchers.append(RaianBotDispatcher(bot_service))
     Ariadne.config(launch_manager=manager, default_account=config.default_account)

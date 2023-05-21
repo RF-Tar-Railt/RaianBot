@@ -78,9 +78,9 @@ async def gacha_(app: Ariadne, sender: Sender, target: Target, count: Match[int]
 @accessable
 async def simulate(app: Ariadne, sender: Sender, target: Target, interface: RaianBotInterface):
     from arknights_toolkit.gacha.simulate import simulate_image
-    async with cd.trigger(target.id, int) as res:
-        if not res[1]:
-            return
+    # async with cd.trigger(target.id, int) as res:
+    #     if not res[1]:
+    #         return
     if interface.data.exist(target.id):
         user = interface.data.get_user(target.id)
         proba = user.get(arkgacha_proba, arkgacha_proba(0, 2))

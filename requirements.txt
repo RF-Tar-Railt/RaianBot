@@ -5,11 +5,11 @@ aiodns==3.0.0
 aiohttp==3.8.4
 aiosignal==1.2.0
 anyio==3.6.1
-arclet-alconna==1.7.2
-arclet-alconna-ariadne==0.13.1
-arclet-alconna-graia==0.13.1
+arclet-alconna==1.7.6
+arclet-alconna-ariadne==0.13.2
+arclet-alconna-graia==0.13.2
 arclet-alconna-tools==0.6.0
-arknights-toolkit==0.5.10
+arknights-toolkit==0.5.11
 async-timeout==4.0.2
 attrs==22.1.0
 Brotli==1.0.9
@@ -43,7 +43,7 @@ graiax-text2img-playwright==0.3.0
 greenlet==2.0.1
 h11==0.12.0
 httpcore==0.15.0
-httpx==0.24.0
+httpx==0.24.1
 idna==3.3
 imageio-ffmpeg==0.4.7
 importlib-metadata==4.12.0

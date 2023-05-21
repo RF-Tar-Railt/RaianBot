@@ -30,7 +30,7 @@ cache_dir = Path(bot.config.cache_dir) / "plugins" / "closure"
 cache_dir.mkdir(parents=True, exist_ok=True)
 
 
-@alcommand(closure, private=False)
+@alcommand(closure, private=False, comp_session={})
 @record("closure")
 @assign("$main")
 @exclusive
@@ -50,7 +50,7 @@ async def _help(app: Ariadne, sender: Group):
     )
 
 
-@alcommand(closure, private=False)
+@alcommand(closure, private=False, comp_session={})
 @record("closure")
 @assign("reset")
 @exclusive
@@ -62,7 +62,7 @@ async def _reset(app: Ariadne, sender: Group, data: BotDataManager):
     return await app.send_message(sender, "[ClosureTalk] 重置完毕")
 
 
-@alcommand(closure, private=False)
+@alcommand(closure, private=False, comp_session={})
 @record("closure")
 @assign("bind")
 @exclusive
@@ -76,7 +76,7 @@ async def _bind(app: Ariadne, sender: Group, target: Member, name: Match[str]):
         return await app.send_message(sender, str(e))
 
 
-@alcommand(closure, private=False)
+@alcommand(closure, private=False, comp_session={})
 @record("closure")
 @assign("create")
 @exclusive
@@ -89,7 +89,7 @@ async def _create(app: Ariadne, sender: Group, count: Match[int]):
         return await app.send_message(sender, str(e))
 
 
-@alcommand(closure, private=False)
+@alcommand(closure, private=False, comp_session={})
 @record("closure")
 @assign("start")
 @exclusive
