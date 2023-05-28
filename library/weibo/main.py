@@ -64,11 +64,14 @@ class WeiboAPI:
         uid: int,
         save: bool = False,
         cache: bool = True,
-    ) -> WeiboUser:
+    ) -> Optional[WeiboUser]:
         if cache and str(uid) in self.data.followers:
             return self.data.followers[str(uid)]
         params = {"type": "uid", "value": uid}
-        d_data = await self._call(params)
+        try:
+            d_data = await self._call(params)
+        except (WeiboError, asyncio.TimeoutError):
+            return
         user = WeiboUser(
             id=uid,
             name=d_data["userInfo"]["screen_name"],
@@ -93,18 +96,17 @@ class WeiboAPI:
         index: int = 0,
         save: bool = False,
         cache: bool = True,
-    ) -> WeiboUser:
+    ) -> Optional[WeiboUser]:
         index = max(index, 0)
         if cache and name in self.data.mapping:
             return await self.get_profile(int(self.data.mapping[name]), save, cache)
         return await self.get_profile((await self.search_users(name))[index], save, cache)
 
     async def get_profiles(self, name: str) -> List[WeiboUser]:
-        ids = await self.search_users(name)
         res = []
-        for i in ids:
-            with suppress(Exception):
-                res.append(await self.get_profile(i))
+        for i in await self.search_users(name):
+            if prof := await self.get_profile(i):
+                res.append(prof)
         return res
 
 
@@ -133,6 +135,8 @@ class WeiboAPI:
     ) -> Optional[WeiboDynamic]:
         if not isinstance(target, WeiboUser):
             target = await self.get_profile(target, save, cache)
+            if not target:
+                return
         params = {
             "type": "uid",
             "value": target.id,
@@ -163,6 +167,8 @@ class WeiboAPI:
 
     async def update(self, target: int) -> Optional[WeiboDynamic]:
         profile = await self.get_profile(target)
+        if not profile:
+            return
         dynamic_total = profile.total
         params = {"type": "uid", "value": profile.id, "containerid": profile.contain_id("weibo")}
         try:

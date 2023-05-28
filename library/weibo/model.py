@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class WeiboUser(BaseModel):
-    id: str
+    id: int
     name: str
     description: str = Field(default='')
     avatar: str = Field(default='')

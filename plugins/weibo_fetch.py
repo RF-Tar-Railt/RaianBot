@@ -20,7 +20,7 @@ from graiax.shortcut.interrupt import FunctionWaiter
 from graiax.shortcut.saya import every, listen
 
 from app import RaianBotService, Sender, Target, record, meta_export, exclusive, accessable, RaianBotInterface
-from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser
+from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser, WeiboError
 
 bot = RaianBotService.current()
 
@@ -278,17 +278,17 @@ async def wlist(app: Ariadne, target: Target, sender: Sender, source: Source, in
     nodes = []
     notice = None
     for uid in followers.data:
-        if prof := await api.get_profile(uid, save=False):
+        if wp := await api.get_profile(uid, save=False):
             nodes.append(
                 ForwardNode(
                     target=target,
                     time=source.time,
                     message=MessageChain(
-                        Image(url=prof.avatar),
-                        f"用户名: {prof.name}\n",
-                        f"介绍: {prof.description}\n",
-                        f"动态数: {prof.statuses}\n",
-                        f"是否可见: {'是' if prof.visitable else '否'}",
+                        Image(url=wp.avatar),
+                        f"用户名: {wp.name}\n",
+                        f"介绍: {wp.description}\n",
+                        f"动态数: {wp.statuses}\n",
+                        f"是否可见: {'是' if wp.visitable else '否'}",
                     ),
                 )
             )
@@ -319,7 +319,10 @@ async def update():
             for uid in followers.data:
                 if uid in visited.get(gid, []):
                     continue
-                wp = (await api.get_profile(int(uid))).copy()
+                wp = await api.get_profile(int(uid))
+                if not wp:
+                    continue
+                wp = wp.copy()
                 try:
                     now = datetime.now()
                     if uid in dynamics:
