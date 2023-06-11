@@ -9,6 +9,7 @@ from .exceptions import RespStatusError, RespDataError, RespDataErrnoError, Weib
 
 
 class WeiboAPI:
+
     user_agent = (
         "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) "
         "AppleWebKit/601.1.46 (KHTML, like Gecko) "

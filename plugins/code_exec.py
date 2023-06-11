@@ -2,16 +2,7 @@ import asyncio
 import sys
 from io import StringIO
 
-from app import (
-    RaianBotInterface,
-    Sender,
-    create_image,
-    render_markdown,
-    permission,
-    reports_md,
-    exclusive,
-    accessable
-)
+from app import RaianBotInterface, Sender, create_image, render_markdown, permission, reports_md, exclusive, accessable
 from nepattern import AnyString
 from arclet.alconna import Alconna, Field, Args, Arparma, CommandMeta, Option, MultiVar
 from arclet.alconna.graia import alcommand, startswith
@@ -25,12 +16,60 @@ code = Alconna(
     "执行",
     Args["code", MultiVar(AnyString), Field(completion=lambda: "试试 print(1+1)")] / "\n",
     Option("--pure-text"),
+    Option("--no-output"),
+    Option("--timeout", Args["sec", int]),
     Option("--out", Args["name", str, "res"]),
     meta=CommandMeta(description="执行简易代码", example="$执行 print(1+1)", hide=True),
 )
-code.shortcut("命令概览", {"command": MessageChain(f"{code.headers[0]}执行\nfrom arclet.alconna import command_manager\nprint(command_manager)")})
-code.shortcut("echo", {"command": MessageChain(f"{code.headers[0]}执行 --pure-text\nprint(\\'{{*}}\\')")})
+code.shortcut(
+    "命令概览",
+    {
+        "command": MessageChain(
+            f"{code.headers[0]}执行\nfrom arclet.alconna import command_manager\nprint(command_manager)"
+        )
+    },
+)
+code.shortcut(
+    "echo",
+    {
+        "command": MessageChain(
+            f"{code.headers[0]}执行 --no-output --pure-text\n"
+            f"await app.send_message(sender, \\'{{*}}\\')"
+        )
+    },
+)
+code.shortcut(
+    "render",
+    {
+        "command": MessageChain(
+            f"{code.headers[0]}执行 --no-output --pure-text --timeout 60\n"
+            f"from graiax.playwright import PlaywrightBrowser\n"
+            f"browser = app.launch_manager.get_interface(PlaywrightBrowser)\n"
+            f"page = await browser.new_page()\n"
+            f"await page.click(\\'html\\')\n"
+            f"await page.goto(\\'{{%0}}\\')\n"
+            f"data = await page.screenshot(full_page=True)\n"
+            f"await app.send_message(sender, MessageChain(Image(data_bytes=data)))\n"
+            f"await page.close()\n"
+        )
+    },
+)
 
+
+code.shortcut(
+    "(?:https?://)?github.com/(.+)/([^#]+).*?",
+    {
+        "command": MessageChain(
+            f"{code.headers[0]}执行 --no-output --pure-text --timeout 60\n"
+            f"import secrets\n"
+            f"token = secrets.token_urlsafe(16)\n"
+            f"resp = await app.service.client_session.get(\\'https://opengraph.githubassets.com/\\' + token + \\'/{{0}}/{{1}}\\').__aenter__()\n"
+            f"data = await resp.read()\n"
+            f"await app.send_message(sender, MessageChain(Image(data_bytes=data)))\n"
+            f"await resp.__aexit__(None, None, None)"
+        )
+    },
+)
 
 
 @alcommand(code, send_error=True)
@@ -67,8 +106,10 @@ async def execc(app: Ariadne, sender: Sender, result: Arparma, interface: RaianB
             {**glb, **locals()},
             lcs,
         )
-        code_res = await asyncio.wait_for(lcs["rc"](output), 10)
+        code_res = await asyncio.wait_for(lcs["rc"](output), result.query("timeout.sec", 10))
         sys.stdout = _to
+        if result.find("no-output"):
+            return
         if code_res is not None:
             return await app.send_message(
                 sender,
@@ -107,14 +148,14 @@ async def shell(app: Ariadne, sender: Sender, echos: MessageChain):
         stdout, stderr = await process.communicate()
     if stdout:
         try:
-            res = stdout.decode('utf-8').strip()
+            res = stdout.decode("utf-8").strip()
         except UnicodeDecodeError:
-            res = stdout.decode('gbk').strip()
+            res = stdout.decode("gbk").strip()
     elif stderr:
         try:
-            res = stderr.decode('utf-8').strip()
+            res = stderr.decode("utf-8").strip()
         except UnicodeDecodeError:
-            res = stderr.decode('gbk').strip()
+            res = stderr.decode("gbk").strip()
     else:
         res = "No output"
     md = f"""\

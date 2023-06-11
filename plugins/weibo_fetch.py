@@ -57,18 +57,17 @@ async def _handle_dynamic(
 ):
     first = MessageChain(data.text or "表情")
     browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
-    with contextlib.suppress(Exception):
-        async with browser.page(viewport={"width": 800, "height": 2400}) as page:
-            await page.click("html")
-            await page.goto(data.url, timeout=60000, wait_until="networkidle")
-            elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
-            elem1 = page.locator("//article[@class='weibo-main']").first
-            bounding = await elem.bounding_box()
-            bounding1 = await elem1.bounding_box()
-            assert bounding
-            assert bounding1
-            bounding["height"] += bounding1["height"]
-            first = MessageChain(await app.upload_image(await page.screenshot(full_page=True, clip=bounding), method))
+    async with browser.page(viewport={"width": 800, "height": 2400}) as page:
+        await page.click("html")
+        await page.goto(data.url, timeout=60000, wait_until="networkidle")
+        elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
+        elem1 = page.locator("//article[@class='weibo-main']").first
+        bounding = await elem.bounding_box()
+        bounding1 = await elem1.bounding_box()
+        assert bounding
+        assert bounding1
+        bounding["height"] += bounding1["height"]
+        first = MessageChain(await app.upload_image(await page.screenshot(full_page=True, clip=bounding), method))
     imgs = []
     for url in data.img_urls:
         with contextlib.suppress(Exception):
@@ -342,7 +341,7 @@ async def update():
                     # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
                 except (ValueError, TypeError, IndexError, KeyError, asyncio.TimeoutError):
                     api.data.followers[uid] = wp
-                    await api.data.save()
+                    api.data.save()
                     continue
     dynamics.clear()
     visited.clear()

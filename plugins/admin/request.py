@@ -8,6 +8,8 @@ from graia.ariadne.event.mirai import BotInvitedJoinGroupRequestEvent, NewFriend
 from graia.ariadne.message.chain import MessageChain
 from graiax.shortcut.saya import listen
 from graia.ariadne.model.relationship import Friend
+from graia.ariadne.event.message import FriendMessage
+from graia.ariadne.util.interrupt import FunctionWaiter
 
 
 class mute(NamedTuple):
@@ -45,6 +47,33 @@ async def get_friend_accept(app: Ariadne, event: NewFriendRequestEvent, interfac
             config.admin.master_id,
             "已自动同意请求"
         )
+    else:
+        async def waiter(sender: Friend, msg: MessageChain):
+            if sender.id == config.admin.master_id:
+                return str(msg)
+
+        await app.send_friend_message(config.admin.master_id, "处理请求等待中")
+        res = await FunctionWaiter(waiter, [FriendMessage], block_propagation=True).wait(120)
+        if not res:
+            await event.reject("管理员超时未回复，请尝试重新发送请求")
+            await app.send_friend_message(
+                config.admin.master_id,
+                "因为超时已拒绝请求"
+            )
+            return
+        if res in ("同意", "yes", "y", "ok", "好", "是", "同意请求"):
+            await event.accept("同意请求")
+            await app.send_friend_message(
+                config.admin.master_id,
+                "已同意请求"
+            )
+        else:
+            await event.reject("拒绝请求")
+            await app.send_friend_message(
+                config.admin.master_id,
+                "已拒绝请求"
+            )
+
 
 
 @listen(BotInvitedJoinGroupRequestEvent)
@@ -72,7 +101,7 @@ async def bot_invite(app: Ariadne, event: BotInvitedJoinGroupRequestEvent, inter
                 MessageChain(f"该群被禁言次数达到上限, 已拒绝申请\n" f"请联系群主或管理员向机器人报备禁言理由"),
             )
         if interface.data.cache.get("auto_accept", False):
-            await event.accept("")
+            await event.accept("已自动同意请求")
             await app.send_friend_message(
                 config.admin.master_id,
                 "已自动同意请求"
@@ -83,9 +112,44 @@ async def bot_invite(app: Ariadne, event: BotInvitedJoinGroupRequestEvent, inter
                     f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in data.cache.setdefault('blacklist', {}) else 'accepted.'}"
                 ),
             )
-        await app.send_friend_message(
-            event.supplicant,
-            "请等待机器人管理员处理该请求"
-        )
-        return
+        async def waiter(sender: Friend, msg: MessageChain):
+            if sender.id == config.admin.master_id:
+                return str(msg)
+
+        await app.send_friend_message(event.supplicant, "请等待机器人管理员处理该请求")
+        await app.send_friend_message(config.admin.master_id, "处理请求等待中")
+        res = await FunctionWaiter(waiter, [FriendMessage], block_propagation=True).wait(120)
+        if not res:
+            await event.reject("管理员超时未回复，请尝试重新发送请求")
+            await app.send_friend_message(
+                event.supplicant,
+                "管理员超时未回复，请尝试重新发送请求"
+            )
+            await app.send_friend_message(
+                config.admin.master_id,
+                "因为超时已拒绝请求"
+            )
+            return
+        if res in ("同意", "yes", "y", "ok", "好", "是", "同意请求"):
+            await event.accept("已同意请求")
+            await app.send_friend_message(
+                config.admin.master_id,
+                "已同意请求"
+            )
+            return await app.send_friend_message(
+                event.supplicant,
+                MessageChain(
+                    f"{'该群已在黑名单中, 请告知管理员使用群管功能解除黑名单' if event.source_group in data.cache.setdefault('blacklist', {}) else 'accepted.'}"
+                ),
+            )
+        else:
+            await event.reject("拒绝请求")
+            await app.send_friend_message(
+                config.admin.master_id,
+                "已拒绝请求"
+            )
+            return await app.send_friend_message(
+                event.supplicant,
+                "已拒绝请求"
+            )
     return await event.reject("请先加机器人好友")

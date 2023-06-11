@@ -52,7 +52,7 @@ async def guess_update(app: Ariadne, sender: Sender):
 @exclusive
 @accessable
 async def guess_reset(app: Ariadne, sender: Sender):
-    id_ = f"{app.account}_g{sender.id}" if isinstance(sender, Group) else f"{app.account}_f{sender.id}"
+    id_ = f"g{sender.id}" if isinstance(sender, Group) else f"f{sender.id}"
     if (file := Path(f"{bot.config.plugin_cache_dir / 'guess' / f'{id_}.json'}")).exists():
         file.unlink(missing_ok=True)
     return await app.send_message(sender, "重置完毕")
@@ -76,6 +76,7 @@ async def guess(
         if id_ not in current_bot.data.cache.setdefault("$guess", []):
             return await app.send_message(sender, f"游戏异常，请重置后再试\n重置方法：{bot.config.command.headers[0]}猜干员 重置")
         await app.send_message(sender, "游戏继续！")
+        return
     else:
         wordle.select(id_)
         await app.send_message(sender, "猜干员游戏开始！\n发送 取消 可以结束当前游戏")
@@ -104,7 +105,7 @@ async def guess(
             return await app.send_message(
                 sender,
                 f"{'' if isinstance(sender, Friend) else f'{sender.name}的'}游戏已结束！" +
-                f"\n答案为{ans.select}" if ans else ""
+                (f"\n答案为{ans.select}" if ans else "")
             )
         try:
             if simple.result:

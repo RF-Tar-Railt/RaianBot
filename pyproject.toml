@@ -1,6 +1,6 @@
 [project]
 name = "raian-bot"
-version = "0.21.4"
+version = "0.21.5"
 description = "simple qq bot bases on Araidne and Alconna"
 authors = [
     {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},

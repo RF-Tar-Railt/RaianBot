@@ -3,6 +3,7 @@ from app.report import generate_reports
 from graia.ariadne import Ariadne
 from graia.ariadne.exception import AccountMuted, RemoteException
 from graia.ariadne.event.message import GroupMessage, FriendMessage
+from graia.ariadne.event.mirai import MemberJoinEvent, MemberLeaveEventQuit
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image
 from graia.ariadne.model import MemberInfo
