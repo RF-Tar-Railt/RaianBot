@@ -4,7 +4,7 @@
 aiodns==3.0.0
 aiohttp==3.8.4
 aiosignal==1.2.0
-anyio==3.6.1
+anyio==3.7.0
 arclet-alconna==1.7.7
 arclet-alconna-ariadne==0.14.0
 arclet-alconna-graia==0.14.0
