@@ -67,7 +67,7 @@ playwright==1.28.0
 psutil==5.9.5
 pycares==4.2.2
 pycparser==2.21
-pydantic==1.10.8
+pydantic==1.10.9
 pyee==9.0.4
 pygments==2.13.0
 pyparsing==3.0.9
