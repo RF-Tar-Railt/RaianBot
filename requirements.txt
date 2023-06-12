@@ -61,7 +61,7 @@ multidict==6.0.2
 nepattern==0.5.8
 numpy==1.24.3
 packaging==23.1
-picimagesearch==3.7.4
+picimagesearch==3.9.2
 Pillow==9.5.0
 playwright==1.28.0
 psutil==5.9.5
