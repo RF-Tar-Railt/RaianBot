@@ -59,7 +59,7 @@ mdit-py-plugins==0.3.0
 mdurl==0.1.2
 multidict==6.0.2
 nepattern==0.5.8
-numpy==1.23.5
+numpy==1.24.3
 packaging==23.1
 picimagesearch==3.7.4
 Pillow==9.5.0
