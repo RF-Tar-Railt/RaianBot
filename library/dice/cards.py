@@ -168,7 +168,7 @@ class Cards:
             r.append(help_del_)
         return r
 
-    def ra_handler(self, args: str, exp: int = -1, level: str = "0", uid: int = 0):
+    def ra_handler(self, args: str, exp: int = -1, level: str = "0", uid: int = 0, rule: int = 0):
         if not args:
             return help_sa
         if card_data := self.get(level, uid):
@@ -190,7 +190,7 @@ class Cards:
         else:
             value = exp
         dices = diro.parse("1D100")
-        return f"{args}检定:\n{expr(dices, value)}" if isinstance(value, int) else "请输入正确的别名，或传入检定值"
+        return f"{args}检定:\n{expr(dices, value, rule)}" if isinstance(value, int) else "请输入正确的别名，或传入检定值"
 
     def sc_handler(self, sf: str, san: Optional[int] = None, level: str = "0", uid: int = 0) -> str:
         try:
