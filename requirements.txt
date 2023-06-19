@@ -14,7 +14,7 @@ graia-amnesia>=0.6.0
 graia-ariadne<0.12.0,>=0.11.5
 graia-broadcast>=0.19.2
 graia-saya>=0.0.16
-graia-scheduler<0.1
+graia-scheduler<0.2
 graiax-fastapi>=0.2.0
 graiax-playwright>=0.2.1
 graiax-shortcut>=0.2.1
