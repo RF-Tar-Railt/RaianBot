@@ -30,7 +30,7 @@ pydantic>=1.9.0,<3.0
 pypinyin>=0.48.0
 pyquery>=2.0.0
 PyYAML~=6.0
-tencentcloud-sdk-python==3.0.946
+tencentcloud-sdk-python==3.0.952
 ujson>=5.6.0
 unwind~=0.4.0
 uvicorn>=0.22.0
