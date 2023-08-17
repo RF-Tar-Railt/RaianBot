@@ -9,13 +9,13 @@ import ujson
 from app import RaianBotInterface, RaianBotService, Sender, Target, exclusive, record, accessable
 from arclet.alconna import command_manager
 from arclet.alconna.graia import endswith, startswith
-from arclet.alconna.graia.service import AlconnaGraiaInterface
+from arclet.alconna.graia.service import AlconnaGraiaService
 from arclet.alconna.graia.dispatcher import result_cache
 from arclet.alconna.ariadne import AlconnaAriadneAdapter
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import At, Face, Image, Plain, Quote, Source, Voice
+from graia.ariadne.message.element import Face, Image, Plain, Quote, Source, Voice
 from graia.ariadne.model import Friend
 from graia.ariadne.util.cooldown import CoolDown
 from graia.broadcast.exceptions import PropagationCancelled
@@ -33,15 +33,26 @@ json_filename = "assets/data/dialog_templates.json"
 with open(json_filename, "r", encoding="UTF-8") as f_obj:
     dialog_templates = ujson.load(f_obj)["templates"]
 config: DialogConfig = bot.config.plugin.get(DialogConfig)
-trans = TencentTrans(bot.config.tencent.secret_id, bot.config.tencent.secret_key) if config.tencent else YoudaoTrans()
+trans = (
+    TencentTrans(
+        bot.config.platform.tencentcloud_secret_id,
+        bot.config.platform.tencentcloud_secret_key
+    ) if config.tencent else YoudaoTrans()
+)
 
 nickname = config.nickname.strip()
 
 tcbot = None
 if config.tencent:
-    tcbot = TencentChatBot(nickname, bot.config.tencent.secret_id, bot.config.tencent.secret_key)
+    tcbot = TencentChatBot(
+        nickname,
+        bot.config.platform.tencentcloud_secret_id,
+        bot.config.platform.tencentcloud_secret_key,
+        bot.config.platform.tencentcloud_tbp_bot_id,
+        bot.config.platform.tencentcloud_tbp_bot_env
+    )
 aiml = None
-if not tcbot and not config.gpt_api:
+if not bot.config.platform.mylai_api_key and not config.gpt_api:
     aiml = AIML(
         trans,
         gender=" girl",
@@ -61,7 +72,6 @@ if not tcbot and not config.gpt_api:
     aiml_files = "assets/data/alice"
     aiml_brain = f"{bot.config.plugin_cache_dir / 'aiml_brain.brn'}"
     aiml.load_aiml(aiml_files, aiml_brain)
-
 
 async def voice(string: str):
     rand_str = string.replace("#voice", "")
@@ -110,7 +120,7 @@ async def image(string: str, target: Target):
         return Image(data_bytes=path.read_bytes()) if path.exists() else name
 
 
-def error_handle(t):
+def error_handle(t) -> str:
     return random.choice(
         [
             t,
@@ -137,8 +147,8 @@ async def random_ai(app: Ariadne, sender: Sender, target: Target, msg: str, **kw
             ai_url, params={"text": msg, "session": f"{interface.config.bot_name}/{session}"}
         ) as resp:
             return "".join((await resp.json())["result"])
-    if rand == 2 and tcbot:
-        if reply := tcbot.chat(msg):
+    if (rand == 2 or not ai_url) and tcbot:
+        if reply := tcbot.chat(msg, session):
             return reply
         if random.randint(1, 10) > 5:
             return error_handle(msg)
@@ -159,13 +169,13 @@ async def smatch(
     target: Target,
     sender: Sender,
     message: MessageChain,
-    alcif: AlconnaGraiaInterface,
+    alcif: AlconnaGraiaService,
     event: Union[GroupMessage, FriendMessage],
 ):
     """依据语料进行匹配回复"""
     cmds = [i.name for i in command_manager.get_commands()]
     if msg := str(message.include(Plain)).strip(" +"):
-        adapter: AlconnaAriadneAdapter = alcif.adapter
+        adapter: AlconnaAriadneAdapter = alcif.get_adapter()
         source = adapter.source_id(event)
         for alc, cache in result_cache.items():
             if source in cache and ((res := cache[source].result()) and res.result.matched):
@@ -237,9 +247,6 @@ async def aitalk(
     for n in cmds:
         if re.search(f".*{n}.*", str(message)):
             raise PropagationCancelled
-    async with cd.trigger(sender.id, int) as res:
-        if not res[1]:
-            return
     if isinstance(target, Friend):
         reply = await random_ai(
             app, sender, target, str(message.include(Plain, Face)).strip(" +")[:120], gpt=0.5, tx=0.4
@@ -247,9 +254,7 @@ async def aitalk(
         if reply:
             await app.send_message(sender, reply, quote=False if isinstance(target, Friend) else source)
         return
-    if (message.has(At) and message.get_first(At).target == app.account) or (
-        quote and quote.sender_id == app.account
-    ):
+    if  quote and quote.sender_id == app.account:
         reply = await random_ai(
             app, sender, target, str(message.include(Plain, Face)).strip(" +")[:120], gpt=0.6, tx=0.3
         )

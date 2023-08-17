@@ -1,5 +1,7 @@
 import asyncio
 import contextlib
+import random
+from loguru import logger
 from datetime import datetime
 from typing import NamedTuple, List
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -20,7 +22,7 @@ from graiax.shortcut.interrupt import FunctionWaiter
 from graiax.shortcut.saya import every, listen
 
 from app import RaianBotService, Sender, Target, record, meta_export, exclusive, accessable, RaianBotInterface
-from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser, WeiboError
+from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser
 
 bot = RaianBotService.current()
 
@@ -55,9 +57,9 @@ async def _handle_dynamic(
     name: str,
     method: UploadMethod = UploadMethod.Group,
 ):
-    first = MessageChain(data.text or "表情")
     browser: PlaywrightBrowser = app.launch_manager.get_interface(PlaywrightBrowser)
-    async with browser.page(viewport={"width": 800, "height": 2400}) as page:
+    page = await browser.new_page(viewport={"width": 800, "height": 2400})
+    try:
         await page.click("html")
         await page.goto(data.url, timeout=60000, wait_until="networkidle")
         elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
@@ -68,6 +70,12 @@ async def _handle_dynamic(
         assert bounding1
         bounding["height"] += bounding1["height"]
         first = MessageChain(await app.upload_image(await page.screenshot(full_page=True, clip=bounding), method))
+    except Exception as e:
+        logger.error(f"微博动态截图失败: {e}")
+        first = MessageChain(data.text or "表情")
+    finally:
+        await page.close()
+
     imgs = []
     for url in data.img_urls:
         with contextlib.suppress(Exception):
@@ -78,10 +86,10 @@ async def _handle_dynamic(
     if data.video_url:
         nodes.append(MessageChain(f"视频链接: {data.video_url}"))
     if data.retweet:
-        nodes.extend(await _handle_dynamic(app, data.retweet, time, target, name, method))
-        # nodes.append(MessageChain(Forward(*(await _handle_dynamic(page, data.retweet, time, target, name)))))
-    return nodes
-    # return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
+        # nodes.extend(await _handle_dynamic(app, data.retweet, time, target, name, method))
+        nodes.append(MessageChain(Forward(*(await _handle_dynamic(app, data.retweet, time, target, name, method)))))
+    # return nodes
+    return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
 
 
 @route.route(["GET"], "/weibo/check", response_model=WeiboUser)
@@ -186,9 +194,9 @@ async def wfetch(
         getattr(target, "name", getattr(target, "nickname", "")),
         UploadMethod.Friend if isinstance(target, Friend) else UploadMethod.Group,
     )
-    for node in nodes:
-        res = await app.send_message(sender, node)
-    # res = await app.send_message(sender, MessageChain(Forward(*nodes)))
+    res = await app.send_message(sender, nodes[0].message_chain)
+    for node in nodes[1:]:
+        await app.send_message(sender, node.message_chain)
 
     async def waiter(w_sender: Sender, message: MessageChain):
         if w_sender == sender and (message.startswith("链接") or message.startswith("link")):
@@ -335,11 +343,11 @@ async def update():
                         continue
                     await app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
                     for node in dy:
-                        await app.send_group_message(prof.id, node)
-                    await asyncio.sleep(1)
+                        await app.send_group_message(prof.id, node.message_chain)
+                    await asyncio.sleep(random.random() + random.randint(3, 6))
                     visited.setdefault(gid, []).append(uid)
-                    # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
-                except (ValueError, TypeError, IndexError, KeyError, asyncio.TimeoutError):
+                except (ValueError, TypeError, IndexError, KeyError, asyncio.TimeoutError) as e:
+                    await app.send_friend_message(interface.config.admin.master_id, f"WEIBO {e}")
                     api.data.followers[uid] = wp
                     api.data.save()
                     continue

@@ -284,7 +284,7 @@ async def rhd_handle(
     result: Arparma, a_number: Match[int],
     interface: RaianBotInterface
 ):
-    if not app.get_friend(target.id):
+    if not await app.get_friend(target.id):
         return await app.send_message(sender, "请先加bot 为好友")
     pat = result.header["dabp"].strip()
     exp = a_number.result if a_number.available else None
@@ -296,7 +296,7 @@ async def rhd_handle(
     cfg = data.get(coc_config, coc_config(0))
     with suppress(ValueError):
         return await app.send_friend_message(target.id, rd0(pat, exp, cfg.rule))
-    return await app.send_friend_message(target.id, "出错了！")
+    return await app.send_message(sender, "出错了！")
 
 
 @alcommand(setcoc_c, private=False)

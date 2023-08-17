@@ -2,7 +2,7 @@ import asyncio
 from typing import Union, Type, Optional, Dict, Any, Literal, List
 import aiohttp
 from pyquery import PyQuery as Query
-from contextlib import suppress
+import ujson
 from .storage import DefaultWeiboData, BaseWeiboData
 from .model import WeiboUser, WeiboDynamic
 from .exceptions import RespStatusError, RespDataError, RespDataErrnoError, WeiboError
@@ -47,8 +47,12 @@ class WeiboAPI:
         async with self.session.get(base_url, params=params, headers=headers, timeout=timeout) as resp:
             if resp.status != 200:
                 raise RespStatusError(f"Error: {resp.status}")
-            data = await resp.json()
-            if data.get("ok") != 1:
+            try:
+                data = await resp.json(loads=ujson.loads)
+            except aiohttp.ContentTypeError as e:
+                print(await resp.text(), e)
+                raise RespDataError(f"Error: {await resp.text()}") from e
+            if not data or data.get("ok") != 1:
                 raise RespDataError(f"Error: {data}")
             if data["data"].get("errno"):
                 raise RespDataErrnoError(f"Error: {data['data']['errno']}")
@@ -85,7 +89,7 @@ class WeiboAPI:
             params["containerid"] = user.contain_id("weibo")
             cdata = await self._call(params)
             user.total = cdata["cardlistInfo"]["total"]
-        self.data.mapping[user.name] = str(uid)
+        # self.data.mapping[user.name] = str(uid)
         if save:
             self.data.followers[str(uid)] = user
             self.data.save()
@@ -99,8 +103,6 @@ class WeiboAPI:
         cache: bool = True,
     ) -> Optional[WeiboUser]:
         index = max(index, 0)
-        if cache and name in self.data.mapping:
-            return await self.get_profile(int(self.data.mapping[name]), save, cache)
         return await self.get_profile((await self.search_users(name))[index], save, cache)
 
     async def get_profiles(self, name: str) -> List[WeiboUser]:

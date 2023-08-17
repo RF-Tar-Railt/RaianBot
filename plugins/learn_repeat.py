@@ -169,12 +169,11 @@ async def rremove(app: Ariadne, sender: Group, source: Source, target: Match[Uni
 async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arparma):
     this_file = base_path / f"{app.account}" / f"record_{sender.id}.json"
     this_file.parent.mkdir(parents=True, exist_ok=True)
-    content = result.query_with(list, "增加.content") or []
+    content = result.query_with(MessageChain, "增加.content") or MessageChain(At(1))
     if name.result in {"(.+?)", ".+?", ".*?", "(.*?)", ".+", ".*", "."}:
         return await app.send_message(sender, MessageChain("内容过于宽泛！"))
     _name = name.result.replace("**", "*")
-    _record = MessageChain(content)
-    _record = _record.include(Face, Image, Plain)
+    _record = content.include(Face, Image, Plain)
     if not _record:
         return await app.send_message(sender, MessageChain("喂, 没有内容啊~"))
     if not this_file.exists():
@@ -195,7 +194,7 @@ async def radd(app: Ariadne, target: Member, sender: Group, source: Source, name
 async def redit(app: Ariadne, target: Member, sender: Group, source: Source, name: Match[str], result: Arparma):
     this_file = base_path / f"{app.account}" / f"record_{sender.id}.json"
     this_file.parent.mkdir(parents=True, exist_ok=True)
-    content = result.query_with(list, "增加.content") or []
+    content = result.query_with(MessageChain, "修改.content") or MessageChain(At(1))
     if name.result in {"(.+?)", ".+?", ".*?", "(.*?)", ".+", ".*", "."}:
         return await app.send_message(sender, MessageChain("内容过于宽泛！"))
     _name = name.result.replace("**", "*")
@@ -205,8 +204,7 @@ async def redit(app: Ariadne, target: Member, sender: Group, source: Source, nam
         _data = ujson.load(f_obj)
     if _name not in _data:
         return await app.send_message(sender, MessageChain("该群不存在该学习记录！"))
-    _record = MessageChain(content)
-    _record = _record.include(Face, Image, Plain)
+    _record = content.include(Face, Image, Plain)
     if not _record:
         return await app.send_message(sender, MessageChain("喂, 没有内容啊~"))
     _data[_name] = {"id": target.id, "content": await _serialize_message(_record), "json": True}

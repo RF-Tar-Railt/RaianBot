@@ -97,10 +97,10 @@ class RaianBotService(Service):
                 data.load()
                 logger.debug(f"账号 {account} 数据加载完毕")
             logger.success("机器人数据加载完毕")
-            if not await fetch():
-                logger.error("方舟数据获取失败")
-                manager.status.exiting = True
-                return
+            # if not await fetch():
+            #     logger.error("方舟数据获取失败")
+            #     manager.status.exiting = True
+            #     return
             saya = it(Saya)
             with saya.module_context():
                 for module_info in pkgutil.iter_modules(self.config.plugin.paths):

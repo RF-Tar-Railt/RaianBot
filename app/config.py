@@ -119,12 +119,18 @@ class PluginConfig(BaseConfig):
         return self.data[mtype]
 
 
-class TencentCloudAPIConfig(BaseConfig):
-    secret_id: str = Field(default="xxxxxxxxxxxxxxxxxxxx")
+class PlatformConfig(BaseConfig):
+    tencentcloud_secret_id: Optional[str] = Field(default=None)
     """腾讯云API 的 secret-id"""
 
-    secret_key: str = Field(default="xxxxxxxxxxxxxxxxxxxx")
+    tencentcloud_secret_key: Optional[str] = Field(default=None)
     """腾讯云API 的 secret-key"""
+
+    tencentcloud_tbp_bot_id: Optional[str] = Field(default=None)
+    """腾讯云API 下 腾讯对话平台 (TBP) 的 bot-id"""
+
+    tencentcloud_tbp_bot_env: Optional[Literal["dev", "release"]] = Field(default=None)
+    """腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env"""
 
 
 class BotConfig(BaseConfig):
@@ -163,8 +169,8 @@ class RaianConfig(BaseConfig):
     api: APIConfig
     """对外接口相关配置"""
 
-    tencent: TencentCloudAPIConfig
-    """腾讯云相关配置"""
+    platform: PlatformConfig
+    """外部平台接口相关配置"""
 
     bots: Dict[int, BotConfig] = Field(default_factory=dict)
     """bot 配置"""

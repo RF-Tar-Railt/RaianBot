@@ -88,7 +88,7 @@ async def saucenao(
                 iqdb_result: Optional[IqdbResponse] = await asyncio.wait_for(iqdb.search(image_url), timeout=20)
             except Exception as e:
                 logger.warning(e)
-        await client.close()
+        await client.aclose()
     if all([not sauce_result, not ascii2_result, not iqdb_result]):
         running.clear()
         return await app.send_message(sender, MessageChain("搜索失败, 未找到有价值的数据. 请尝试重新搜索"), quote=source.id)

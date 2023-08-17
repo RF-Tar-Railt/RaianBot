@@ -1,4 +1,5 @@
 import contextlib
+import re
 from io import BytesIO
 
 from app import Sender, accessable, exclusive, record, RaianBotService
@@ -19,7 +20,7 @@ cd = Alconna(
     "倒计时",
     Arg("content#中文内容", str),
     Arg("state", str, "还有"),
-    Arg("count", counting, Field({"num": "5", "unit": "秒"}, alias="5秒"), notice="倒计时"),
+    Arg("count", counting, Field(counting.match("5秒"), alias="5秒"), notice="倒计时"),
     Option("-gif", help_text="是否为gif形式"),
     Option("英文", Args["en",  MultiVar(str)] / "\n", help_text="英文内容，不设置则自动翻译"),
     meta=CommandMeta("流浪地球倒计时", usage="注意: 该命令不需要 “渊白” 开头", example="倒计时 离开学 还剩 1天"),
@@ -27,8 +28,12 @@ cd = Alconna(
 
 bot = RaianBotService.current()
 config: DialogConfig = bot.config.plugin.get(DialogConfig)
-trans = TencentTrans(bot.config.tencent.secret_id, bot.config.tencent.secret_key) if config.tencent else YoudaoTrans()
-
+trans = (
+    TencentTrans(
+        bot.config.platform.tencentcloud_secret_id,
+        bot.config.platform.tencentcloud_secret_key
+    ) if config.tencent else YoudaoTrans()
+)
 
 
 @alcommand(cd)
@@ -38,9 +43,9 @@ trans = TencentTrans(bot.config.tencent.secret_id, bot.config.tencent.secret_key
 async def draw(app: Ariadne, sender: Sender, arp: Arparma):
     content = arp.content
     start = arp.state
-    count = arp.count
+    count = arp.count.groupdict()
     with contextlib.suppress(Exception):
-        count = counting.match(start)
+        count = counting.match(start).groupdict()
         start = "还有"
     en = "\n".join(arp.query("英文.en", [])) or (
         f"{await trans.trans(content, 'en')}\n"

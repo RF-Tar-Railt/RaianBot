@@ -6,13 +6,15 @@ from typing import List
 
 from app import RaianBotInterface, Sender, exclusive, extract_plugin_config, permission, render_markdown, send_handler
 from arclet.alconna import Alconna, Args, CommandMeta, Field, Option, Subcommand
-from arclet.alconna.graia import Match, alcommand, assign, mention
+from arclet.alconna.graia import Match, alcommand, assign, mention, startswith
 from creart import it
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Forward, ForwardNode, Image
 from graia.ariadne.model import Group
 from graia.saya import Saya
+from graia.ariadne.event.message import GroupMessage
+from graiax.shortcut.saya import listen
 from library.aiml.lang_support import is_chinese
 from loguru import logger
 
@@ -359,6 +361,22 @@ async def _f(app: Ariadne, sender: Group, name: Match[str], bot: RaianBotInterfa
     group.disabled.append(name.result)
     bot.data.update_group(group)
     return await app.send_message(sender, MessageChain(f"功能 {name.result} 禁用成功"))
+
+
+@listen(GroupMessage)
+@permission("admin")
+@startswith("/禁用敏感功能")
+@exclusive
+async def _f_disable(app: Ariadne, sender: Group, bot: RaianBotInterface):
+    group = bot.data.get_group(sender.id)
+    if group.in_blacklist or sender.id in bot.data.cache["blacklist"]:
+        return await app.send_message(sender, MessageChain("所在群组已进入黑名单, 设置无效"))
+    for name in ("member_join", "member_leave", "ai"):
+        if name in bot.data.funcs and name not in group.disabled:
+            group.disabled.append(name)
+    bot.data.update_group(group)
+    return await app.send_message(sender, MessageChain("敏感功能禁用成功"))
+
 
 
 @alcommand(group_control, send_error=True)

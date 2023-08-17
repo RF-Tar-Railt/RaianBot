@@ -7,7 +7,8 @@ from graia.ariadne import Ariadne
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.event.mirai import BotLeaveEventDisband, BotLeaveEventKick, BotJoinGroupEvent
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.model.relationship import Group, Member
+from graia.ariadne.model.relationship import Group, Member, MemberPerm
+from graia.ariadne.message.element import At
 from graiax.shortcut.saya import listen, priority
 from ..config.admin import AdminConfig
 
@@ -94,6 +95,27 @@ async def get_join_group(app: Ariadne, group: Group, interface: RaianBotInterfac
             "赞助（爱发电）：https://afdian.net/@rf_tar_railt\n"
             "机器人交流群：122680593",
         ),
+    )
+    admins = [member for member in members if member.permission != MemberPerm.Member]
+    ats = [At(member.id) for member in admins]
+    await app.send_group_message(
+        group.id,
+        MessageChain(
+            *ats,
+            "\n管理员请注意："
+            "\n本机器人默认开启如下功能："
+            "\n - 入群提醒"
+            "\n - 离群提醒"
+            "\n - AI对话"
+            "\n您可以使用"
+            f"\n> {interface.base_config.command.headers[0]}功能 列出"
+            f"\n> {interface.base_config.command.headers[0]}功能 禁用 <功能名>"
+            f"\n> {interface.base_config.command.headers[0]}功能 启用 <功能名>"
+            "\n来对机器人功能进行管理"
+            "\n您也可以使用"
+            "> /禁用敏感功能"
+            "\n来禁用上述默认功能"
+        )
     )
     if other_bots := (
         [member for member in members if member.id in interface.base_config.bots and member.id != config.account]

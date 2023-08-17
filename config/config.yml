@@ -53,8 +53,12 @@ api:
   ## FastAPI 服务的运行端口
   port: 8000
 ## 腾讯云相关配置
-tencent:
+platform:
   ## 腾讯云API 的 secret-id
-  secret_id: "xxxxxxxxxxxxxxxxxxxxxxxxx"
+  tencentcloud_secret_id: null
   ## 腾讯云API 的 secret-key
-  secret_key: "xxxxxxxxxxxxxxxxxxxxxxxxx"
+  tencentcloud_secret_key: null
+  ## 腾讯云API 下 腾讯对话平台 (TBP) 的 bot-id
+  tencentcloud_tbp_bot_id: null
+  ## 腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env
+  tencentcloud_tbp_bot_env: null
