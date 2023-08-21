@@ -41,7 +41,7 @@ h11==0.14.0
 httpcore==0.15.0
 httpx==0.24.1
 idna==3.4
-imageio-ffmpeg==0.4.7
+imageio-ffmpeg==0.4.8
 importlib-metadata==6.8.0
 kiwisolver==1.4.4
 launart==0.6.4
