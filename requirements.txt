@@ -72,7 +72,7 @@ PyYAML==6.0.1
 requests==2.31.0
 six==1.16.0
 sniffio==1.3.0
-starlette==0.27.0
+starlette==0.31.0
 statv==0.3.2
 tarina==0.3.3
 tencentcloud-sdk-python==3.0.960
