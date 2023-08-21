@@ -53,7 +53,7 @@ matplotlib==3.6.2
 mdit-py-emoji==0.1.0
 mdit-py-plugins==0.3.0
 mdurl==0.1.2
-multidict==6.0.2
+multidict==6.0.4
 nepattern==0.5.13
 numpy==1.23.5
 packaging==23.1
