@@ -32,7 +32,7 @@ graia-broadcast==0.23.2
 graia-saya==0.0.18
 graia-scheduler==0.0.10
 graiax-fastapi==0.3.0
-graiax-playwright==0.2.1
+graiax-playwright==0.3.1
 graiax-shortcut==0.3.0
 graiax-silkcoder==0.3.6
 graiax-text2img-playwright==0.3.0
