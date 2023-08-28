@@ -43,7 +43,7 @@ httpx==0.24.1
 idna==3.4
 imageio-ffmpeg==0.4.8
 importlib-metadata==6.8.0
-kiwisolver==1.4.4
+kiwisolver==1.4.5
 launart==0.8.1
 linkify-it-py==1.0.3
 loguru==0.7.0
