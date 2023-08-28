@@ -48,7 +48,7 @@ launart==0.8.1
 linkify-it-py==1.0.3
 loguru==0.7.0
 lxml==4.9.3
-markdown-it-py==2.1.0
+markdown-it-py==3.0.0
 matplotlib==3.7.2
 mdit-py-emoji==0.1.0
 mdit-py-plugins==0.4.0
