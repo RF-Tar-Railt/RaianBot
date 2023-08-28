@@ -46,7 +46,7 @@ importlib-metadata==6.8.0
 kiwisolver==1.4.4
 launart==0.6.4
 linkify-it-py==1.0.3
-loguru==0.6.0
+loguru==0.7.0
 lxml==4.9.3
 markdown-it-py==2.1.0
 matplotlib==3.6.2
