@@ -36,7 +36,7 @@ graiax-playwright==0.3.1
 graiax-shortcut==0.3.0
 graiax-silkcoder==0.3.6
 graiax-text2img-playwright==0.4.2
-greenlet==2.0.1
+greenlet==2.0.2
 h11==0.14.0
 httpcore==0.15.0
 httpx==0.24.1
