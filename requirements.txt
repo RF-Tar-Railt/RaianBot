@@ -76,7 +76,7 @@ starlette==0.31.1
 statv==0.3.2
 tarina==0.3.3
 tencentcloud-sdk-python==3.0.973
-tokenize-rt==5.1.0
+tokenize-rt==5.2.0
 tomli==2.0.1
 typing-extensions==4.7.1
 uc-micro-py==1.0.2
