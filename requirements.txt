@@ -12,7 +12,7 @@ arknights-toolkit==0.5.12
 async-timeout==4.0.2
 attrs==23.1.0
 certifi==2023.7.22
-charset-normalizer==2.1.1
+charset-normalizer==3.2.0
 cli-lite==0.7.1
 click==8.1.7
 colorama==0.4.5
