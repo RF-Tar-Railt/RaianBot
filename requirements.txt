@@ -22,7 +22,7 @@ croniter==1.4.1
 cssselect==1.2.0
 cycler==0.11.0
 diro-py==0.1.1
-fastapi==0.103.0
+fastapi==0.103.1
 fix-future-annotations==0.5.0
 fonttools==4.42.1
 frozenlist==1.4.0
