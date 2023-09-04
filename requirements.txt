@@ -9,7 +9,7 @@ arclet-alconna-ariadne==0.15.0
 arclet-alconna-graia==0.15.0
 arclet-alconna-tools==0.6.6
 arknights-toolkit==0.5.12
-async-timeout==4.0.2
+async-timeout==4.0.3
 attrs==23.1.0
 certifi==2023.7.22
 charset-normalizer==3.2.0
