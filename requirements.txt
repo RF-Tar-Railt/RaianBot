@@ -86,6 +86,6 @@ urllib3==2.0.4
 uvicorn==0.23.2
 win32-setctime==1.1.0
 xlsxwriter==3.1.2
-yarl==1.8.1
+yarl==1.9.2
 zipp==3.16.2
 
