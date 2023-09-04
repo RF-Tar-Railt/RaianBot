@@ -79,7 +79,7 @@ tencentcloud-sdk-python==3.0.962
 tokenize-rt==5.1.0
 tomli==2.0.1
 typing-extensions==4.7.1
-uc-micro-py==1.0.1
+uc-micro-py==1.0.2
 ujson==5.8.0
 unwind==0.4.0
 urllib3==2.0.4
