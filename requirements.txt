@@ -39,7 +39,7 @@ graiax-text2img-playwright==0.4.2
 greenlet==2.0.2
 h11==0.14.0
 httpcore==0.18.0
-httpx==0.24.1
+httpx==0.25.0
 idna==3.4
 imageio-ffmpeg==0.4.8
 importlib-metadata==6.8.0
