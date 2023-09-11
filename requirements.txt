@@ -7,7 +7,7 @@ anyio==4.0.0
 arclet-alconna==1.7.19
 arclet-alconna-ariadne==0.15.0
 arclet-alconna-graia==0.15.0
-arclet-alconna-tools==0.6.6
+arclet-alconna-tools==0.6.7
 arknights-toolkit==0.5.12
 async-timeout==4.0.3
 attrs==23.1.0
