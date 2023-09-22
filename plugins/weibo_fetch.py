@@ -1,7 +1,5 @@
 import asyncio
 import contextlib
-import random
-from loguru import logger
 from datetime import datetime
 from typing import NamedTuple, List
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -71,7 +69,7 @@ async def _handle_dynamic(
         bounding["height"] += bounding1["height"]
         first = MessageChain(await app.upload_image(await page.screenshot(full_page=True, clip=bounding), method))
     except Exception as e:
-        logger.error(f"微博动态截图失败: {e}")
+        await app.send_group_message(592387986, MessageChain(f"微博动态截图失败: {e}"))
         first = MessageChain(data.text or "表情")
     finally:
         await page.close()
@@ -196,7 +194,7 @@ async def wfetch(
     )
     res = await app.send_message(sender, nodes[0].message_chain)
     for node in nodes[1:]:
-        await app.send_message(sender, node.message_chain)
+    	await app.send_message(sender, node.message_chain)
 
     async def waiter(w_sender: Sender, message: MessageChain):
         if w_sender == sender and (message.startswith("链接") or message.startswith("link")):
@@ -306,7 +304,7 @@ async def wlist(app: Ariadne, target: Target, sender: Sender, source: Source, in
         await app.send_group_message(sender, notice)
 
 
-@every(1, "minute")
+@every(5, "minute")
 @record("微博动态自动获取", False)
 async def update():
     dynamics = {}
@@ -344,10 +342,13 @@ async def update():
                     await app.send_group_message(prof.id, MessageChain(f"{name} 有一条新动态！请查收!"))
                     for node in dy:
                         await app.send_group_message(prof.id, node.message_chain)
-                    await asyncio.sleep(random.random() + random.randint(3, 6))
+                        await asyncio.sleep(0.2)
+                    #await app.send_group_message(prof.id, MessageChain(Forward(*dy)))
+                    await asyncio.sleep(10.3)
                     visited.setdefault(gid, []).append(uid)
-                except (ValueError, TypeError, IndexError, KeyError, asyncio.TimeoutError) as e:
-                    await app.send_friend_message(interface.config.admin.master_id, f"WEIBO {e}")
+                    # await app.send_group_message(prof.id, MessageChain(Forward(*data)))
+                except Exception as e:
+                    await app.send_group_message(592387986, f"WEIBO UPDATE: {e} {type(e)}")
                     api.data.followers[uid] = wp
                     api.data.save()
                     continue

@@ -1,8 +1,8 @@
 import asyncio
 from typing import Union, Type, Optional, Dict, Any, Literal, List
 import aiohttp
-from pyquery import PyQuery as Query
 import ujson
+from pyquery import PyQuery as Query
 from .storage import DefaultWeiboData, BaseWeiboData
 from .model import WeiboUser, WeiboDynamic
 from .exceptions import RespStatusError, RespDataError, RespDataErrnoError, WeiboError
@@ -42,20 +42,21 @@ class WeiboAPI:
         headers = {
             "Host": "m.weibo.cn",
             "Referer": "https://m.weibo.cn/u/XXX",
-            "User-Agent": self.user_agent
+            "User-Agent": self.user_agent,
+            "Content-Type": "application/json"
         }
         async with self.session.get(base_url, params=params, headers=headers, timeout=timeout) as resp:
             if resp.status != 200:
-                raise RespStatusError(f"Error: {resp.status}")
+                raise RespStatusError(f"Error: {resp.status}\n{params}")
             try:
                 data = await resp.json(loads=ujson.loads)
             except aiohttp.ContentTypeError as e:
                 print(await resp.text(), e)
-                raise RespDataError(f"Error: {await resp.text()}") from e
+                raise RespDataError(f"Error: {await resp.text()}\n{params}") from e
             if not data or data.get("ok") != 1:
-                raise RespDataError(f"Error: {data}")
+                raise RespDataError(f"Error: {data}\n{params}")
             if data["data"].get("errno"):
-                raise RespDataErrnoError(f"Error: {data['data']['errno']}")
+                raise RespDataErrnoError(f"Error: {data['data']['errno']}\n{params}")
             return data["data"]
 
     async def search_users(self, target: str) -> List[int]:
@@ -146,13 +147,8 @@ class WeiboAPI:
             "containerid": target.contain_id(keyword),
             "page": page,
         }
-        try:
-            d_data = await self._call(params)
-        except (WeiboError, asyncio.TimeoutError):
-            return
+        d_data = await self._call(params)
         if index > len(d_data["cards"]) - 1:
-            return
-        if d_data["cards"][0]["card_type"] != 9:
             return
         if index < 0:
             if len(d_data["cards"]) > 1:
@@ -160,6 +156,8 @@ class WeiboAPI:
                 index = ids.index(max(ids))
             else:
                 index = 0
+        if d_data["cards"][index]["card_type"] == 156:
+            index += 1
         res = self._handler_dynamic(d_data["cards"][index]["mblog"])
         res.user = target
         if save:
@@ -174,13 +172,18 @@ class WeiboAPI:
             return
         dynamic_total = profile.total
         params = {"type": "uid", "value": profile.id, "containerid": profile.contain_id("weibo")}
-        try:
-            d_data = await self._call(params)
-        except (WeiboError, asyncio.TimeoutError):
-            return
+        d_data = await self._call(params)
         if d_data["cardlistInfo"]["total"] > dynamic_total:
             profile.total = d_data["cardlistInfo"]["total"]
-            dy = await self.get_dynamic(profile, save=False)
+            if len(d_data["cards"]) > 1:
+                ids = [int(i["mblog"]["id"]) for i in d_data["cards"] if i["card_type"] == 9]
+                index = ids.index(max(ids))
+            else:
+                index = 0
+            if d_data["cards"][0]["card_type"] == 156:
+                index += 1
+            dy = self._handler_dynamic(d_data["cards"][index]["mblog"])
+            dy.user = profile
             if dy.bid == profile.latest:
                 return
             profile.latest = dy.bid

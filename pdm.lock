@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:6cee8f7cc315404e63a60d5ff47ce49809f3a5ce61ad8eebcd141d704be01c4d"
+content_hash = "sha256:05dd7846afba879c0f17bba8e83e44cb4bb1325500d4b1934a5c51e810087036"
 
 [[package]]
 name = "aiohttp"
@@ -582,7 +582,7 @@ files = [
 
 [[package]]
 name = "graiax-fastapi"
-version = "0.3.0"
+version = "0.3.1"
 requires_python = ">=3.8"
 summary = "FastAPI launcher for GraiaCommunity."
 dependencies = [
@@ -592,8 +592,8 @@ dependencies = [
     "typing-extensions<5.0,>=4.7.1",
 ]
 files = [
-    {file = "graiax_fastapi-0.3.0-py3-none-any.whl", hash = "sha256:f48a92f4ebb2d4196eb771ea25f594d206d29e84d60a6e7947a740853820327f"},
-    {file = "graiax_fastapi-0.3.0.tar.gz", hash = "sha256:bdf33696b4df256db7ec0f5e2f100ea37c1a5525a39f43e38591db641833a414"},
+    {file = "graiax_fastapi-0.3.1-py3-none-any.whl", hash = "sha256:ffed00361f9ba29886583a9175adcc18c50113eb763bc28466aa54ac602f1d06"},
+    {file = "graiax_fastapi-0.3.1.tar.gz", hash = "sha256:21a1b4f1e5a29acf1c3c74d2982ce0b80e08104942810ae39c3f6f87b9c8c5d2"},
 ]
 
 [[package]]

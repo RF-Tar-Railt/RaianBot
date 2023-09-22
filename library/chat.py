@@ -36,6 +36,7 @@ class TencentChatBot:
             )
 
             resp = self.client.TextProcess(req)
+            print(resp.to_json_string())
             if resp.ResponseText:
                 msg: str = resp.ResponseText
                 nickname: str = self.name
