@@ -10,16 +10,15 @@ from httpx import AsyncClient
 
 app_code = "4ca99fa6b56cc2ba"
 header = {
-    'cred': '',
     'User-Agent': 'Skland/1.0.1 (com.hypergryph.skland; build:100001014; Android 31; ) Okhttp/4.11.0',
     'Accept-Encoding': 'gzip',
     'Connection': 'close'
 }
 header_for_sign = {
-    'platform': '',
+    'platform': '1',
     'timestamp': '',
-    'dId': '',
-    'vName': ''
+    'dId': 'de9759a5afaa634f',
+    'vName': '1.0.1'
 }
 
 # 签到url
@@ -108,7 +107,8 @@ class SKAutoSign:
 
     async def sign(self, session: str):
         if session not in self.data:
-            raise RuntimeError(f"{session} 不存在")
+            yield {"status": False, "text": f"{session} 不存在", "target": ""}
+            return
         data = self.data[session]
         headers = {
             **header,
@@ -127,17 +127,21 @@ class SKAutoSign:
             )
             response = response.json()
             if response["code"] != 0:
-                raise RuntimeError(f"请求角色列表出现问题：{response['message']}")
+                yield {"status": False, "text": f"请求角色列表出现问题：{response['message']}", "target": ""}
+                return
+                #raise RuntimeError(f"请求角色列表出现问题：{response['message']}")
             binding = []
             for i in response["data"]["list"]:
                 if i.get("appCode") == "arknights":
                     binding.extend(i["bindingList"])
             if not binding:
-                raise RuntimeError(f"{session} 未创建方舟账号")
+                yield {"status": False, "text": f"{session} 未创建方舟账号", "target": ""}
+                return
+                # raise RuntimeError(f"{session} 未创建方舟账号")
             for i in binding:
                 if data["uid"] and i["uid"] not in data["uid"]:
                     continue
-                query = {"uid": i["uid"], "gameId": 1}
+                query = {"uid": i["uid"], "gameId": i["channelMasterId"]}
                 drname = i["nickName"]
                 server = i["channelName"]
                 result = {}
