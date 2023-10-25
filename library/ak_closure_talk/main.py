@@ -108,6 +108,7 @@ class ArknightsClosureStore:
         return self.session[field].to_html()
 
     def download_resource(self):
+        # https://github.com/ClosureTalk/closuretalk.github.io/raw/master/resources/ak/char.json
         char_path = self.base_path / "characters"
         char_path.mkdir(exist_ok=True, parents=True)
         total = len(self.characters)
@@ -118,7 +119,12 @@ class ArknightsClosureStore:
                     continue
                 try:
                     resp = httpx.get(
-                        GITHUB_RAW_LINK.format(path=f"resources/ak/characters/{quote(image)}.webp"), verify=False
+                        GITHUB_RAW_LINK.format(path=f"resources/ak/characters/{quote(image)}.webp"),
+                        proxies={
+                            "http://": "http://127.0.0.1:7890",
+                            "https://": "http://127.0.0.1:7890",
+                        },
+                        verify=False
                     )
                     with (char_path / image_path).open("wb+") as f:
                         f.write(resp.read())
@@ -127,7 +133,6 @@ class ArknightsClosureStore:
                 except Exception as e:
                     logger.error(f"[ClosureTalk] [{char_index} / {total}] 下载 {image} 时出现错误：{e}")
         logger.debug("[ClosureTalk] 已下载资源")
-
 
 if __name__ == "__main__":
     _store = ArknightsClosureStore()
