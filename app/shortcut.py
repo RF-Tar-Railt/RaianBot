@@ -8,18 +8,16 @@ from typing import (
 )
 import inspect
 from pathlib import Path
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Image
-from graia.ariadne.model import Friend, Group, Member
+from avilla.core.message import MessageChain
+from avilla.core.elements import Picture, Text
+from avilla.core.resource import RawResource
 from graia.saya import Channel
 from graia.saya.factory import ensure_buffer
 
 from .context import DataInstance
 from .control import require_admin, require_function, check_disabled, check_exclusive
-from .image import render_markdown
+from .image import md2img
 
-Sender = Union[Group, Friend]
-Target = Union[Member, Friend]
 T_Callable = TypeVar("T_Callable", bound=Callable)
 
 
@@ -44,6 +42,7 @@ def record(name: str, require: bool = True, disable: bool = False):
         return func
 
     return wrapper
+
 
 def accessable(path: str | T_Callable | None = None):
     def wrapper(func: T_Callable) -> T_Callable:
@@ -84,7 +83,7 @@ def exclusive(func: T_Callable) -> T_Callable:
 async def send_handler(t: str, output: str):
     # length = (output.count("\n") + 5) * 16
     if t == "shortcut":
-        return MessageChain(output)
+        return MessageChain([Text(output)])
     if t == "completion":
         output = (
             output.replace("\n\n", "\n")
@@ -93,7 +92,7 @@ async def send_handler(t: str, output: str):
             .replace("&#123;", "{")
             .replace("&#125;", "}")
         )
-        return MessageChain(output)
+        return MessageChain([Text(output)])
     if not output.startswith("#"):
         output = f"# {output}"
         output = (
@@ -103,4 +102,4 @@ async def send_handler(t: str, output: str):
             .replace("<", "&lt;")
             .replace(">", "&gt;")
         )
-    return MessageChain(Image(data_bytes=await render_markdown(output)))
+    return MessageChain([Picture(RawResource(await md2img(output)))])

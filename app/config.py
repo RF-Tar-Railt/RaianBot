@@ -6,12 +6,10 @@ from typing import List, Optional, cast, Dict, TypeVar, Type, Literal, ClassVar,
 
 import yaml
 from avilla.core.elements import Notice
-from avilla.elizabeth.protocol import ElizabethConfig as _ElizabethConfig
-from avilla.qqapi.protocol import Intents as _Intents, QQAPIConfig as _QQAPIConfig
+from avilla.elizabeth.protocol import ElizabethConfig as _ElizabethConfig, ElizabethProtocol
+from avilla.qqapi.protocol import Intents as _Intents, QQAPIConfig as _QQAPIConfig,QQAPIProtocol
 from loguru import logger
 from pydantic import BaseModel, Field
-
-from .context import MainConfigInstance
 
 
 class BaseConfig(BaseModel):
@@ -133,7 +131,7 @@ class ElizabethConfig(BaseConfig):
     name: str
     """机器人名字, 请尽量不要与 prefix 重合"""
 
-    account: int
+    account: str
     """bot 登录账号"""
 
     host: str
@@ -152,12 +150,12 @@ class ElizabethConfig(BaseConfig):
     """bot 权限相关配置"""
 
     def export(self):
-        return _ElizabethConfig(
-            qq=self.account,
+        return ElizabethProtocol().configure(_ElizabethConfig(
+            qq=int(self.account),
             host=self.host,
             port=self.port,
             access_token=self.access_token
-        )
+        ))
 
 
 class Intents(BaseConfig):
@@ -212,15 +210,21 @@ class QQAPIConfig(BaseConfig):
     """bot 权限相关配置"""
 
     def export(self):
-        return _QQAPIConfig(
+        return QQAPIProtocol().configure(_QQAPIConfig(
             id=self.account, token=self.token, secret=self.secret, shard=self.shard,
             intent=self.intent.export(), is_sandbox=self.is_sandbox
-        )
+        ))
 
 
 class RaianConfig(BaseConfig):
     cache_dir: str = Field(default="cache")
     """缓存数据存放的文件夹, 默认为 cache"""
+
+    log_level: str = Field(default="INFO")
+    """日志等级"""
+
+    proxy: Optional[str] = Field(default=None)
+    """代理配置"""
 
     browser: BrowserConfig
     """浏览器相关配置"""
@@ -254,19 +258,16 @@ def load_config(root_dir: str = "config") -> RaianConfig:
             with open(config_path, "r", encoding="utf-8") as f:
                 main_config = RaianConfig.parse_obj(yaml.safe_load(f))
             main_config.root = root_dir
-            MainConfigInstance.set(main_config)
             return main_config
 
     logger.critical("没有有效的配置文件！")
     sys.exit()
 
 
-def extract_plugin_config(plugin_path: str, name: str) -> Optional[BasePluginConfig]:
+def extract_plugin_config(main_config: RaianConfig, plugin_path: str, name: str) -> Optional[BasePluginConfig]:
     with suppress(ModuleNotFoundError, FileNotFoundError, AttributeError, KeyError):
         config_module = importlib.import_module(f"{plugin_path}.config")
-        if (base := MainConfigInstance.get(None)) and (
-                path := Path.cwd() / base.root / "plugins" / f"{name}.yml"
-        ).exists():
+        if (path := Path.cwd() / main_config.root / "plugins" / f"{name}.yml").exists():
             with path.open("r+", encoding="UTF-8") as f_obj:
                 data = yaml.safe_load(f_obj.read())
             return cast(BasePluginConfig, config_module.Config).parse_obj(data)

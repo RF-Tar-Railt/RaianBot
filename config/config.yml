@@ -1,15 +1,9 @@
-## bot 默认登录账号
-default_account: 'NOT-A-NUMBER'
 ## 缓存数据存放的文件夹, 默认为 cache
 cache_dir: 'cache'
-## mirai-api-http 相关配置
-mirai:
-  ## mirai-api-http 的链接
-  host: "localhost"
-  ## mirai-api-http 的端口
-  port: 8080
-  ## mirai-api-http 的验证码
-  verify_key: "INITKEYWylsVdbr"
+## 日志等级
+log_level: "info"
+## 代理配置
+proxy: null
 ## 浏览器相关配置
 browser:
   type: "chromium"
@@ -17,10 +11,8 @@ browser:
 ## bot 命令相关配置
 command:
   ## 命令前缀
-  ## At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)
   prefix:
     - "莱安"
-    - "At:123456789"
   ## 帮助选项的名称
   help:
     - "--help"
@@ -62,3 +54,26 @@ platform:
   tencentcloud_tbp_bot_id: null
   ## 腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env
   tencentcloud_tbp_bot_env: null
+## bot 配置
+bots:
+  -
+    ## 类型为 mirai-api-http
+    type: mirai
+    ## 机器人名字, 请尽量不要与 prefix 重合
+    name: 莱安
+    ## bot 登录账号
+    account: "NOT-A-NUMBER"
+    ## mirai-api-http 的链接
+    host: "localhost"
+    ## mirai-api-http 的端口
+    port: 8080
+    ## mirai-api-http 的验证码
+    access_token: "INITKEYWylsVdbr"
+    ## bot 初始禁用的模块名称
+    disabled: []
+    ## bot 权限相关配置
+    admin:
+      ## bot 的控制者的账号
+      master_id: "NOT-A-NUMBER"
+      ## bot 的管理者(除开控制者)的账号
+      admins: []

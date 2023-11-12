@@ -105,7 +105,7 @@ def setup(level='INFO'):
         for handler in _logger.handlers:
             if isinstance(handler, logging.StreamHandler):
                 _logger.removeHandler(handler)
-    log_format = debug_format if level == 'DEBUG' else info_format
+    log_format = debug_format if level.upper() == 'DEBUG' else info_format
     logger.remove()
     logger.add(
         "./logs/latest.log",

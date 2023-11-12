@@ -39,7 +39,7 @@ async def fill_font(route: Route, request: Request):
 
 footer = (
     '<style>.footer{box-sizing:border-box;position:absolute;left:0;width:100%;background:#eee;'
-    'padding:50px 40px;margin-top:50px;font-size:0.85rem;color:#6b6b6b;}'
+    'padding:30px 40px;margin-top:50px;font-size:1rem;color:#6b6b6b;}'
     '.footer p{margin:5px auto;}</style>'
     f'<div class="footer"><p>由 RaianBot 生成</p><p>{datetime.now().strftime("%Y/%m/%d %p %I:%M:%S")}</p></div>'
 )
