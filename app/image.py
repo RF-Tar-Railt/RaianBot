@@ -1,101 +1,90 @@
-from __future__ import annotations
+import re
+from datetime import datetime
 
-from typing import Literal
-from graiax.text2img.playwright.renderer import HTMLRenderer
-from graiax.text2img.playwright.converter import MarkdownConverter
-from graiax.text2img.playwright.renderer import PageOption, ScreenshotOption
-from graia.ariadne.util.async_exec import ParallelExecutor
-from io import BytesIO
-from PIL import Image, ImageFont, ImageDraw
+from graiax.text2img.playwright import (
+    HTMLRenderer,
+    MarkdownConverter,
+    PageOption,
+    ScreenshotOption,
+    convert_text,
+)
+from graiax.text2img.playwright.renderer import BuiltinCSS
 
+from playwright.async_api import Request, Route
+from yarl import URL
+from pathlib import Path
 
-def cut_text(
-    origin: str,
-    font: ImageFont.FreeTypeFont,
-    chars_per_line: int,
-):
-    target = ""
-    start_symbol = "[{<(【《（〈〖［〔“‘『「〝"
-    end_symbol = ",.!?;:]}>)%~…，。！？；：】》）〉〗］〕”’～』」〞"
-    line_width = chars_per_line * font.getlength("0")
-    for i in origin.splitlines(False):
-        if i == "":
-            target += "\n"
-            continue
-        j = 0
-        i = i.replace("\t", "  ")
-        for ind, elem in enumerate(i):
-            if i[j : ind + 1] == i[j:]:
-                target += i[j : ind + 1] + "\n"
-                continue
-            elif font.getlength(i[j : ind + 1]) <= line_width:
-                continue
-            elif ind - j > 3:
-                if i[ind] in end_symbol and i[ind - 1] != i[ind]:
-                    target += i[j : ind + 1] + "\n"
-                    j = ind + 1
-                    continue
-                elif i[ind] in start_symbol and i[ind - 1] != i[ind]:
-                    target += i[j:ind] + "\n"
-                    continue
-            target += i[j:ind] + "\n"
-            j = ind
-    return target.rstrip()
+font_path = Path(__file__).parent.parent / "assets" / 'fonts'
+
+font_mime_map = {
+    'collection': 'font/collection',
+    'otf': 'font/otf',
+    'sfnt': 'font/sfnt',
+    'ttf': 'font/ttf',
+    'woff': 'font/woff',
+    'woff2': 'font/woff2',
+}
 
 
-async def render_markdown(
-    md: str,
-    width: int | None = None,
-    height: int | None = None,
-    factor: float = 1.5,
-    itype: Literal["jpeg", "png"] = "jpeg",
-    quality: int = 80,
-):
-    content = MarkdownConverter().convert(md)
-    return await HTMLRenderer(
-        screenshot_option=ScreenshotOption(type=itype, quality=quality, scale="device")
-    ).render(
-        content,
-        extra_page_option=(
-            PageOption(viewport={"width": width, "height": height}, device_scale_factor=factor)  # type: ignore
-        ) if width is not None and height is not None else None
+async def fill_font(route: Route, request: Request):
+    url = URL(request.url)
+    if (font_path / url.name).exists():
+        await route.fulfill(
+            path=font_path / url.name,
+            content_type=font_mime_map.get(url.suffix),
+        )
+        return
+    await route.fallback()
+
+
+footer = (
+    '<style>.footer{box-sizing:border-box;position:absolute;left:0;width:100%;background:#eee;'
+    'padding:50px 40px;margin-top:50px;font-size:0.85rem;color:#6b6b6b;}'
+    '.footer p{margin:5px auto;}</style>'
+    f'<div class="footer"><p>由 RaianBot 生成</p><p>{datetime.now().strftime("%Y/%m/%d %p %I:%M:%S")}</p></div>'
+)
+
+html_render = HTMLRenderer(
+    page_option=PageOption(device_scale_factor=1.5),
+    screenshot_option=ScreenshotOption(type='jpeg', quality=80, full_page=True, scale='device'),
+    css=(
+        BuiltinCSS.reset,
+        BuiltinCSS.github,
+        BuiltinCSS.one_dark,
+        BuiltinCSS.container,
+        "@font-face{font-family:'harmo';font-weight:300;"
+        "src:url('http://static.graiax/fonts/HarmonyOS_Sans_SC_Light.ttf') format('truetype');}"
+        "@font-face{font-family:'harmo';font-weight:400;"
+        "src:url('http://static.graiax/fonts/HarmonyOS_Sans_SC_Regular.ttf') format('truetype');}"
+        "@font-face{font-family:'harmo';font-weight:500;"
+        "src:url('http://static.graiax/fonts/HarmonyOS_Sans_SC_Medium.ttf') format('truetype');}"
+        "@font-face{font-family:'harmo';font-weight:600;"
+        "src:url('http://static.graiax/fonts/HarmonyOS_Sans_SC_Bold.ttf') format('truetype');}"
+        "*{font-family:'harmo',sans-serif}",
+    ),
+    page_modifiers=[
+        lambda page: page.route(lambda url: bool(re.match('^http://static.graiax/fonts/(.+)$', url)), fill_font)
+    ],
+)
+
+md_converter = MarkdownConverter()
+
+
+async def text2img(text: str, width: int = 800) -> bytes:
+    html = convert_text(text)
+    html += footer
+
+    return await html_render.render(
+        html,
+        extra_page_option=PageOption(viewport={'width': width, 'height': 10}),
     )
 
 
-async def create_image(
-    text: str | list[str],
-    font: str = "simhei.ttf",
-    font_size: int = 20,
-    cut: int = 80,
-    mode: str = "RGB",
-    background: tuple[int, int, int] | tuple[int, int, int, float] | str = "white",
-) -> bytes:
-    return await ParallelExecutor().to_thread(_create_image, text, font, font_size, cut, mode, background)
+async def md2img(text: str, width: int = 800) -> bytes:
+    html = md_converter.convert(text)
+    html += footer
 
-
-def _create_image(
-    text: str | list[str],
-    font: str,
-    font_size: int = 20,
-    cut: int = 80,
-    mode: str = "RGB",
-    background: tuple[int, int, int] | tuple[int, int, int, float] | str = "white",
-) -> bytes:
-    new_font = ImageFont.truetype(font, font_size)
-    if isinstance(text, str):
-        cut_str = cut_text(text, new_font, cut)
-    else:
-        cut_str = "\n".join(text)
-    textx, texty = new_font.getsize_multiline(cut_str)
-    image = Image.new(mode, (textx + 40, texty + 40), background)  # type: ignore
-    draw = ImageDraw.Draw(image)
-    draw.text((20, 20), cut_str, font=new_font, fill="black")
-    imageio = BytesIO()
-    image.save(
-        imageio,
-        format="JPEG",
-        quality=95,
-        subsampling=2,
-        qtables="web_high",
+    return await html_render.render(
+        html,
+        extra_page_option=PageOption(viewport={'width': width, 'height': 10}),
     )
-    return imageio.getvalue()

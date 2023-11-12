@@ -1,45 +1,27 @@
 [project]
 name = "raian-bot"
-version = "0.22.0"
-description = "simple qq bot bases on Araidne and Alconna"
+version = "1.0.0"
+description = ""
 authors = [
-    {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
+    {name = "RF-Tar-Railt",email = "3165388245@qq.com"},
 ]
 dependencies = [
-    "arclet-alconna<2.0.0, >=1.7.18",
-    "arclet-alconna-graia<1.0.0, >=0.15.0",
-    "arclet-alconna-ariadne<1.0.0, >=0.15.0",
-    "arclet-alconna-tools>=0.6.5",
-    "graia-ariadne<0.12.0, >=0.11.5",
-    "graia-amnesia>=0.6.0",
-    "graia-broadcast>=0.19.2",
-    "graia-saya>=0.0.18",
-    "graia-scheduler<0.1",
-    "unwind~=0.4.0",
-    "Pillow>=9.5.0",
-    "aiohttp<4.0, >=3.8.4",
+    "arclet-alconna-avilla>=0.16.2",
+    "avilla-qqapi>=1.0.0a11",
+    "graia-saya>=0.0.19",
+    "graia-scheduler>=0.3.0",
     "pyquery>=2.0.0",
-    "pydantic<2.0, >=1.9.0",
-    "picimagesearch>=3.7.0",
-    "PyYAML~=6.0",
-    "loguru>=0.6.0",
-    "psutil~=5.9.0",
-    "tencentcloud-sdk-python",
-    "ujson>=5.6.0",
-    "graiax-playwright>=0.2.1",
-    "graiax-silkcoder[ffmpeg]>=0.3.4",
-    "graiax-text2img-playwright>=0.2",
+    "pydantic<2.0.0",
+    "PyYAML>=6.0.1",
+    "tencentcloud-sdk-python>=3.0.1023",
+    "graiax-playwright>=0.3.1",
+    "graiax-text2img-playwright>=0.4.2",
     "diro-py>=0.1.1",
-    "httpx>=0.23.0",
-    "arknights-toolkit>=0.5.12",
-    "graiax-fastapi>=0.3.1",
-    "uvicorn>=0.22.0",
-    "graiax-shortcut>=0.2.1",
-    "pypinyin>=0.48.0",
-    "certifi>=2023.5.7",
-    "launart<0.7.0, >=0.6.3",
+    "arknights-toolkit>=0.6.2",
+    "graiax-fastapi>=0.4.1",
+    "avilla-elizabeth>=1.0.0a10",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
 
@@ -47,13 +29,8 @@ license = {text = "AGPL-3.0"}
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-
 [tool]
 [tool.black]
 include = '\.pyi?$'
 line-length = 120
-target-version = ['py38']
-[tool.pdm.dev-dependencies]
-dev = [
-    "fix-future-annotations>=0.5.0",
-]
+target-version = ['py39']

@@ -1,41 +1,37 @@
 import importlib
-import re
 import sys
 from contextlib import suppress
 from pathlib import Path
-from typing import List, Optional, cast, Dict, TypeVar, Type, Literal, ClassVar
+from typing import List, Optional, cast, Dict, TypeVar, Type, Literal, ClassVar, Set, Tuple, Union
 
 import yaml
-from graia.ariadne.message.element import At, Face
+from avilla.core.elements import Notice
+from avilla.elizabeth.protocol import ElizabethConfig as _ElizabethConfig
+from avilla.qqapi.protocol import Intents as _Intents, QQAPIConfig as _QQAPIConfig
 from loguru import logger
 from pydantic import BaseModel, Field
 
 from .context import MainConfigInstance
 
+
 class BaseConfig(BaseModel):
     class Config:
         extra = "ignore"
 
+
 class BasePluginConfig(BaseModel):
     is_global: ClassVar[bool] = False
+
     @classmethod
     def __init_subclass__(cls, **kwargs):
         if kwargs.get("domain", "global") == "global":
             cls.is_global = True
+
     class Config:
         extra = "ignore"
 
+
 TConfig = TypeVar("TConfig", bound=BasePluginConfig)
-
-class MiraiConfig(BaseConfig):
-    host: str = Field(default="localhost")
-    """mirai-api-http 的链接"""
-
-    port: int = Field(default=8080)
-    """mirai-api-http 的端口"""
-
-    verify_key: str
-    """mirai-api-http 的验证码"""
 
 
 class APIConfig(BaseConfig):
@@ -47,13 +43,10 @@ class APIConfig(BaseConfig):
 
 
 class AdminConfig(BaseConfig):
-    master_id: int
+    master_id: str
     """bot 的控制者的账号"""
 
-    master_name: str
-    """bot 的控制者的名字"""
-
-    admins: List[int] = Field(default_factory=list)
+    admins: List[str] = Field(default_factory=list)
     """bot 的管理者(除开控制者)的账号"""
 
 
@@ -89,14 +82,15 @@ class CommandConfig(BaseConfig):
     completion: List[str] = Field(default_factory=lambda x: ["-cp", "--comp"])
     """补全选项的名称"""
 
+    disables: Set[Literal["help", "shortcut", "completion"]] = Field(default_factory=set)
+    """禁用内置选项"""
+
     @property
     def headers(self):
         res = []
         for p in self.prefix:
-            if mth := re.match(r"^At:(?P<target>\d+)$", p):
-                res.append(At(int(mth.groupdict()["target"])))
-            elif mth := re.match(r"^Face:(?P<target>.+)$", p):
-                res.append(Face(name=mth.groupdict()["target"]))
+            if p == "$Notice":
+                res.append(Notice)
             else:
                 res.append(p)
         return res
@@ -133,12 +127,23 @@ class PlatformConfig(BaseConfig):
     """腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env"""
 
 
-class BotConfig(BaseConfig):
-    bot_name: str
+class ElizabethConfig(BaseConfig):
+    type: Literal["mirai"] = "mirai"
+
+    name: str
     """机器人名字, 请尽量不要与 prefix 重合"""
 
     account: int
     """bot 登录账号"""
+
+    host: str
+    """mirai-api-http 的地址"""
+
+    port: int
+    """mirai-api-http 的端口"""
+
+    access_token: str
+    """mirai-api-http 的鉴权"""
 
     disabled: List[str] = Field(default_factory=list)
     """bot 初始禁用的模块名称"""
@@ -146,16 +151,76 @@ class BotConfig(BaseConfig):
     admin: AdminConfig
     """bot 权限相关配置"""
 
+    def export(self):
+        return _ElizabethConfig(
+            qq=self.account,
+            host=self.host,
+            port=self.port,
+            access_token=self.access_token
+        )
+
+
+class Intents(BaseConfig):
+    guilds: bool = True
+    guild_members: bool = True
+    guild_messages: bool = False
+    """GUILD_MESSAGES"""
+    guild_message_reactions: bool = True
+    direct_message: bool = False
+    """DIRECT_MESSAGES"""
+    open_forum_event: bool = False
+    audio_live_member: bool = False
+    c2c_group_at_messages: bool = False
+    interaction: bool = False
+    message_audit: bool = True
+    forum_event: bool = False
+    audio_action: bool = False
+    at_messages: bool = True
+
+    def export(self):
+        return _Intents(**self.dict())
+
+
+class QQAPIConfig(BaseConfig):
+    type: Literal["qqapi"] = "qqapi"
+
+    name: str
+    """机器人名字, 请尽量不要与 prefix 重合"""
+
+    account: str
+    """bot 的appid"""
+
+    token: str
+    """bot 的令牌"""
+
+    secret: str
+    """bot 的密钥"""
+
+    shard: Optional[Tuple[int, int]] = None
+    """分片设置"""
+
+    intent: Intents = Field(default_factory=Intents)
+    """事件接收配置"""
+
+    is_sandbox: bool = False
+    """是否为沙箱环境"""
+
+    disabled: List[str] = Field(default_factory=list)
+    """bot 初始禁用的模块名称"""
+
+    admin: AdminConfig
+    """bot 权限相关配置"""
+
+    def export(self):
+        return _QQAPIConfig(
+            id=self.account, token=self.token, secret=self.secret, shard=self.shard,
+            intent=self.intent.export(), is_sandbox=self.is_sandbox
+        )
+
 
 class RaianConfig(BaseConfig):
-    default_account: int
-    """bot 默认登录账号"""
-
     cache_dir: str = Field(default="cache")
     """缓存数据存放的文件夹, 默认为 cache"""
-
-    mirai: MiraiConfig
-    """mirai-api-http 相关配置"""
 
     browser: BrowserConfig
     """浏览器相关配置"""
@@ -172,19 +237,15 @@ class RaianConfig(BaseConfig):
     platform: PlatformConfig
     """外部平台接口相关配置"""
 
-    bots: Dict[int, BotConfig] = Field(default_factory=dict)
+    bots: List[Union[ElizabethConfig, QQAPIConfig]] = Field(default_factory=list)
     """bot 配置"""
 
     root: str = Field(default="config")
     """根目录"""
-
-    @property
-    def mirai_addr(self) -> str:
-        return f"http://{self.mirai.host}:{self.mirai.port}"
-
     @property
     def plugin_cache_dir(self) -> Path:
         return Path.cwd() / self.cache_dir / self.plugin.root
+
 
 def load_config(root_dir: str = "config") -> RaianConfig:
     if (path := Path.cwd() / root_dir).exists() and path.is_dir():
@@ -193,24 +254,8 @@ def load_config(root_dir: str = "config") -> RaianConfig:
             with open(config_path, "r", encoding="utf-8") as f:
                 main_config = RaianConfig.parse_obj(yaml.safe_load(f))
             main_config.root = root_dir
-            configs = {}
-            for config_file in (path / "bots").iterdir():
-                name = config_file.name
-                if name == "config.yml":
-                    continue
-                if name == "{example_account}.yml" or config_file.is_dir() or not config_file.stem.isdigit():
-                    logger.warning(f"请将 {root_dir}/bots/{name} 重命名为你的机器人账号")
-                    continue
-                with config_file.open(encoding="utf-8") as f:
-                    _bot_config = BotConfig.parse_obj(yaml.safe_load(f))
-                    if _bot_config.account != int(config_file.stem):
-                        logger.warning(f"请将 {root_dir}/bots/{name} 重命名为你的机器人账号")
-                        continue
-                    configs[_bot_config.account] = _bot_config
-            if configs and main_config.default_account in configs:
-                main_config.bots.update(configs)
-                MainConfigInstance.set(main_config)
-                return main_config
+            MainConfigInstance.set(main_config)
+            return main_config
 
     logger.critical("没有有效的配置文件！")
     sys.exit()
@@ -218,9 +263,9 @@ def load_config(root_dir: str = "config") -> RaianConfig:
 
 def extract_plugin_config(plugin_path: str, name: str) -> Optional[BasePluginConfig]:
     with suppress(ModuleNotFoundError, FileNotFoundError, AttributeError, KeyError):
-        config_module = importlib.import_module(f"{plugin_path}.config.{name}")
+        config_module = importlib.import_module(f"{plugin_path}.config")
         if (base := MainConfigInstance.get(None)) and (
-            path := Path.cwd() / base.root / "plugins" / f"{name}.yml"
+                path := Path.cwd() / base.root / "plugins" / f"{name}.yml"
         ).exists():
             with path.open("r+", encoding="UTF-8") as f_obj:
                 data = yaml.safe_load(f_obj.read())

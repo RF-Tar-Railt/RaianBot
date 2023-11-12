@@ -35,35 +35,34 @@ from .logger import set_output
 from .utils import send_handler
 
 
-class RaianBotInterface(ExportInterface["RaianBotService"]):
-    service: "RaianBotService"
-    def __init__(self, service: "RaianBotService", account: int | None = None):
-        self.service = service
-        self.account = account or Ariadne.current().account
-
-    def bind(self, account: int):
-        return RaianBotInterface(self.service, account)
-
-    @property
-    def data(self) -> BotDataManager:
-        if self.account is None:
-            return AccountDataInstance.get()
-        return DataInstance.get()[self.account]
-
-    @property
-    def base_config(self) -> RaianConfig:
-        return self.service.config
-
-    @property
-    def config(self) -> BotConfig:
-        if self.account is None:
-            return BotConfigInstance.get()
-        return self.service.config.bots[self.account]
+# class RaianBotInterface(ExportInterface["RaianBotService"]):
+#     service: "RaianBotService"
+#     def __init__(self, service: "RaianBotService", account: int | None = None):
+#         self.service = service
+#         self.account = account or Ariadne.current().account
+#
+#     def bind(self, account: int):
+#         return RaianBotInterface(self.service, account)
+#
+#     @property
+#     def data(self) -> BotDataManager:
+#         if self.account is None:
+#             return AccountDataInstance.get()
+#         return DataInstance.get()[self.account]
+#
+#     @property
+#     def base_config(self) -> RaianConfig:
+#         return self.service.config
+#
+#     @property
+#     def config(self) -> BotConfig:
+#         if self.account is None:
+#             return BotConfigInstance.get()
+#         return self.service.config.bots[self.account]
 
 
 class RaianBotService(Service):
     id = "raian.core.service"
-    supported_interface_types = {RaianBotInterface}
     config: RaianConfig
 
     def __init__(self, config: RaianConfig):
@@ -73,9 +72,6 @@ class RaianBotService(Service):
         DataInstance.set(
             {account: BotDataManager(bot_config) for account, bot_config in config.bots.items()}
         )
-
-    def get_interface(self, _: type[RaianBotInterface]) -> RaianBotInterface:
-        return RaianBotInterface(self)
 
     @property
     def required(self) -> set[str | type[ExportInterface]]:
