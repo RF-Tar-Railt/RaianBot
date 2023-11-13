@@ -14,7 +14,8 @@ from loguru import logger
 import pkgutil
 from pathlib import Path
 
-from .config import extract_plugin_config, RaianConfig, BasePluginConfig
+from .config import extract_plugin_config, RaianConfig, BasePluginConfig, SqliteDatabaseConfig
+from .database import DatabaseService, get_engine_url
 
 BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
 
@@ -26,7 +27,16 @@ class RaianBotService(Service):
     def __init__(self, config: RaianConfig):
         super().__init__()
         self.config = config
+        (Path.cwd() / self.config.data_dir).mkdir(parents=True, exist_ok=True)
         self.cache = {}
+
+    def ensure_manager(self, manager: Launart):
+        super().ensure_manager(manager)
+        if isinstance(self.config.database, SqliteDatabaseConfig):
+            self.config.database.name = f"/{self.config.data_dir}/{self.config.database.name}"
+            if not self.config.database.name.endswith(".db"):
+                self.config.database.name = f"{self.config.database.name}.db"
+        manager.add_component(DatabaseService(get_engine_url(**self.config.database.dict())))
 
     @property
     def required(self) -> set[str]:
@@ -58,7 +68,7 @@ class RaianBotService(Service):
                         continue
                     try:
                         if model := extract_plugin_config(self.config, path, name):
-                            self.config.plugin.data[type(model)] = model
+                            self.config.plugin.configs[type(model)] = model
                         saya.require(f"{path}.{name}")
                     except BaseException as e:
                         logger.warning(
@@ -96,10 +106,13 @@ class RaianBotDispatcher(BaseDispatcher):
         self.service = service
 
     async def catch(self, interface: DispatcherInterface):
+        if interface.annotation is RaianBotService:
+            return self.service
+        if interface.annotation is RaianConfig:
+            return self.service.config
         if isinstance(interface.annotation, type):
-            if interface.annotation is RaianConfig:
-                return self.service.config
-            # if interface.annotation is BotConfig:
-            #     return BotConfigInstance.get()
+            if issubclass(interface.annotation, Service):
+                manager = Launart.current()
+                return manager.get_interface(interface.annotation)
             if issubclass(interface.annotation, BasePluginConfig):
                 return self.service.config.plugin.get(interface.annotation)

@@ -94,9 +94,31 @@ class CommandConfig(BaseConfig):
         return res
 
 
+class SqliteDatabaseConfig(BaseConfig):
+    type: Literal["sqlite"] = "sqlite"
+    name: str
+    driver: str = "aiosqlite"
+
+    class Config:
+        extra = "allow"
+
+
+class MySqlDatabaseConfig(BaseConfig):
+    type: Literal["mysql"] = "mysql"
+    name: str
+    driver: str = "pymysql"
+    host: str
+    port: int = 3306
+    username: str
+    password: str
+
+    class Config:
+        extra = "allow"
+
+
 class PluginConfig(BaseConfig):
     root: str = Field(default="plugins", exclude={"bots", "data", "config"})
-    """模块缓存的根路径"""
+    """模块各数据的根路径"""
 
     paths: List[str] = Field(default_factory=lambda x: ["plugins"])
     """模块存放的路径"""
@@ -104,11 +126,11 @@ class PluginConfig(BaseConfig):
     disabled: List[str] = Field(default_factory=list)
     """全局初始禁用的模块名称"""
 
-    data: Dict[Type[BasePluginConfig], BasePluginConfig] = Field(default_factory=dict)
+    configs: Dict[Type[BasePluginConfig], BasePluginConfig] = Field(default_factory=dict)
     """插件配置存放处"""
 
     def get(self, mtype: Type[TConfig]) -> TConfig:
-        return self.data[mtype]
+        return self.configs[mtype]
 
 
 class PlatformConfig(BaseConfig):
@@ -217,8 +239,8 @@ class QQAPIConfig(BaseConfig):
 
 
 class RaianConfig(BaseConfig):
-    cache_dir: str = Field(default="cache")
-    """缓存数据存放的文件夹, 默认为 cache"""
+    data_dir: str = Field(default="data")
+    """数据存放的文件夹, 默认为 data"""
 
     log_level: str = Field(default="INFO")
     """日志等级"""
@@ -231,6 +253,9 @@ class RaianConfig(BaseConfig):
 
     command: CommandConfig
     """bot 命令相关配置"""
+
+    database: Union[SqliteDatabaseConfig, MySqlDatabaseConfig]
+    """bot 数据库相关配置"""
 
     plugin: PluginConfig
     """bot 模块相关配置"""
@@ -247,8 +272,9 @@ class RaianConfig(BaseConfig):
     root: str = Field(default="config")
     """根目录"""
     @property
-    def plugin_cache_dir(self) -> Path:
-        return Path.cwd() / self.cache_dir / self.plugin.root
+    def plugin_data_dir(self) -> Path:
+        return Path.cwd() / self.data_dir / self.plugin.root
+
 
 
 def load_config(root_dir: str = "config") -> RaianConfig:

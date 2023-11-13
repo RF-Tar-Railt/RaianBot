@@ -1,26 +1,26 @@
-from graia.scheduler.service import SchedulerService
-from launart import Launart
-from creart import it
-from loguru import logger
 import asyncio
-from app.config import load_config
-from app.core import RaianBotService, RaianBotDispatcher
-from app.logger import setup_logger, loguru_exc_callback_async
-from app.client import AiohttpClientService
-from graia.saya import Saya
-from graia.broadcast import Broadcast
-from graia.scheduler import GraiaScheduler
-from arclet.alconna import namespace
-from arclet.alconna.tools import MarkdownTextFormatter
-from arclet.alconna.graia import AlconnaBehaviour, AlconnaGraiaService, AlconnaDispatcher
-from arclet.alconna.avilla import AlconnaAvillaAdapter
-from avilla.core import Avilla
-from fastapi import FastAPI
-from graiax.fastapi import FastAPIBehaviour, FastAPIService
-from graia.amnesia.builtins.asgi import UvicornASGIService
-from graiax.playwright import PlaywrightService
 
+from app.client import AiohttpClientService
+from app.config import load_config
+from app.core import RaianBotDispatcher, RaianBotService
+from app.logger import loguru_exc_callback_async, setup_logger
 from app.shortcut import send_handler
+from arclet.alconna import namespace
+from arclet.alconna.avilla import AlconnaAvillaAdapter
+from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, AlconnaGraiaService
+from arclet.alconna.tools import MarkdownTextFormatter
+from avilla.core import Avilla
+from creart import it
+from fastapi import FastAPI
+from graia.amnesia.builtins.asgi import UvicornASGIService
+from graia.broadcast import Broadcast
+from graia.saya import Saya
+from graia.scheduler import GraiaScheduler
+from graia.scheduler.service import SchedulerService
+from graiax.fastapi import FastAPIBehaviour, FastAPIService
+from graiax.playwright import PlaywrightService
+from launart import Launart
+from loguru import logger
 
 config = load_config(root_dir="my_config")
 setup_logger(config.log_level)
@@ -53,7 +53,7 @@ manager.add_component(
     )
 )
 manager.add_component(AiohttpClientService())
-manager.add_component(AlconnaGraiaService(AlconnaAvillaAdapter, enable_cache=True, cache_dir=config.cache_dir))
+manager.add_component(AlconnaGraiaService(AlconnaAvillaAdapter, enable_cache=True, cache_dir=config.data_dir))
 manager.add_component(FastAPIService(fastapi))
 manager.add_component(UvicornASGIService(config.api.host, config.api.port))
 manager.add_component(SchedulerService(it(GraiaScheduler)))

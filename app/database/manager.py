@@ -26,45 +26,6 @@ class DatabaseManager:
             engine_options = {"echo": "debug", "pool_pre_ping": True}
         self.engine = create_async_engine(url, **engine_options)
 
-    @classmethod
-    def get_engine_url(
-        cls,
-        database_name: str,
-        driver: str = "aiosqlite",
-        database_type: str = "sqlite",
-        host: str | None = None,
-        port: int = 3306,
-        username: str | None = None,
-        passwd: str | None = None,
-        **kwargs: dict[str, str],
-    ) -> str:
-        """
-        生成一个数据库链接，仅支持 mysql 或 sqlite
-
-        Args:
-            database_name (str):
-                MySQL/MariaDB 时为数据库名称
-                SQLite 时则为数据库名称
-            driver (str, optional): 数据库 Driver. 默认为 "aiosqlite".
-                可用的 MySQL/MariaDB Driver 列表详见：https://docs.sqlalchemy.org/en/20/dialects/mysql.html#dialect-mysql
-                可用的 SQLite Driver 列表详见：https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#dialect-sqlite
-            database_type (str, optional): 数据库类型. 默认为 "mysql".
-            host (str, optional): MySQL/MariaDB 服务器地址.
-            port (int): MySQL/MariaDB 服务器端口. 默认为 3306.
-            username (str, optional): MySQL/MariaDB 服务器用户名. 默认为 None.
-            passwd (str, optional): MySQL/MariaDB 服务器密码. 默认为 None.
-        """
-        if database_type == "mysql":
-            if host is None or username is None or passwd is None:
-                raise ValueError("Option `username` or `passwd` or `database_name` must in parameter.")
-            url = f"mysql+{driver}://{username}:{passwd}@{host}:{port}/{database_name}"
-        elif database_type == "sqlite":
-            url = f"sqlite+{driver}://{database_name}"
-        else:
-            raise ValueError("Unsupport database type, please creating URL manually.")
-        kw = "".join(f"&{key}={value}" for key, value in kwargs.items()).lstrip("&")
-        return f'{url}?{kw}' if kw else url
-
     async def initialize(self, session_options: dict[str, Any] | None = None):
         """初始化数据库
 

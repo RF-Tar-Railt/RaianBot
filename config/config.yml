@@ -1,5 +1,5 @@
 ## 缓存数据存放的文件夹, 默认为 cache
-cache_dir: 'cache'
+data_dir: 'data'
 ## 日志等级
 log_level: "info"
 ## 代理配置
@@ -25,6 +25,11 @@ command:
   completion:
     - "--comp"
     - "-cp"
+## bot 数据库相关配置
+database:
+  type: sqlite
+  name: data
+  driver: aiosqlite
 ## bot 模块相关配置
 plugin:
   ## 模块缓存的根路径
