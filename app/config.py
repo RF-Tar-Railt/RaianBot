@@ -150,12 +150,12 @@ class ElizabethConfig(BaseConfig):
     """bot 权限相关配置"""
 
     def export(self):
-        return ElizabethProtocol().configure(_ElizabethConfig(
+        return ElizabethProtocol, _ElizabethConfig(
             qq=int(self.account),
             host=self.host,
             port=self.port,
             access_token=self.access_token
-        ))
+        )
 
 
 class Intents(BaseConfig):
@@ -210,10 +210,10 @@ class QQAPIConfig(BaseConfig):
     """bot 权限相关配置"""
 
     def export(self):
-        return QQAPIProtocol().configure(_QQAPIConfig(
+        return QQAPIProtocol, _QQAPIConfig(
             id=self.account, token=self.token, secret=self.secret, shard=self.shard,
             intent=self.intent.export(), is_sandbox=self.is_sandbox
-        ))
+        )
 
 
 class RaianConfig(BaseConfig):

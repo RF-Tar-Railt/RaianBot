@@ -98,19 +98,21 @@ def loguru_exc_callback_async(loop, context: dict):
     logger.opt(exception=exc_info).error("\n".join(log_lines))
 
 
-def setup(level='INFO'):
-    logging.basicConfig(handlers=[loguru_handler], level=0, force=True)
+def setup_logger(level='INFO'):
+    logging.basicConfig(handlers=[loguru_handler], level=level.upper(), force=True)
     for name in logging.root.manager.loggerDict:
         _logger = logging.getLogger(name)
         for handler in _logger.handlers:
             if isinstance(handler, logging.StreamHandler):
                 _logger.removeHandler(handler)
+    sys.excepthook = loguru_exc_callback
+    traceback.print_exception = loguru_exc_callback
     log_format = debug_format if level.upper() == 'DEBUG' else info_format
     logger.remove()
     logger.add(
         "./logs/latest.log",
         format=log_format,
-        level=level,
+        level=level.upper(),
         enqueue=True,
         rotation="00:00",
         compression='zip',
@@ -120,7 +122,7 @@ def setup(level='INFO'):
         colorize=False,
     )
     logger.add(
-        sys.stderr, level=level,
+        sys.stderr, level=level.upper(),
         format=log_format, backtrace=True,
         diagnose=True, colorize=True
     )

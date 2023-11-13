@@ -21,6 +21,7 @@ dependencies = [
     "graiax-fastapi>=0.4.1",
     "avilla-elizabeth>=1.0.0a10",
     "ujson>=5.8.0",
+    "sqlalchemy>=2.0.23",
 ]
 requires-python = ">=3.9"
 readme = "README.md"

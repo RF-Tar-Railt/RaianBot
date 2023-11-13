@@ -1,41 +1,24 @@
 from __future__ import annotations
 
-from typing import (
-    Callable,
-    Literal,
-    TypeVar,
-    Union,
-)
+from typing import Callable, Literal, TypeVar
 import inspect
 from pathlib import Path
 from avilla.core.message import MessageChain
 from avilla.core.elements import Picture, Text
 from avilla.core.resource import RawResource
-from graia.saya import Channel
 from graia.saya.factory import ensure_buffer
 
-from .context import DataInstance
+from .core import RaianBotService
 from .control import require_admin, require_function, check_disabled, check_exclusive
 from .image import md2img
 
 T_Callable = TypeVar("T_Callable", bound=Callable)
 
 
-def meta_export(
-    *,
-    group_meta: list[type[tuple]] | None = None,
-    user_meta: list[type[tuple]] | None = None,
-):
-    return Channel.current().export(
-        {"group_meta": group_meta or [], "user_meta": user_meta or []}
-    )
-
-
 def record(name: str, require: bool = True, disable: bool = False):
     def wrapper(func: T_Callable) -> T_Callable:
-        datas = DataInstance.get()
-        for data in datas.values():
-            data.record(name, disable)(func)
+        service = RaianBotService.current()
+        service.record(name, disable)(func)
         if require:
             buffer = ensure_buffer(func)
             buffer.setdefault("decorators", []).append(require_function(name))
