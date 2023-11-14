@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-from typing import Union, Optional, Any
-from loguru import logger
+import random
+from datetime import datetime
+from typing import Any, Optional, Union
+
+from avilla.core import Context
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
+from loguru import logger
+from sqlalchemy.sql import select
 
-from datetime import datetime
+from .core import RaianBotService
+from .database import DatabaseService, Group
 
-import random
 
 
 def require_admin(only: bool = False, __record: Any = None):
@@ -43,20 +48,24 @@ def require_admin(only: bool = False, __record: Any = None):
 
 
 def require_function(name: str):
-    def __wrapper__(app: Ariadne, sender: Union[Friend, Group]):
-        from .core import RaianBotInterface
-
-        data = app.launch_manager.get_interface(RaianBotInterface).data
-        if isinstance(sender, Friend):
+    async def __wrapper__(ctx: Context, bot: RaianBotService, db: DatabaseService):
+        if ctx.scene == ctx.client:
             return True
-        if name not in data.funcs:
+        if name not in bot.functions:
             return True
-        if group_data := data.get_group(sender.id):
-            if name in group_data.disabled:
-                raise ExecutionStop
-            elif group_data.in_blacklist or sender.id in data.cache.get("blacklist", []):
-                raise ExecutionStop
-        return True
+        async with db.get_session() as session:
+            group = (
+                await session.scalars(
+                    select(Group)
+                    .where(Group.id == ctx.scene.last_value)
+                )
+            ).one_or_none()
+            if group:
+                if name in group.disabled:
+                    raise ExecutionStop
+                elif group.in_blacklist:
+                    raise ExecutionStop
+            return True
 
     return Depend(__wrapper__)
 

@@ -33,8 +33,6 @@ class DatabaseManager:
         """
         if session_options is None:
             session_options = {"expire_on_commit": False}
-        async with self.engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
         self.session_factory = async_sessionmaker(self.engine, **session_options)
 
     async def stop(self, close: bool = True):
@@ -52,18 +50,10 @@ class DatabaseManager:
         # clean-up pooled connections
         await self.engine.dispose(close)
 
-    async def exec(self, sql: Executable) -> Result:
+    async def execute(self, sql: Executable) -> Result:
         """执行 SQL 命令"""
         async with self.session_factory() as session:
             return await session.execute(sql)
-
-    # from sqlalchemy.sql.expression import Select
-    # async def select_all(self, sql: Select[tuple[T_Row]]) -> list[Sequence[T_Row]]:
-    #     result = await self.exec(sql)
-    #     return cast(list[Sequence[T_Row]], result.all())
-    # async def select_first(self, sql: Select[tuple[T_Row]]) -> Sequence[T_Row] | None:
-    #     result = await self.exec(sql)
-    #     return cast(Sequence[T_Row] | None, result.first())
 
     async def select_all(self, sql: TypedReturnsRows[tuple[T_Row]]) -> Sequence[T_Row]:
         async with self.session_factory() as session:

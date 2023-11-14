@@ -67,7 +67,7 @@ bots:
     ## 机器人名字, 请尽量不要与 prefix 重合
     name: 莱安
     ## bot 登录账号
-    account: "NOT-A-NUMBER"
+    account: "UNDEFINED"
     ## mirai-api-http 的链接
     host: "localhost"
     ## mirai-api-http 的端口
@@ -79,6 +79,38 @@ bots:
     ## bot 权限相关配置
     admin:
       ## bot 的控制者的账号
-      master_id: "NOT-A-NUMBER"
+      master_id: "UNDEFINED"
+      ## bot 的管理者(除开控制者)的账号
+      admins: []
+  -
+    ## 类型为 qq-api
+    type: qqapi
+    ## 机器人名字, 请尽量不要与 prefix 重合
+    name: 莱安
+    ## bot 的 appid
+    account: "UNDEFINED"
+    ## bot 的令牌
+    token: "UNDEFINED"
+    ## bot 的密钥
+    secret: "UNDEFINED"
+    ## 分片设置
+    shard: null
+    ## 事件接收配置
+    intent:
+      # 仅作示范
+      ## 是否接收频道所有消息
+      guild_messages: true
+      ## 是否接受 at 机器人的消息
+      at_messages: false
+      ## 是否接受频道私聊消息
+      direct_message: true
+    ## 是否为沙箱环境
+    is_sandbox: true
+    ## bot 初始禁用的模块名称
+    disabled: []
+    ## bot 权限相关配置
+    admin:
+      ## bot 的控制者的账号
+      master_id: "UNDEFINED"
       ## bot 的管理者(除开控制者)的账号
       admins: []

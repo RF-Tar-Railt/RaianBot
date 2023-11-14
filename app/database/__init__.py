@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .service import DatabaseService
-
+from .model import Base, User, Group
 
 def get_engine_url(
     type: str,

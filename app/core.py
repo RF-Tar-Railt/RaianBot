@@ -36,7 +36,12 @@ class RaianBotService(Service):
             self.config.database.name = f"/{self.config.data_dir}/{self.config.database.name}"
             if not self.config.database.name.endswith(".db"):
                 self.config.database.name = f"{self.config.database.name}.db"
-        manager.add_component(DatabaseService(get_engine_url(**self.config.database.dict())))
+        manager.add_component(
+            DatabaseService(
+                get_engine_url(**self.config.database.dict()),
+                {"echo": None, "pool_pre_ping": True},
+            )
+        )
 
     @property
     def required(self) -> set[str]:
@@ -69,7 +74,7 @@ class RaianBotService(Service):
                     try:
                         if model := extract_plugin_config(self.config, path, name):
                             self.config.plugin.configs[type(model)] = model
-                        saya.require(f"{path}.{name}")
+                        saya.require(f"{path}.{name}.main")
                     except BaseException as e:
                         logger.warning(
                             f"fail to load {path}.{name}, caused by "
@@ -77,7 +82,6 @@ class RaianBotService(Service):
                         )
                         traceback.print_exc()
                         continue
-
         async with self.stage("cleanup"):
             self.cache.clear()
             logger.success("机器人数据保存完毕")
@@ -96,6 +100,10 @@ class RaianBotService(Service):
 
         return __wrapper__
 
+    @property
+    def functions(self):
+        return self.cache.get("function::record", {})
+
     def func_description(self, name: str):
         return func.__doc__ if (func := self.cache.get("function::record", {}).get(name)) else "Unknown"
 
@@ -113,6 +121,6 @@ class RaianBotDispatcher(BaseDispatcher):
         if isinstance(interface.annotation, type):
             if issubclass(interface.annotation, Service):
                 manager = Launart.current()
-                return manager.get_interface(interface.annotation)
+                return manager.get_component(interface.annotation)
             if issubclass(interface.annotation, BasePluginConfig):
                 return self.service.config.plugin.get(interface.annotation)

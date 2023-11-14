@@ -276,7 +276,6 @@ class RaianConfig(BaseConfig):
         return Path.cwd() / self.data_dir / self.plugin.root
 
 
-
 def load_config(root_dir: str = "config") -> RaianConfig:
     if (path := Path.cwd() / root_dir).exists() and path.is_dir():
         config_path = path / "config.yml"
@@ -284,6 +283,9 @@ def load_config(root_dir: str = "config") -> RaianConfig:
             with open(config_path, "r", encoding="utf-8") as f:
                 main_config = RaianConfig.parse_obj(yaml.safe_load(f))
             main_config.root = root_dir
+            for bot in main_config.bots.copy():
+                if bot.account == "UNDEFINED":
+                    main_config.bots.remove(bot)
             return main_config
 
     logger.critical("没有有效的配置文件！")
@@ -292,7 +294,7 @@ def load_config(root_dir: str = "config") -> RaianConfig:
 
 def extract_plugin_config(main_config: RaianConfig, plugin_path: str, name: str) -> Optional[BasePluginConfig]:
     with suppress(ModuleNotFoundError, FileNotFoundError, AttributeError, KeyError):
-        config_module = importlib.import_module(f"{plugin_path}.config")
+        config_module = importlib.import_module(f"{plugin_path}.{name}.config")
         if (path := Path.cwd() / main_config.root / "plugins" / f"{name}.yml").exists():
             with path.open("r+", encoding="UTF-8") as f_obj:
                 data = yaml.safe_load(f_obj.read())
