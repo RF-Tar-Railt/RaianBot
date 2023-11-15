@@ -38,3 +38,8 @@ build-backend = "pdm.backend"
 include = '\.pyi?$'
 line-length = 120
 target-version = ['py39']
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "cos-python-sdk-v5>=1.9.26",
+]

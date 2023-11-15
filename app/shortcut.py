@@ -3,9 +3,13 @@ from __future__ import annotations
 from typing import Callable, Literal, TypeVar
 import inspect
 from pathlib import Path
+from avilla.core import Context
 from avilla.core.message import MessageChain
 from avilla.core.elements import Picture, Text
 from avilla.core.resource import RawResource
+from avilla.qqapi.resource import QQAPIImageResource
+from avilla.qqapi.account import QQAPIAccount
+from avilla.elizabeth.resource import ElizabethImageResource
 from graia.saya.factory import ensure_buffer
 
 from .core import RaianBotService
@@ -13,6 +17,13 @@ from .control import require_admin, require_function, check_disabled, check_excl
 from .image import md2img
 
 T_Callable = TypeVar("T_Callable", bound=Callable)
+
+
+def picture(url: str, ctx: Context):
+    if isinstance(ctx.account, QQAPIAccount):
+
+        return Picture(QQAPIImageResource(ctx.scene.image(url), "image", url))
+    return Picture(ElizabethImageResource(ctx.scene.image(url), id="", url=url))
 
 
 def record(name: str, require: bool = True, disable: bool = False):

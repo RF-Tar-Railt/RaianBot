@@ -127,6 +127,9 @@ class PluginConfig(BaseConfig):
 
 
 class PlatformConfig(BaseConfig):
+    tencentcloud_region: Optional[str] = Field(default=None)
+    """腾讯云API 的 region"""
+
     tencentcloud_secret_id: Optional[str] = Field(default=None)
     """腾讯云API 的 secret-id"""
 
@@ -138,6 +141,9 @@ class PlatformConfig(BaseConfig):
 
     tencentcloud_tbp_bot_env: Optional[Literal["dev", "release"]] = Field(default=None)
     """腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env"""
+
+    tencentcloud_bucket: Optional[str] = Field(default=None)
+    """腾讯云API 下 COS 的 bucket"""
 
     heweather_api_key: Optional[str] = Field(default=None)
     """和风天气API 的 key

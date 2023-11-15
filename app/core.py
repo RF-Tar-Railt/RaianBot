@@ -17,6 +17,7 @@ from pathlib import Path
 
 from .config import extract_plugin_config, BotConfig, RaianConfig, BasePluginConfig, SqliteDatabaseConfig
 from .database import DatabaseService, get_engine_url
+from .cos import CosConfig, put_object
 
 BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
 
@@ -107,6 +108,22 @@ class RaianBotService(Service):
 
     def func_description(self, name: str):
         return func.__doc__ if (func := self.cache.get("function::record", {}).get(name)) else "Unknown"
+
+    async def upload_to_cos(self, content: bytes | str, name: str):
+        config = CosConfig(
+            secret_id=self.config.platform.tencentcloud_secret_id,
+            secret_key=self.config.platform.tencentcloud_secret_key,
+            region=self.config.platform.tencentcloud_region,
+            scheme='https'
+        )
+        await put_object(
+            config,
+            self.config.platform.tencentcloud_bucket,
+            content,
+            name,
+            headers={"StorageClass": "STANDARD"}
+        )
+        return config.uri(self.config.platform.tencentcloud_bucket, name)
 
 
 class RaianBotDispatcher(BaseDispatcher):

@@ -51,6 +51,8 @@ api:
   port: 8000
 ## 腾讯云相关配置
 platform:
+  ## 腾讯云API 的 region
+  tencentcloud_region: null
   ## 腾讯云API 的 secret-id
   tencentcloud_secret_id: null
   ## 腾讯云API 的 secret-key
@@ -59,6 +61,8 @@ platform:
   tencentcloud_tbp_bot_id: null
   ## 腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env
   tencentcloud_tbp_bot_env: null
+  ## 腾讯云API 下 COS 的 bucket
+  tencentcloud_bucket: null
   ## 和风天气API 的 key
   ## 获取地址: https://id.qweather.com/#/login
   heweather_api_key: null

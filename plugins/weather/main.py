@@ -1,8 +1,9 @@
 from pathlib import Path
+from secrets import token_hex
 
 import ujson
 from app.core import RaianBotService
-from app.shortcut import record
+from app.shortcut import record, picture
 from arclet.alconna import Alconna, Args, CommandMeta
 from arclet.alconna.graia import Match, alcommand
 from avilla.core import Context, Picture, RawResource
@@ -57,7 +58,12 @@ if config.heweather:
         await page.goto(file.absolute().as_uri())
         img = await page.screenshot(type="jpeg", quality=80, full_page=True, scale="device")
         await page.close()
-        return await ctx.scene.send_message(Picture(RawResource(img)))
+        try:
+            return await ctx.scene.send_message(Picture(RawResource(img)))
+        except Exception:
+            url = await bot.upload_to_cos(img, f"weather_{token_hex(16)}.jpg")
+            return await ctx.scene.send_message(picture(url, ctx))
+
 
 else:
     with (Path.cwd() / "assets" / "data" / "city.json").open("r", encoding="utf-8") as f:
@@ -90,6 +96,10 @@ else:
         if await elem4.count():
             bounding3 = await elem4.first.bounding_box()
             bounding1["height"] += bounding3["height"]
-        res = Picture(RawResource(await page.screenshot(full_page=True, clip=bounding1)))
+        img = await page.screenshot(full_page=True, clip=bounding1)
         await page.close()
-        return await ctx.scene.send_message(res)
+        try:
+            return await ctx.scene.send_message(Picture(RawResource(img)))
+        except Exception:
+            url = await bot.upload_to_cos(img, f"weather_{token_hex(16)}.jpg")
+            return await ctx.scene.send_message(picture(url, ctx))

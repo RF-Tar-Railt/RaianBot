@@ -1,7 +1,7 @@
 from app.client import AiohttpClientService
 from app.core import RaianBotService
 from app.database import DatabaseService, User
-from app.shortcut import record
+from app.shortcut import record, picture
 from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
@@ -9,6 +9,7 @@ from avilla.core import Context, MessageChain, Picture, RawResource, Text
 from fastapi.responses import JSONResponse, Response
 from graiax.fastapi import route
 from sqlalchemy.sql import select
+from secrets import token_hex
 
 from .config import GachaConfig
 from .model import ArkgachaRecord
@@ -53,7 +54,12 @@ async def change(ctx: Context, aio: AiohttpClientService):
     if new := (await gacha.update()):
         async with aio.session.get(new.pool) as resp:
             data = await resp.read()
-        return await ctx.scene.send_message(MessageChain([Text(f"卡池已更新至: {new.title}"), Picture(RawResource(data))]))
+        try:
+            return await ctx.scene.send_message(MessageChain([Text(f"卡池已更新至: {new.title}"), Picture(RawResource(data))]))
+        except Exception:
+            await ctx.scene.send_message(MessageChain([Text(f"卡池已更新至: {new.title}")]))
+            url = await bot.upload_to_cos(data, f"{new.title}.png")
+            return await ctx.scene.send_message(picture(url, ctx))
     return await ctx.scene.send_message("卡池已经是最新状态！")
 
 
@@ -90,8 +96,11 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
                 guser = GachaUser()
                 data = gacha.gacha_with_img(guser, count_)
                 await ctx.scene.send_message("您未签到，抽卡水位是继承不了的说")
-    return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
-
+    try:
+        return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
+    except Exception:
+        url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png")
+        return await ctx.scene.send_message(picture(url, ctx))
 
 @alcommand(Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="灰色头像表示新干员但是头图未更新")), remove_tome=True)
 @record("抽卡")
@@ -125,4 +134,8 @@ async def simulate(ctx: Context, db: DatabaseService):
                 guser = GachaUser()
                 data = await simulate_image(gacha.gacha(guser, 10)[0])
                 await ctx.scene.send_message("您未签到，抽卡水位是继承不了的说")
-    return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
+    try:
+        return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
+    except Exception:
+        url = await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png")
+        return await ctx.scene.send_message(picture(url, ctx))
