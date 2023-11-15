@@ -8,13 +8,14 @@ from arknights_toolkit.update.main import fetch
 from creart import it
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from avilla.core import Context
 from graia.saya import Saya
 from launart import Service, Launart
 from loguru import logger
 import pkgutil
 from pathlib import Path
 
-from .config import extract_plugin_config, RaianConfig, BasePluginConfig, SqliteDatabaseConfig
+from .config import extract_plugin_config, BotConfig, RaianConfig, BasePluginConfig, SqliteDatabaseConfig
 from .database import DatabaseService, get_engine_url
 
 BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
@@ -124,3 +125,10 @@ class RaianBotDispatcher(BaseDispatcher):
                 return manager.get_component(interface.annotation)
             if issubclass(interface.annotation, BasePluginConfig):
                 return self.service.config.plugin.get(interface.annotation)
+            if hasattr(interface.event, "context"):
+                context: Context = interface.event.context
+                if issubclass(interface.annotation, BotConfig):
+                    return next(
+                        (bot for bot in self.service.config.bots if bot.account == context.account.route["account"]),
+                        None
+                    )

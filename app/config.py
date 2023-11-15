@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Optional, cast, Dict, TypeVar, Type, Literal, ClassVar, Set, Tuple, Union
 
 import yaml
+from avilla.core import Selector
 from avilla.core.elements import Notice
 from avilla.elizabeth.protocol import ElizabethConfig as _ElizabethConfig, ElizabethProtocol
 from avilla.qqapi.protocol import Intents as _Intents, QQAPIConfig as _QQAPIConfig,QQAPIProtocol
@@ -38,14 +39,6 @@ class APIConfig(BaseConfig):
 
     port: int = Field(default=8000)
     """FastAPI 服务的运行端口"""
-
-
-class AdminConfig(BaseConfig):
-    master_id: str
-    """bot 的控制者的账号"""
-
-    admins: List[str] = Field(default_factory=list)
-    """bot 的管理者(除开控制者)的账号"""
 
 
 class BrowserConfig(BaseConfig):
@@ -146,15 +139,59 @@ class PlatformConfig(BaseConfig):
     tencentcloud_tbp_bot_env: Optional[Literal["dev", "release"]] = Field(default=None)
     """腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env"""
 
+    heweather_api_key: Optional[str] = Field(default=None)
+    """和风天气API 的 key
+    
+    获取地址: https://id.qweather.com/#/login
+    """
 
-class ElizabethConfig(BaseConfig):
-    type: Literal["mirai"] = "mirai"
+    heweather_api_type: Optional[Literal[0, 1, 2]] = Field(default=None)
+    """和风天气API 的类型
+
+    0 = 普通版，免费订阅 (3 天天气预报)  
+    1 = 个人开发版，标准订阅 (7 天天气预报)  
+    2 = 商业版 (7 天天气预报)  
+    """
+
+    heweather_api_hourly_type: Literal[1, 2] = Field(default=1)
+    """和风天气API 的逐小时类型
+    
+    1 = 未来12小时 (默认值)  
+    2 = 未来24小时  
+    """
+
+
+class BotConfig(BaseConfig):
+    type: str
+    """机器人类型"""
 
     name: str
     """机器人名字, 请尽量不要与 prefix 重合"""
 
     account: str
-    """bot 登录账号"""
+    """bot 账号"""
+
+    master_id: str
+    """bot 的控制者的账号"""
+
+    admins: List[str] = Field(default_factory=list)
+    """bot 的管理者(除开控制者)的账号"""
+
+    disabled: List[str] = Field(default_factory=list)
+    """bot 初始禁用的模块名称"""
+
+    def export(self):
+        raise NotImplementedError
+
+    def master(self, channel: Optional[str] = None) -> Selector:
+        raise NotImplementedError
+
+    def administrators(self, channel: Optional[str] = None) -> List[Selector]:
+        raise NotImplementedError
+
+
+class ElizabethConfig(BotConfig):
+    type: Literal["mirai"] = "mirai"
 
     host: str
     """mirai-api-http 的地址"""
@@ -165,12 +202,6 @@ class ElizabethConfig(BaseConfig):
     access_token: str
     """mirai-api-http 的鉴权"""
 
-    disabled: List[str] = Field(default_factory=list)
-    """bot 初始禁用的模块名称"""
-
-    admin: AdminConfig
-    """bot 权限相关配置"""
-
     def export(self):
         return ElizabethProtocol, _ElizabethConfig(
             qq=int(self.account),
@@ -178,6 +209,16 @@ class ElizabethConfig(BaseConfig):
             port=self.port,
             access_token=self.access_token
         )
+
+    def master(self, channel: Optional[str] = None) -> Selector:
+        if not channel:
+            return Selector.from_follows_pattern(f"land(qq).friend({self.master_id})")
+        return Selector.from_follows_pattern(f"land(qq).group({channel}).member({self.master_id})")
+
+    def administrators(self, channel: Optional[str] = None) -> List[Selector]:
+        if not channel:
+            return [Selector.from_follows_pattern(f"land(qq).friend({admin})") for admin in self.admins]
+        return [Selector.from_follows_pattern(f"land(qq).group({channel}).member({admin})") for admin in self.admins]
 
 
 class Intents(BaseConfig):
@@ -201,14 +242,8 @@ class Intents(BaseConfig):
         return _Intents(**self.dict())
 
 
-class QQAPIConfig(BaseConfig):
+class QQAPIConfig(BotConfig):
     type: Literal["qqapi"] = "qqapi"
-
-    name: str
-    """机器人名字, 请尽量不要与 prefix 重合"""
-
-    account: str
-    """bot 的appid"""
 
     token: str
     """bot 的令牌"""
@@ -225,17 +260,21 @@ class QQAPIConfig(BaseConfig):
     is_sandbox: bool = False
     """是否为沙箱环境"""
 
-    disabled: List[str] = Field(default_factory=list)
-    """bot 初始禁用的模块名称"""
-
-    admin: AdminConfig
-    """bot 权限相关配置"""
-
     def export(self):
         return QQAPIProtocol, _QQAPIConfig(
             id=self.account, token=self.token, secret=self.secret, shard=self.shard,
             intent=self.intent.export(), is_sandbox=self.is_sandbox
         )
+
+    def master(self, channel: Optional[str] = None) -> Selector:
+        if not channel:
+            return Selector.from_follows_pattern(f"land(qq).user({self.master_id})")
+        return Selector.from_follows_pattern(f"land(qq).channel({channel}).member({self.master_id})")
+
+    def administrators(self, channel: Optional[str] = None) -> List[Selector]:
+        if not channel:
+            return [Selector.from_follows_pattern(f"land(qq).user({admin})") for admin in self.admins]
+        return [Selector.from_follows_pattern(f"land(qq).channel({channel}).member({admin})") for admin in self.admins]
 
 
 class RaianConfig(BaseConfig):

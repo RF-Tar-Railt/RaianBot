@@ -59,6 +59,18 @@ platform:
   tencentcloud_tbp_bot_id: null
   ## 腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env
   tencentcloud_tbp_bot_env: null
+  ## 和风天气API 的 key
+  ## 获取地址: https://id.qweather.com/#/login
+  heweather_api_key: null
+  ## 和风天气API 的类型
+  ##  0 = 普通版，免费订阅 (3 天天气预报)
+  ##  1 = 个人开发版，标准订阅 (7 天天气预报)
+  ##  2 = 商业版 (7 天天气预报)
+  heweather_api_type: null
+  ## 和风天气API 的逐小时类型
+  ## 1 = 未来12小时 (默认值)
+  ## 2 = 未来24小时
+  heweather_api_hourly_type: 1
 ## bot 配置
 bots:
   -
@@ -108,9 +120,7 @@ bots:
     is_sandbox: true
     ## bot 初始禁用的模块名称
     disabled: []
-    ## bot 权限相关配置
-    admin:
-      ## bot 的控制者的账号
-      master_id: "UNDEFINED"
-      ## bot 的管理者(除开控制者)的账号
-      admins: []
+    ## bot 的控制者的账号
+    master_id: "UNDEFINED"
+    ## bot 的管理者(除开控制者)的账号
+    admins: []

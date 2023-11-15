@@ -24,10 +24,3 @@ async def _init_g(ctx: Context, db: DatabaseService):
             session.add(group)
             await session.commit()
             await session.refresh(group)
-    # data = interface.data
-    # config = interface.config
-    # if not data.exist(group.id):
-    #     data.add_group(group.id)
-    #     data.cache["all_joined_group"].append(group.id)
-    #     return await app.send_friend_message(
-    #         config.admin.master_id, MessageChain(f"{group.name} 初始配置化完成")

@@ -10,7 +10,7 @@ from httpx import AsyncClient
 
 app_code = "4ca99fa6b56cc2ba"
 header = {
-    'User-Agent': 'Skland/1.0.1 (com.hypergryph.skland; build:100001014; Android 31; ) Okhttp/4.11.0',
+    'User-Agent': 'Skland/1.4.1 (com.hypergryph.skland; build:100001014; Android 31; ) Okhttp/4.11.0',
     'Accept-Encoding': 'gzip',
     'Connection': 'close'
 }
@@ -18,7 +18,8 @@ header_for_sign = {
     'platform': '1',
     'timestamp': '',
     'dId': 'de9759a5afaa634f',
-    'vName': '1.0.1'
+    'vName': '1.4.1',
+    'vCode': "100401001"
 }
 
 # 签到url
@@ -64,6 +65,7 @@ def get_sign_header(token: str, url: str, method: str, body: Optional[dict], old
     for i in header_ca:
         h[i] = header_ca[i]
     return h
+
 
 class SKAutoSign:
     def __init__(self, path: str):
