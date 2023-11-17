@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import pkgutil
 import traceback
 from contextvars import ContextVar
 from pathlib import Path
-from typing import Literal
+from typing import Union, Literal
 
 from arknights_toolkit.update.main import fetch
 from avilla.core import Context
@@ -19,7 +17,7 @@ from .config import BasePluginConfig, BotConfig, RaianConfig, SqliteDatabaseConf
 from .cos import CosConfig, put_object
 from .database import DatabaseService, get_engine_url
 
-BotServiceCtx: ContextVar[RaianBotService] = ContextVar("bot_service")
+BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
 
 
 class RaianBotService(Service):
@@ -109,7 +107,7 @@ class RaianBotService(Service):
     def func_description(self, name: str):
         return func.__doc__ if (func := self.cache.get("function::record", {}).get(name)) else "Unknown"
 
-    async def upload_to_cos(self, content: bytes | str, name: str):
+    async def upload_to_cos(self, content: Union[bytes, str], name: str):
         config = CosConfig(
             secret_id=self.config.platform.tencentcloud_secret_id,
             secret_key=self.config.platform.tencentcloud_secret_key,

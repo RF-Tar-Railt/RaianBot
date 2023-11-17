@@ -27,6 +27,7 @@ async def render(weather: HeWeatherData, hourly_type: int) -> str:
     }
 
     template_env = jinja2.Environment(
+        autoescape=True,
         loader=jinja2.FileSystemLoader(template_path),
         enable_async=True,
     )
