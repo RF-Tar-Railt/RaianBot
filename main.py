@@ -1,15 +1,17 @@
 import asyncio
+from secrets import token_hex
 
 from app.client import AiohttpClientService
 from app.config import load_config
 from app.core import RaianBotDispatcher, RaianBotService
+from app.image import md2img
 from app.logger import loguru_exc_callback_async, setup_logger
-from app.shortcut import send_handler
+from app.shortcut import picture
 from arclet.alconna import namespace
 from arclet.alconna.avilla import AlconnaAvillaAdapter
-from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, AlconnaGraiaService
+from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, AlconnaGraiaService, AlconnaOutputMessage
 from arclet.alconna.tools import MarkdownTextFormatter
-from avilla.core import Avilla
+from avilla.core import Avilla, Context, Picture, RawResource
 from creart import it
 from fastapi import FastAPI
 from graia.amnesia.builtins.asgi import UvicornASGIService
@@ -60,7 +62,6 @@ manager.add_component(SchedulerService(it(GraiaScheduler)))
 manager.add_component(bot_service := RaianBotService(config))
 bcc.finale_dispatchers.append(RaianBotDispatcher(bot_service))
 
-AlconnaDispatcher.default_send_handler = send_handler
 
 avilla = Avilla(broadcast=bcc, launch_manager=manager, record_send=True, message_cache_size=0)
 protocols = {}
@@ -72,6 +73,38 @@ for protocol_type, configs in protocols.items():
     for config in configs:
         protocol.configure(config)
     avilla.apply_protocols(protocol)
+
+
+@avilla.listen(AlconnaOutputMessage)
+async def send_handler(output: str, otype: str, ctx: Context):
+    # length = (output.count("\n") + 5) * 16
+    if otype in ("shortcut", "error"):
+        return await ctx.scene.send_message(output)
+    if otype == "completion":
+        output = (
+            output.replace("\n\n", "\n")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&#123;", "{")
+            .replace("&#125;", "}")
+        )
+        return await ctx.scene.send_message(output)
+    if not output.startswith("#"):
+        output = f"# {output}"
+        output = (
+            output.replace("\n\n", "\n")
+            .replace("\n", "\n\n")
+            .replace("#", "##")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+        )
+    img = await md2img(output)
+    try:
+        return await ctx.scene.send_message(Picture(RawResource(img)))
+    except Exception:
+        url = await bot_service.upload_to_cos(img, f"output_{token_hex(16)}.jpg")
+        return await ctx.scene.send_message(picture(url, ctx))
+
 
 logger.success("------------------机器人初始化完毕--------------------")
 avilla.launch()

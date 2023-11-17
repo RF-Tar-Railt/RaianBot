@@ -1,7 +1,5 @@
-from app.client import AiohttpClientService
-from app.core import RaianBotService
-from app.database import DatabaseService, User
-from app.shortcut import record, picture
+from secrets import token_hex
+
 from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
@@ -9,7 +7,11 @@ from avilla.core import Context, MessageChain, Picture, RawResource, Text
 from fastapi.responses import JSONResponse, Response
 from graiax.fastapi import route
 from sqlalchemy.sql import select
-from secrets import token_hex
+
+from app.client import AiohttpClientService
+from app.core import RaianBotService
+from app.database import DatabaseService, User
+from app.shortcut import accessable, picture, record
 
 from .config import GachaConfig
 from .model import ArkgachaRecord
@@ -45,17 +47,19 @@ cmd = Alconna(
 )
 
 
-@alcommand(cmd, remove_tome=True)
+@alcommand(cmd, remove_tome=True, post=True)
 @assign("更新")
 @record("抽卡")
 # @exclusive
-# @accessable
+@accessable
 async def change(ctx: Context, aio: AiohttpClientService):
     if new := (await gacha.update()):
         async with aio.session.get(new.pool) as resp:
             data = await resp.read()
         try:
-            return await ctx.scene.send_message(MessageChain([Text(f"卡池已更新至: {new.title}"), Picture(RawResource(data))]))
+            return await ctx.scene.send_message(
+                MessageChain([Text(f"卡池已更新至: {new.title}"), Picture(RawResource(data))])
+            )
         except Exception:
             await ctx.scene.send_message(MessageChain([Text(f"卡池已更新至: {new.title}")]))
             url = await bot.upload_to_cos(data, f"{new.title}.png")
@@ -63,11 +67,11 @@ async def change(ctx: Context, aio: AiohttpClientService):
     return await ctx.scene.send_message("卡池已经是最新状态！")
 
 
-@alcommand(cmd, send_error=True, remove_tome=True)
+@alcommand(cmd, send_error=True, remove_tome=True, post=True)
 @assign("$main")
 @record("抽卡")
 # @exclusive
-# @accessable
+@accessable
 async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
     """模拟抽卡"""
     count_ = min(max(count.result, 1), 300)
@@ -83,9 +87,7 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
             proba.statis = guser.six_statis
             await session.commit()
         else:
-            user = (
-                await session.scalars(select(User).where(User.id == ctx.client.last_value))
-            ).one_or_none()
+            user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
             if user:
                 guser = GachaUser(2, 0)
                 data = gacha.gacha_with_img(guser, count_)
@@ -102,10 +104,13 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
         url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png")
         return await ctx.scene.send_message(picture(url, ctx))
 
-@alcommand(Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="灰色头像表示新干员但是头图未更新")), remove_tome=True)
+
+@alcommand(
+    Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="灰色头像表示新干员但是头图未更新")), remove_tome=True, post=True  # noqa: E501
+)
 @record("抽卡")
 # @exclusive
-# @accessable
+@accessable
 async def simulate(ctx: Context, db: DatabaseService):
     from arknights_toolkit.gacha.simulate import simulate_image
 
@@ -121,9 +126,7 @@ async def simulate(ctx: Context, db: DatabaseService):
             proba.statis = guser.six_statis
             await session.commit()
         else:
-            user = (
-                await session.scalars(select(User).where(User.id == ctx.client.last_value))
-            ).one_or_none()
+            user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
             if user:
                 guser = GachaUser(2, 0)
                 data = await simulate_image(gacha.gacha(guser, 10)[0])

@@ -1,6 +1,7 @@
-from app.database import Base, User
+from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, ForeignKey
+
+from app.database import Base, User
 
 
 class ArkgachaRecord(Base):

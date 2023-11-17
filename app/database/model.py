@@ -1,8 +1,7 @@
-from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.sql.sqltypes import String, Boolean, Float, JSON
 from sqlalchemy import MetaData
+from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.sql.sqltypes import JSON, Boolean, Float, String
 
 _NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",

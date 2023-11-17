@@ -1,6 +1,8 @@
 import traceback
 from io import StringIO
+
 from graia.broadcast.builtin.event import ExceptionThrown
+
 from .image import md2img
 
 
@@ -8,7 +10,7 @@ async def generate_report(event: ExceptionThrown):
     with StringIO() as fp:
         traceback.print_tb(event.exception.__traceback__, file=fp)
         tb = fp.getvalue()
-    msg = f'''\
+    msg = f"""\
 ## 异常事件：
 
 `{str(event.event.__repr__())}`
@@ -26,5 +28,5 @@ async def generate_report(event: ExceptionThrown):
 ```py
 {tb}
 ```
-'''
+"""
     return await md2img(msg, 1500)

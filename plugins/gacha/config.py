@@ -1,5 +1,6 @@
-from app.config import BasePluginConfig
 from typing import Optional
+
+from app.config import BasePluginConfig
 
 
 class Config(BasePluginConfig, domain="global"):

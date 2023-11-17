@@ -12,7 +12,7 @@ browser:
 command:
   ## 命令前缀
   prefix:
-    - "莱安"
+    - "/"
   ## 帮助选项的名称
   help:
     - "--help"

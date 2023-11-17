@@ -1,25 +1,25 @@
 from __future__ import annotations
 
+import pkgutil
 import traceback
-from typing import Literal
 from contextvars import ContextVar
+from pathlib import Path
+from typing import Literal
 
 from arknights_toolkit.update.main import fetch
+from avilla.core import Context
 from creart import it
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-from avilla.core import Context
 from graia.saya import Saya
-from launart import Service, Launart
+from launart import Launart, Service
 from loguru import logger
-import pkgutil
-from pathlib import Path
 
-from .config import extract_plugin_config, BotConfig, RaianConfig, BasePluginConfig, SqliteDatabaseConfig
-from .database import DatabaseService, get_engine_url
+from .config import BasePluginConfig, BotConfig, RaianConfig, SqliteDatabaseConfig, extract_plugin_config
 from .cos import CosConfig, put_object
+from .database import DatabaseService, get_engine_url
 
-BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
+BotServiceCtx: ContextVar[RaianBotService] = ContextVar("bot_service")
 
 
 class RaianBotService(Service):
@@ -114,20 +114,15 @@ class RaianBotService(Service):
             secret_id=self.config.platform.tencentcloud_secret_id,
             secret_key=self.config.platform.tencentcloud_secret_key,
             region=self.config.platform.tencentcloud_region,
-            scheme='https'
+            scheme="https",
         )
         await put_object(
-            config,
-            self.config.platform.tencentcloud_bucket,
-            content,
-            name,
-            headers={"StorageClass": "STANDARD"}
+            config, self.config.platform.tencentcloud_bucket, content, name, headers={"StorageClass": "STANDARD"}
         )
         return config.uri(self.config.platform.tencentcloud_bucket, name)
 
 
 class RaianBotDispatcher(BaseDispatcher):
-
     def __init__(self, service: RaianBotService):
         self.service = service
 
@@ -146,6 +141,5 @@ class RaianBotDispatcher(BaseDispatcher):
                 context: Context = interface.event.context
                 if issubclass(interface.annotation, BotConfig):
                     return next(
-                        (bot for bot in self.service.config.bots if bot.account == context.account.route["account"]),
-                        None
+                        (bot for bot in self.service.config.bots if bot.ensure(context.account)), None  # type: ignore
                     )

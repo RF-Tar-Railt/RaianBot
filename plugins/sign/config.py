@@ -1,5 +1,6 @@
-from app.config import BasePluginConfig
 from pydantic import Field
+
+from app.config import BasePluginConfig
 
 
 class Config(BasePluginConfig):

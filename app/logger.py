@@ -4,22 +4,18 @@ import traceback
 from types import TracebackType
 from typing import Optional
 
-from graia.broadcast.exceptions import (
-    ExecutionStop,
-    PropagationCancelled,
-    RequirementCrashed,
-)
+from graia.broadcast.exceptions import ExecutionStop, PropagationCancelled, RequirementCrashed
 from loguru import logger
 
-
 info_format = (
-    '<green>{time:YYYY-MM-DD HH:mm:ss.S}</green> | <level>{level: <8}</level> | '
-    '<cyan>{name}</cyan> - <level>{message}</level>'
+    "<green>{time:YYYY-MM-DD HH:mm:ss.S}</green> | <level>{level: <8}</level> | "
+    "<cyan>{name}</cyan> - <level>{message}</level>"
 )
 debug_format = (
-    '<green>{time:YYYY-MM-DD HH:mm:ss.SSSS}</green> | <level>{level: <9}</level> | '
-    '<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level> '
+    "<green>{time:YYYY-MM-DD HH:mm:ss.SSSS}</green> | <level>{level: <9}</level> | "
+    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level> "
 )
+
 
 class LoguruHandler(logging.Handler):
     def emit(self, record):
@@ -49,7 +45,7 @@ def loguru_exc_callback(cls: type[BaseException], val: BaseException, tb: Option
         val (Exception): 异常的实际值
         tb (TracebackType): 回溯消息
     """
-    if not issubclass(cls,(ExecutionStop, PropagationCancelled)):
+    if not issubclass(cls, (ExecutionStop, PropagationCancelled)):
         logger.opt(exception=(cls, val, tb)).error("Exception:")
 
 
@@ -98,7 +94,7 @@ def loguru_exc_callback_async(loop, context: dict):
     logger.opt(exception=exc_info).error("\n".join(log_lines))
 
 
-def setup_logger(level='INFO'):
+def setup_logger(level="INFO"):
     logging.basicConfig(handlers=[loguru_handler], level=level.upper(), force=True)
     for name in logging.root.manager.loggerDict:
         _logger = logging.getLogger(name)
@@ -107,7 +103,7 @@ def setup_logger(level='INFO'):
                 _logger.removeHandler(handler)
     sys.excepthook = loguru_exc_callback
     traceback.print_exception = loguru_exc_callback
-    log_format = debug_format if level.upper() == 'DEBUG' else info_format
+    log_format = debug_format if level.upper() == "DEBUG" else info_format
     logger.remove()
     logger.add(
         "./logs/latest.log",
@@ -115,14 +111,10 @@ def setup_logger(level='INFO'):
         level=level.upper(),
         enqueue=True,
         rotation="00:00",
-        compression='zip',
+        compression="zip",
         encoding="utf-8",
         backtrace=True,
         diagnose=True,
         colorize=False,
     )
-    logger.add(
-        sys.stderr, level=level.upper(),
-        format=log_format, backtrace=True,
-        diagnose=True, colorize=True
-    )
+    logger.add(sys.stderr, level=level.upper(), format=log_format, backtrace=True, diagnose=True, colorize=True)

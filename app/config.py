@@ -2,13 +2,19 @@ import importlib
 import sys
 from contextlib import suppress
 from pathlib import Path
-from typing import List, Optional, cast, Dict, TypeVar, Type, Literal, ClassVar, Set, Tuple, Union
+from typing import ClassVar, Generic, Literal, Optional, TypeVar, Union, cast
 
 import yaml
 from avilla.core import Selector
+from avilla.core.account import BaseAccount
 from avilla.core.elements import Notice
-from avilla.elizabeth.protocol import ElizabethConfig as _ElizabethConfig, ElizabethProtocol
-from avilla.qqapi.protocol import Intents as _Intents, QQAPIConfig as _QQAPIConfig,QQAPIProtocol
+from avilla.elizabeth.account import ElizabethAccount
+from avilla.elizabeth.protocol import ElizabethConfig as _ElizabethConfig
+from avilla.elizabeth.protocol import ElizabethProtocol
+from avilla.qqapi.account import QQAPIAccount
+from avilla.qqapi.protocol import Intents as _Intents
+from avilla.qqapi.protocol import QQAPIConfig as _QQAPIConfig
+from avilla.qqapi.protocol import QQAPIProtocol
 from loguru import logger
 from pydantic import BaseModel, Field
 
@@ -31,6 +37,7 @@ class BasePluginConfig(BaseModel):
 
 
 TConfig = TypeVar("TConfig", bound=BasePluginConfig)
+TA = TypeVar("TA", bound=BaseAccount)
 
 
 class APIConfig(BaseConfig):
@@ -61,19 +68,19 @@ class BrowserConfig(BaseConfig):
 
 
 class CommandConfig(BaseConfig):
-    prefix: List[str] = Field(default_factory=lambda x: ["."])
+    prefix: list[str] = Field(default_factory=lambda x: ["."])
     """命令前缀; At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)"""
 
-    help: List[str] = Field(default_factory=lambda x: ["-h", "--help"])
+    help: list[str] = Field(default_factory=lambda x: ["-h", "--help"])
     """帮助选项的名称"""
 
-    shortcut: List[str] = Field(default_factory=lambda x: ["-sct", "--shortcut"])
+    shortcut: list[str] = Field(default_factory=lambda x: ["-sct", "--shortcut"])
     """快捷命令选项的名称"""
 
-    completion: List[str] = Field(default_factory=lambda x: ["-cp", "--comp"])
+    completion: list[str] = Field(default_factory=lambda x: ["-cp", "--comp"])
     """补全选项的名称"""
 
-    disables: Set[Literal["help", "shortcut", "completion"]] = Field(default_factory=set)
+    disables: set[Literal["help", "shortcut", "completion"]] = Field(default_factory=set)
     """禁用内置选项"""
 
     @property
@@ -113,16 +120,16 @@ class PluginConfig(BaseConfig):
     root: str = Field(default="plugins", exclude={"bots", "data", "config"})
     """模块各数据的根路径"""
 
-    paths: List[str] = Field(default_factory=lambda x: ["plugins"])
+    paths: list[str] = Field(default_factory=lambda x: ["plugins"])
     """模块存放的路径"""
 
-    disabled: List[str] = Field(default_factory=list)
+    disabled: list[str] = Field(default_factory=list)
     """全局初始禁用的模块名称"""
 
-    configs: Dict[Type[BasePluginConfig], BasePluginConfig] = Field(default_factory=dict)
+    configs: dict[type[BasePluginConfig], BasePluginConfig] = Field(default_factory=dict)
     """插件配置存放处"""
 
-    def get(self, mtype: Type[TConfig]) -> TConfig:
+    def get(self, mtype: type[TConfig]) -> TConfig:
         return self.configs[mtype]
 
 
@@ -147,27 +154,27 @@ class PlatformConfig(BaseConfig):
 
     heweather_api_key: Optional[str] = Field(default=None)
     """和风天气API 的 key
-    
+
     获取地址: https://id.qweather.com/#/login
     """
 
     heweather_api_type: Optional[Literal[0, 1, 2]] = Field(default=None)
     """和风天气API 的类型
 
-    0 = 普通版，免费订阅 (3 天天气预报)  
-    1 = 个人开发版，标准订阅 (7 天天气预报)  
-    2 = 商业版 (7 天天气预报)  
+    0 = 普通版，免费订阅 (3 天天气预报)
+    1 = 个人开发版，标准订阅 (7 天天气预报)
+    2 = 商业版 (7 天天气预报)
     """
 
     heweather_api_hourly_type: Literal[1, 2] = Field(default=1)
     """和风天气API 的逐小时类型
-    
-    1 = 未来12小时 (默认值)  
-    2 = 未来24小时  
+
+    1 = 未来12小时 (默认值)
+    2 = 未来24小时
     """
 
 
-class BotConfig(BaseConfig):
+class BotConfig(BaseConfig, Generic[TA]):
     type: str
     """机器人类型"""
 
@@ -180,10 +187,10 @@ class BotConfig(BaseConfig):
     master_id: str
     """bot 的控制者的账号"""
 
-    admins: List[str] = Field(default_factory=list)
+    admins: list[str] = Field(default_factory=list)
     """bot 的管理者(除开控制者)的账号"""
 
-    disabled: List[str] = Field(default_factory=list)
+    disabled: list[str] = Field(default_factory=list)
     """bot 初始禁用的模块名称"""
 
     def export(self):
@@ -192,11 +199,14 @@ class BotConfig(BaseConfig):
     def master(self, channel: Optional[str] = None) -> Selector:
         raise NotImplementedError
 
-    def administrators(self, channel: Optional[str] = None) -> List[Selector]:
+    def administrators(self, channel: Optional[str] = None) -> list[Selector]:
         raise NotImplementedError
 
+    def ensure(self, account: TA):
+        ...
 
-class ElizabethConfig(BotConfig):
+
+class ElizabethConfig(BotConfig[ElizabethAccount]):
     type: Literal["mirai"] = "mirai"
 
     host: str
@@ -210,10 +220,7 @@ class ElizabethConfig(BotConfig):
 
     def export(self):
         return ElizabethProtocol, _ElizabethConfig(
-            qq=int(self.account),
-            host=self.host,
-            port=self.port,
-            access_token=self.access_token
+            qq=int(self.account), host=self.host, port=self.port, access_token=self.access_token
         )
 
     def master(self, channel: Optional[str] = None) -> Selector:
@@ -221,10 +228,13 @@ class ElizabethConfig(BotConfig):
             return Selector.from_follows_pattern(f"land(qq).friend({self.master_id})")
         return Selector.from_follows_pattern(f"land(qq).group({channel}).member({self.master_id})")
 
-    def administrators(self, channel: Optional[str] = None) -> List[Selector]:
+    def administrators(self, channel: Optional[str] = None) -> list[Selector]:
         if not channel:
             return [Selector.from_follows_pattern(f"land(qq).friend({admin})") for admin in self.admins]
         return [Selector.from_follows_pattern(f"land(qq).group({channel}).member({admin})") for admin in self.admins]
+
+    def ensure(self, account: ElizabethAccount):
+        return account.connection.account_id == int(self.account)
 
 
 class Intents(BaseConfig):
@@ -248,7 +258,7 @@ class Intents(BaseConfig):
         return _Intents(**self.dict())
 
 
-class QQAPIConfig(BotConfig):
+class QQAPIConfig(BotConfig[QQAPIAccount]):
     type: Literal["qqapi"] = "qqapi"
 
     token: str
@@ -257,7 +267,7 @@ class QQAPIConfig(BotConfig):
     secret: str
     """bot 的密钥"""
 
-    shard: Optional[Tuple[int, int]] = None
+    shard: Optional[tuple[int, int]] = None
     """分片设置"""
 
     intent: Intents = Field(default_factory=Intents)
@@ -268,8 +278,12 @@ class QQAPIConfig(BotConfig):
 
     def export(self):
         return QQAPIProtocol, _QQAPIConfig(
-            id=self.account, token=self.token, secret=self.secret, shard=self.shard,
-            intent=self.intent.export(), is_sandbox=self.is_sandbox
+            id=self.account,
+            token=self.token,
+            secret=self.secret,
+            shard=self.shard,
+            intent=self.intent.export(),
+            is_sandbox=self.is_sandbox,
         )
 
     def master(self, channel: Optional[str] = None) -> Selector:
@@ -277,10 +291,13 @@ class QQAPIConfig(BotConfig):
             return Selector.from_follows_pattern(f"land(qq).user({self.master_id})")
         return Selector.from_follows_pattern(f"land(qq).channel({channel}).member({self.master_id})")
 
-    def administrators(self, channel: Optional[str] = None) -> List[Selector]:
+    def administrators(self, channel: Optional[str] = None) -> list[Selector]:
         if not channel:
             return [Selector.from_follows_pattern(f"land(qq).user({admin})") for admin in self.admins]
         return [Selector.from_follows_pattern(f"land(qq).channel({channel}).member({admin})") for admin in self.admins]
+
+    def ensure(self, account: QQAPIAccount):
+        return account.connection.config.id == self.account  # type: ignore
 
 
 class RaianConfig(BaseConfig):
@@ -311,11 +328,12 @@ class RaianConfig(BaseConfig):
     platform: PlatformConfig
     """外部平台接口相关配置"""
 
-    bots: List[Union[ElizabethConfig, QQAPIConfig]] = Field(default_factory=list)
+    bots: list[Union[ElizabethConfig, QQAPIConfig]] = Field(default_factory=list)
     """bot 配置"""
 
     root: str = Field(default="config")
     """根目录"""
+
     @property
     def plugin_data_dir(self) -> Path:
         return Path.cwd() / self.data_dir / self.plugin.root
@@ -325,7 +343,7 @@ def load_config(root_dir: str = "config") -> RaianConfig:
     if (path := Path.cwd() / root_dir).exists() and path.is_dir():
         config_path = path / "config.yml"
         if config_path.exists() and config_path.is_file():
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 main_config = RaianConfig.parse_obj(yaml.safe_load(f))
             main_config.root = root_dir
             for bot in main_config.bots.copy():

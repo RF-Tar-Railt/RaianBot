@@ -10,16 +10,15 @@ from httpx import AsyncClient
 
 app_code = "4ca99fa6b56cc2ba"
 header = {
-    'User-Agent': 'Skland/1.4.1 (com.hypergryph.skland; build:100001014; Android 31; ) Okhttp/4.11.0',
-    'Accept-Encoding': 'gzip',
-    'Connection': 'close'
+    "User-Agent": "Skland/1.4.1 (com.hypergryph.skland; build:100001014; Android 31; ) Okhttp/4.11.0",
+    "Accept-Encoding": "gzip",
+    "Connection": "close",
 }
 header_for_sign = {
-    'platform': '1',
-    'timestamp': '',
-    'dId': 'de9759a5afaa634f',
-    'vName': '1.4.1',
-    'vCode': "100401001"
+    "platform": "1",
+    "timestamp": "",
+    "dId": "de9759a5afaa634f",
+    "vName": "1.4.1",
 }
 
 # 签到url
@@ -46,24 +45,23 @@ def generate_signature(token: str, path, body_or_query):
     # 总是说请勿修改设备时间，怕不是yj你的服务器有问题吧，所以这里特地-2
     t = str(int(time.time()) - 2)
     token = token.encode("utf-8")
-    header_ca = json.loads(json.dumps(header_for_sign))
+    header_ca = header_for_sign.copy()
     header_ca["timestamp"] = t
     header_ca_str = json.dumps(header_ca, separators=(",", ":"))
     s = path + body_or_query + t + header_ca_str
     hex_s = hmac.new(token, s.encode("utf-8"), hashlib.sha256).hexdigest()
-    md5 = hashlib.md5(hex_s.encode("utf-8")).hexdigest().encode("utf-8").decode("utf-8")
+    md5 = hashlib.md5(hex_s.encode("utf-8")).hexdigest()
     return md5, header_ca
 
 
 def get_sign_header(token: str, url: str, method: str, body: Optional[dict], old_header: dict):
-    h = json.loads(json.dumps(old_header))
+    h = old_header.copy()
     p = parse.urlparse(url)
     if method.lower() == "get":
         h["sign"], header_ca = generate_signature(token, p.path, p.query)
     else:
         h["sign"], header_ca = generate_signature(token, p.path, json.dumps(body))
-    for i in header_ca:
-        h[i] = header_ca[i]
+    h.update(header_ca)
     return h
 
 
@@ -83,18 +81,14 @@ class SKAutoSign:
 
     async def bind(self, session: str, token: str, uid: str = ""):
         async with AsyncClient(verify=False, headers=header) as client:
-            response = await client.post(
-                grant_code_url, json={"appCode": app_code, "token": token, "type": 0}
-            )
+            response = await client.post(grant_code_url, json={"appCode": app_code, "token": token, "type": 0})
             if response.status_code != 200:
-                raise RuntimeError(f'获得认证代码失败：{response.status_code}')
+                raise RuntimeError(f"获得认证代码失败：{response.status_code}")
             resp = response.json()
             if resp["status"] != 0:
                 raise RuntimeError(f'获得认证代码失败：{resp["msg"]}')
             grant_code = resp["data"]["code"]
-            response = await client.post(
-                cred_code_url, json={"code": grant_code, "kind": 1}
-            )
+            response = await client.post(cred_code_url, json={"code": grant_code, "kind": 1})
             resp = response.json()
             if resp["code"] != 0:
                 raise RuntimeError(f'获得cred失败：{resp["messgae"]}')
@@ -118,20 +112,13 @@ class SKAutoSign:
         }
         async with AsyncClient(verify=False) as client:
             response = await client.get(
-                binding_url,
-                headers=get_sign_header(
-                    data["token"],
-                    binding_url,
-                    "get",
-                    None,
-                    headers
-                )
+                binding_url, headers=get_sign_header(data["token"], binding_url, "get", None, headers)
             )
             response = response.json()
             if response["code"] != 0:
                 yield {"status": False, "text": f"请求角色列表出现问题：{response['message']}", "target": ""}
                 return
-                #raise RuntimeError(f"请求角色列表出现问题：{response['message']}")
+                # raise RuntimeError(f"请求角色列表出现问题：{response['message']}")
             binding = []
             for i in response["data"]["list"]:
                 if i.get("appCode") == "arknights":
@@ -149,19 +136,13 @@ class SKAutoSign:
                 result = {}
                 sign_response = await client.post(
                     sign_url,
-                    headers=get_sign_header(
-                        data["token"],
-                        sign_url,
-                        "post",
-                        query,
-                        headers
-                    ),
+                    headers=get_sign_header(data["token"], sign_url, "post", query, headers),
                     json=query,
                 )
                 sign_response = sign_response.json()
                 if sign_response.get("code") == 0:
                     result["status"] = True
-                    result["target"] = query['uid']
+                    result["target"] = query["uid"]
                     result["text"] = f"{server}账号 {drname}(UID {query['uid']})签到成功\n"
                     awards = sign_response.get("data").get("awards")
                     for award in awards:
@@ -178,7 +159,7 @@ class SKAutoSign:
                         result["text"] += "奖励类型为：" + award.get("type") + "\n"
                 else:
                     result["status"] = False
-                    result["target"] = query['uid']
+                    result["target"] = query["uid"]
                     result["text"] = f"{server}账号 {drname}(UID {query['uid']})签到失败:\n" + sign_response.get("message")
                 yield result
 
@@ -199,3 +180,5 @@ if __name__ == "__main__":
             print(res)
 
     asyncio.run(main())
+
+# hSjs2ZSeFUoHrqwF+MmGyMgv

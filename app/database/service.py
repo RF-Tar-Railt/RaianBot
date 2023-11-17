@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
-from launart import Service, Launart
+from launart import Launart, Service
 from loguru import logger
 from sqlalchemy.engine.result import Result
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker

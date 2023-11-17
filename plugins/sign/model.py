@@ -1,6 +1,7 @@
-from app.database import Base, User
+from sqlalchemy import DateTime, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, ForeignKey, DateTime
+
+from app.database import Base, User
 
 
 class SignRecord(Base):

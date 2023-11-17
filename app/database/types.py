@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 from collections.abc import Callable
 from typing import Any, Literal
+from typing_extensions import TypedDict
 
 from sqlalchemy.engine.interfaces import IsolationLevel, _ExecuteOptions, _ParamStyle
 from sqlalchemy.log import _EchoFlagType
 from sqlalchemy.pool import Pool, _CreatorFnType, _CreatorWRecFnType, _ResetStyleArgType
-from typing_extensions import TypedDict
 
 
 class EngineOptions(TypedDict, total=False):

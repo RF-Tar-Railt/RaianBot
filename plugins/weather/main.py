@@ -2,12 +2,13 @@ from pathlib import Path
 from secrets import token_hex
 
 import ujson
-from app.core import RaianBotService
-from app.shortcut import record, picture
 from arclet.alconna import Alconna, Args, CommandMeta
 from arclet.alconna.graia import Match, alcommand
 from avilla.core import Context, Picture, RawResource
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
+
+from app.core import RaianBotService
+from app.shortcut import accessable, picture, record
 from library.heweather import CityNotFoundError, HeWeather, render
 
 from .config import WeatherConfig
@@ -36,10 +37,10 @@ if config.heweather:
     cache_dir = Path(bot.config.data_dir) / "plugins" / "weather"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    @alcommand(cmd, remove_tome=True)
+    @alcommand(cmd, remove_tome=True, post=True)
     @record("天气")
     # @exclusive
-    # @accessable
+    @accessable
     async def weather(ctx: Context, city: Match[str], pw: PlaywrightService):
         if not city.result:
             return await ctx.scene.send_message("地点是...空气吗?? >_<")
@@ -64,15 +65,14 @@ if config.heweather:
             url = await bot.upload_to_cos(img, f"weather_{token_hex(16)}.jpg")
             return await ctx.scene.send_message(picture(url, ctx))
 
-
 else:
     with (Path.cwd() / "assets" / "data" / "city.json").open("r", encoding="utf-8") as f:
         city_ids = ujson.load(f)
 
-    @alcommand(cmd, remove_tome=True)
+    @alcommand(cmd, remove_tome=True, post=True)
     @record("天气")
     # @exclusive
-    # @accessable
+    @accessable
     async def weather(ctx: Context, city: Match[str], pw: PlaywrightService):
         if city.result not in city_ids:
             return await ctx.scene.send_message("不对劲。。。")

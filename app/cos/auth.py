@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 import hashlib
 import hmac
 import time
 from urllib.parse import quote, urlparse
+
 from httpx import Request
 
 
@@ -93,17 +95,13 @@ class CosS3Auth:
                 if url_parsed.hostname is not None:
                     r.headers["host"] = url_parsed.hostname
 
-        headers = {
-            quote(k.encode(), "-_.~").lower(): quote(v.encode(), "-_.~") for k, v in r.headers.items()
-        }
-        uri_params = {
-            quote(k.encode(), "-_.~").lower(): quote(v.encode(), "-_.~") for k, v in uri_params.items()
-        }
+        headers = {quote(k.encode(), "-_.~").lower(): quote(v.encode(), "-_.~") for k, v in r.headers.items()}
+        uri_params = {quote(k.encode(), "-_.~").lower(): quote(v.encode(), "-_.~") for k, v in uri_params.items()}
         formatted = (
             f"{r.method.lower()}\n"
             f"{path}\n"
-            f"{'&'.join(map(lambda tupl: f'{tupl[0]}={tupl[1]}', sorted(uri_params.items())))}\n"
-            f"{'&'.join(map(lambda tupl: f'{tupl[0]}={tupl[1]}', sorted(headers.items())))}\n"
+            f"{'&'.join(f'{tupl[0]}={tupl[1]}' for tupl in sorted(uri_params.items()))}\n"
+            f"{'&'.join(f'{tupl[0]}={tupl[1]}' for tupl in sorted(headers.items()))}\n"
         )
 
         start_sign_time = int(time.time())

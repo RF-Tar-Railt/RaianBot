@@ -1,27 +1,25 @@
 from __future__ import annotations
 
-from typing import Callable, Literal, TypeVar
 import inspect
 from pathlib import Path
+from typing import Callable, Literal, TypeVar
+
 from avilla.core import Context
-from avilla.core.message import MessageChain
-from avilla.core.elements import Picture, Text
-from avilla.core.resource import RawResource
-from avilla.qqapi.resource import QQAPIImageResource
-from avilla.qqapi.account import QQAPIAccount
+from avilla.core.account import BaseAccount
+from avilla.core.elements import Picture
 from avilla.elizabeth.resource import ElizabethImageResource
+from avilla.qqapi.account import QQAPIAccount
+from avilla.qqapi.resource import QQAPIImageResource
 from graia.saya.factory import ensure_buffer
 
+from .control import check_disabled, require_account, require_admin, require_function
 from .core import RaianBotService
-from .control import require_admin, require_function, check_disabled, check_exclusive
-from .image import md2img
 
 T_Callable = TypeVar("T_Callable", bound=Callable)
 
 
 def picture(url: str, ctx: Context):
     if isinstance(ctx.account, QQAPIAccount):
-
         return Picture(QQAPIImageResource(ctx.scene.image(url), "image", url))
     return Picture(ElizabethImageResource(ctx.scene.image(url), id="", url=url))
 
@@ -65,35 +63,20 @@ def permission(level: Literal["admin", "master"] = "admin"):
         buffer = ensure_buffer(func)
         buffer.setdefault("decorators", []).append(require_admin(level == "master", __record=func))
         return func
+
     return wrapper
 
 
-def exclusive(func: T_Callable) -> T_Callable:
-    buffer = ensure_buffer(func)
-    buffer.setdefault("decorators", []).append(check_exclusive())
-    return func
+def allow(*atype: type[BaseAccount]):
+    def wrapper(func: T_Callable) -> T_Callable:
+        buffer = ensure_buffer(func)
+        buffer.setdefault("decorators", []).append(require_account(atype))
+        return func
+
+    return wrapper
 
 
-async def send_handler(t: str, output: str):
-    # length = (output.count("\n") + 5) * 16
-    if t == "shortcut":
-        return MessageChain([Text(output)])
-    if t == "completion":
-        output = (
-            output.replace("\n\n", "\n")
-            .replace("&lt;", "<")
-            .replace("&gt;", ">")
-            .replace("&#123;", "{")
-            .replace("&#125;", "}")
-        )
-        return MessageChain([Text(output)])
-    if not output.startswith("#"):
-        output = f"# {output}"
-        output = (
-            output.replace("\n\n", "\n")
-            .replace("\n", "\n\n")
-            .replace("#", "##")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-        )
-    return MessageChain([Picture(RawResource(await md2img(output)))])
+# def exclusive(func: T_Callable) -> T_Callable:
+#     buffer = ensure_buffer(func)
+#     buffer.setdefault("decorators", []).append(check_exclusive())
+#     return func
