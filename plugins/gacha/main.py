@@ -4,6 +4,7 @@ from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
 from avilla.core import Context, MessageChain, Picture, RawResource, Text
+from avilla.core.exceptions import ActionFailed
 from fastapi.responses import JSONResponse, Response
 from graiax.fastapi import route
 from sqlalchemy.sql import select
@@ -63,7 +64,17 @@ async def change(ctx: Context, aio: AiohttpClientService):
         except Exception:
             await ctx.scene.send_message(MessageChain([Text(f"卡池已更新至: {new.title}")]))
             url = await bot.upload_to_cos(data, f"{new.title}.png")
-            return await ctx.scene.send_message(picture(url, ctx))
+            try:
+                return await ctx.scene.send_message(picture(url, ctx))
+            except ActionFailed:
+                text = (
+                    f"{new.title}\n"
+                    "六星角色：\n" +
+                    "\n".join(f"{i.name} {'【限定】' if i.limit else '【常驻】'}" for i in new.six_chars) +
+                    "\n五星角色：\n" +
+                    "\n".join(f"{i.name} {'【限定】' if i.limit else '【常驻】'}" for i in new.five_chars)
+                )
+                return await ctx.scene.send_message(text)
     return await ctx.scene.send_message("卡池已经是最新状态！")
 
 
@@ -82,7 +93,8 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
 
         if proba:
             guser = GachaUser(proba.per, proba.statis)
-            data = gacha.gacha_with_img(guser, count_)
+            result = gacha.gacha(guser, count_)
+            data = gacha.create_image(guser, result, count_, True)
             proba.per = guser.six_per
             proba.statis = guser.six_statis
             await session.commit()
@@ -90,19 +102,44 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
             user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
             if user:
                 guser = GachaUser(2, 0)
-                data = gacha.gacha_with_img(guser, count_)
+                result = gacha.gacha(guser, count_)
+                data = gacha.create_image(guser, result, count_, True)
                 proba = ArkgachaRecord(id=user.id, per=guser.six_per, statis=guser.six_statis)
                 session.add(proba)
                 await session.commit()
             else:
                 guser = GachaUser()
-                data = gacha.gacha_with_img(guser, count_)
+                result = gacha.gacha(guser, count_)
+                data = gacha.create_image(guser, result, count_, True)
                 await ctx.scene.send_message("您未签到，抽卡水位是继承不了的说")
     try:
         return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
     except Exception:
         url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png")
-        return await ctx.scene.send_message(picture(url, ctx))
+        try:
+            return await ctx.scene.send_message(picture(url, ctx))
+        except ActionFailed:
+            get_six = {}
+            get_five = {}
+            four_count = 0
+            for ten in result:
+                for res in ten:
+                    if res.rarity == 6:
+                        get_six[res.name] = get_six.get(res.name, 0) + 1
+                    elif res.rarity == 5:
+                        get_five[res.name] = get_five.get(res.name, 0) + 1
+                    elif res.rarity == 4:
+                        four_count += 1
+            text = (
+                f"抽卡次数: {count_}\n"
+                f"六星角色：\n" +
+                "\n".join(f"{i} x{get_six[i]}" for i in get_six) +
+                "\n五星角色：\n" +
+                "\n".join(f"{i} x{get_five[i]}" for i in get_five) +
+                "\n四星角色：\n" +
+                f"共{four_count}个四星"
+            )
+            return await ctx.scene.send_message(text)
 
 
 @alcommand(
@@ -124,7 +161,8 @@ async def simulate(ctx: Context, db: DatabaseService):
 
         if proba:
             guser = GachaUser(proba.per, proba.statis)
-            data = await simulate_image(gacha.gacha(guser, 10)[0])
+            result = gacha.gacha(guser, 10)
+            data = await simulate_image(result[0])
             proba.per = guser.six_per
             proba.statis = guser.six_statis
             await session.commit()
@@ -132,16 +170,41 @@ async def simulate(ctx: Context, db: DatabaseService):
             user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
             if user:
                 guser = GachaUser(2, 0)
-                data = await simulate_image(gacha.gacha(guser, 10)[0])
+                result = gacha.gacha(guser, 10)
+                data = await simulate_image(result[0])
                 proba = ArkgachaRecord(id=user.id, per=guser.six_per, statis=guser.six_statis)
                 session.add(proba)
                 await session.commit()
             else:
                 guser = GachaUser()
-                data = await simulate_image(gacha.gacha(guser, 10)[0])
+                result = gacha.gacha(guser, 10)
+                data = await simulate_image(result[0])
                 await ctx.scene.send_message("您未签到，抽卡水位是继承不了的说")
     try:
         return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
     except Exception:
         url = await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png")
-        return await ctx.scene.send_message(picture(url, ctx))
+        try:
+            return await ctx.scene.send_message(picture(url, ctx))
+        except ActionFailed:
+            get_six = {}
+            get_five = {}
+            four_count = 0
+            for ten in result:
+                for res in ten:
+                    if res.rarity == 6:
+                        get_six[res.name] = get_six.get(res.name, 0) + 1
+                    elif res.rarity == 5:
+                        get_five[res.name] = get_five.get(res.name, 0) + 1
+                    elif res.rarity == 4:
+                        four_count += 1
+            text = (
+                f"抽卡次数: {10}\n"
+                f"六星角色：\n" +
+                "\n".join(f"{i} x{get_six[i]}" for i in get_six) +
+                "\n五星角色：\n" +
+                "\n".join(f"{i} x{get_five[i]}" for i in get_five) +
+                "\n四星角色：\n" +
+                f"共{four_count}个四星"
+            )
+            return await ctx.scene.send_message(text)

@@ -5,6 +5,7 @@ from arclet.alconna.graia import Match, alcommand
 from arknights_toolkit.recruit import recruitment
 from avilla.core import Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.qqapi.exception import ActionFailed
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
 
 from app.core import RaianBotService
@@ -40,7 +41,10 @@ async def recruit(ctx: Context, tags: Match[tuple[str, ...]], pw: PlaywrightServ
             return await ctx.scene.send_message(Picture(RawResource(data)))
         except Exception:
             url = await bot.upload_to_cos(data, f"recruit_{token_hex(16)}.png")
-            return await ctx.scene.send_message(picture(url, ctx))
+            try:
+                return await ctx.scene.send_message(picture(url, ctx))
+            except ActionFailed as e:
+                return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")
     except Exception:
         await ctx.scene.send_message("prts超时，获取失败")
         if isinstance(ctx.account, ElizabethAccount):

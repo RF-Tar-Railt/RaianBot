@@ -6,6 +6,7 @@ from arclet.alconna.avilla import AlconnaAvillaAdapter
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaGraiaService, AlconnaOutputMessage
 from arclet.alconna.tools import MarkdownTextFormatter
 from avilla.core import Avilla, Context, Picture, RawResource
+from avilla.core.exceptions import ActionFailed
 from creart import it
 from fastapi import FastAPI
 from graia.amnesia.builtins.asgi import UvicornASGIService
@@ -104,8 +105,16 @@ async def send_handler(output: str, otype: str, ctx: Context):
         return await ctx.scene.send_message(Picture(RawResource(img)))
     except Exception:
         url = await bot_service.upload_to_cos(img, f"output_{token_hex(16)}.png")
-        return await ctx.scene.send_message(picture(url, ctx))
-
+        try:
+            return await ctx.scene.send_message(picture(url, ctx))
+        except ActionFailed:
+            output = (
+                output.replace("&lt;", "(")
+                .replace("&gt;", ")")
+                .replace("\n\n", "\n")
+                .replace("##", "#")
+            )
+            return await ctx.scene.send_message(output)
 
 logger.success("------------------机器人初始化完毕--------------------")
 avilla.launch()

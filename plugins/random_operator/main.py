@@ -4,7 +4,7 @@ from typing import Union
 from arclet.alconna import Alconna, Args, CommandMeta, Field
 from arclet.alconna.graia import Match, alcommand
 from arknights_toolkit.random_operator import RandomOperator
-from avilla.core import Context, MessageChain, Nick, Notice, Picture, RawResource
+from avilla.core import Context, MessageChain, Nick, Notice, Picture, RawResource, ActionFailed
 from avilla.standard.core.message import MessageReceived
 
 from app.core import RaianBotService
@@ -57,4 +57,7 @@ async def ro(ctx: Context, name: Match[Union[str, Notice]], bot: RaianBotService
         return await ctx.scene.send_message(Picture(RawResource(data)))
     except Exception:
         url = await bot.upload_to_cos(data, f"rand_op_{token_hex(16)}.png")
-        return await ctx.scene.send_message(picture(url, ctx))
+        try:
+            return await ctx.scene.send_message(picture(url, ctx))
+        except ActionFailed:
+            return await ctx.scene.send_message(text)

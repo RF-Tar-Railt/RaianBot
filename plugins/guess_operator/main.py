@@ -7,6 +7,7 @@ from arclet.alconna import Alconna, Args, CommandMeta, Kw, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.wordle import Guess, OperatorWordle
 from avilla.core import Context, MessageChain, MessageReceived, Notice, Picture, RawResource
+from avilla.core.exceptions import ActionFailed
 
 from app.core import RaianBotService
 from app.interrupt import FunctionWaiter
@@ -37,7 +38,21 @@ async def guess_info(ctx: Context):
         return await ctx.scene.send_message(Picture(RawResource(img)))
     except Exception:
         url = await bot.upload_to_cos(img, f"guess_rule_{token_hex(16)}.jpg")
-        return await ctx.scene.send_message(picture(url, ctx))
+        try:
+            return await ctx.scene.send_message(picture(url, ctx))
+        except ActionFailed:
+            text = """\
+绿脸点赞：猜测的干员该属性和神秘干员完全一样!太棒了!
+红脸摇手：猜测的干员该属性和神秘千员完全不一样!难搞哦!
+蓝脸指下：猜测的千员稀有度比神秘干员高!试着往低星猜吧!
+蓝脸指上：猜测的千员稀有度比神秘千员低!试着往高星猜吧!
+黄连疑惑：猜测的干员该属性和神秘千员部分一样!再加把劲!
+千员所属的阵营拆成了多级维度
+和出身地无关，请查阅关系网!
+职业也区分了主职业和分支职业!
+点击干员姓名可以看到详情!
+游戏数据来自PRTS!"""
+            return await ctx.scene.send_message(text)
 
 
 @alcommand(alc, post=True, send_error=True)
@@ -119,7 +134,10 @@ async def guess(
                     await ctx.scene.send_message(Picture(RawResource(img)))
                 except Exception:
                     url = await bot.upload_to_cos(img, f"guess_{token_hex(16)}.jpg")
-                    await ctx.scene.send_message(picture(url, ctx))
+                    try:
+                        await ctx.scene.send_message(picture(url, ctx))
+                    except ActionFailed:
+                        await ctx.scene.send_message(wordle.draw(res, simple=True, max_guess=max_guess.result))
         except Exception as e:
             await ctx.scene.send_message(f"{e}")
             break

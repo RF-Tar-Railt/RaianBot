@@ -3,7 +3,7 @@ from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, command_manager
 from arclet.alconna.graia import Match, alcommand
-from avilla.core import Context, Picture, RawResource, MessageChain, Text
+from avilla.core import Context, Picture, RawResource, MessageChain, Text, ActionFailed
 from avilla.core.tools.filter import Filter
 from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.message import MessageReceived
@@ -67,7 +67,10 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
         return await ctx.scene.send_message(Picture(RawResource(img)))
     except Exception:
         url = await bot.upload_to_cos(img, f"help_{token_hex(16)}.jpg")
-        return await ctx.scene.send_message(picture(url, ctx))
+        try:
+            return await ctx.scene.send_message(picture(url, ctx))
+        except ActionFailed:
+            return await ctx.scene.send_message(md)
 
 
 @alcommand(cmd_help, post=True, send_error=True)
@@ -93,6 +96,15 @@ async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, confi
             return await ctx.scene.send_message(Picture(RawResource(img)))
         except Exception:
             url = await bot.upload_to_cos(img, f"help_{token_hex(16)}.jpg")
-            return await ctx.scene.send_message(picture(url, ctx))
+            try:
+                return await ctx.scene.send_message(picture(url, ctx))
+            except ActionFailed:
+                output = (
+                    text.replace("&lt;", "(")
+                    .replace("&gt;", ")")
+                    .replace("\n\n", "\n")
+                    .replace("##", "#")
+                )
+                return await ctx.scene.send_message(output)
     except (IndexError, TypeError):
         return await ctx.scene.send_message("查询失败！")

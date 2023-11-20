@@ -7,6 +7,7 @@ import ujson
 from arclet.alconna import Alconna, Args, CommandMeta
 from arclet.alconna.graia import Match, alcommand
 from avilla.core import Context, Notice, Picture, RawResource
+from avilla.qqapi.exception import ActionFailed
 from avilla.standard.core.message import MessageReceived
 from graia.amnesia.message import MessageChain
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
@@ -83,7 +84,10 @@ if config.heweather:
             return await ctx.scene.send_message(Picture(RawResource(img)))
         except Exception:
             url = await bot.upload_to_cos(img, f"weather_{token_hex(16)}.jpg")
-            return await ctx.scene.send_message(picture(url, ctx))
+            try:
+                return await ctx.scene.send_message(picture(url, ctx))
+            except ActionFailed as e:
+                return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")
 
 else:
     with (Path.cwd() / "assets" / "data" / "city.json").open("r", encoding="utf-8") as f:
@@ -139,4 +143,7 @@ else:
             return await ctx.scene.send_message(Picture(RawResource(img)))
         except Exception:
             url = await bot.upload_to_cos(img, f"weather_{token_hex(16)}.jpg")
-            return await ctx.scene.send_message(picture(url, ctx))
+            try:
+                return await ctx.scene.send_message(picture(url, ctx))
+            except ActionFailed as e:
+                return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")

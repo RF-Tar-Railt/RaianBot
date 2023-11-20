@@ -8,6 +8,7 @@ from arclet.alconna import Alconna, Args, CommandMeta, Field
 from arclet.alconna.graia import Match, alcommand
 from arknights_toolkit.update import main
 from avilla.core import Context, Picture, RawResource
+from avilla.qqapi.exception import ActionFailed
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
 from playwright.async_api import Page, TimeoutError as PwTimeoutError
 
@@ -75,4 +76,7 @@ async def query(ctx: Context, name: Match[str], content: Match[str], pw: Playwri
         return await ctx.scene.send_message(Picture(RawResource(data)))
     except Exception:
         url = await bot.upload_to_cos(data, f"query_op_{token_hex(16)}.png")
-        return await ctx.scene.send_message(picture(url, ctx))
+        try:
+            return await ctx.scene.send_message(picture(url, ctx))
+        except ActionFailed as e:
+            return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")
