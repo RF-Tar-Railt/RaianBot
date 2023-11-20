@@ -10,7 +10,8 @@ from arknights_toolkit.update import main
 from avilla.core import Context, Picture, RawResource
 from avilla.qqapi.exception import ActionFailed
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
-from playwright.async_api import Page, TimeoutError as PwTimeoutError
+from playwright.async_api import Page
+from playwright.async_api import TimeoutError as PwTimeoutError
 
 from app.core import RaianBotService
 from app.shortcut import accessable, picture, record

@@ -68,11 +68,10 @@ async def change(ctx: Context, aio: AiohttpClientService):
                 return await ctx.scene.send_message(picture(url, ctx))
             except ActionFailed:
                 text = (
-                    f"{new.title}\n"
-                    "六星角色：\n" +
-                    "\n".join(f"{i.name} {'【限定】' if i.limit else '【常驻】'}" for i in new.six_chars) +
-                    "\n五星角色：\n" +
-                    "\n".join(f"{i.name} {'【限定】' if i.limit else '【常驻】'}" for i in new.five_chars)
+                    f"{new.title}\n六星角色：\n"
+                    + "\n".join(f"{i.name} {'【限定】' if i.limit else '【常驻】'}" for i in new.six_chars)
+                    + "\n五星角色：\n"
+                    + "\n".join(f"{i.name} {'【限定】' if i.limit else '【常驻】'}" for i in new.five_chars)
                 )
                 return await ctx.scene.send_message(text)
     return await ctx.scene.send_message("卡池已经是最新状态！")
@@ -132,12 +131,12 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
                         four_count += 1
             text = (
                 f"抽卡次数: {count_}\n"
-                f"六星角色：\n" +
-                "\n".join(f"{i} x{get_six[i]}" for i in get_six) +
-                "\n五星角色：\n" +
-                "\n".join(f"{i} x{get_five[i]}" for i in get_five) +
-                "\n四星角色：\n" +
-                f"共{four_count}个四星"
+                f"六星角色：\n"
+                + "\n".join(f"{i} x{get_six[i]}" for i in get_six)
+                + "\n五星角色：\n"
+                + "\n".join(f"{i} x{get_five[i]}" for i in get_five)
+                + "\n四星角色：\n"
+                + f"共{four_count}个四星"
             )
             return await ctx.scene.send_message(text)
 
@@ -200,11 +199,11 @@ async def simulate(ctx: Context, db: DatabaseService):
                         four_count += 1
             text = (
                 f"抽卡次数: {10}\n"
-                f"六星角色：\n" +
-                "\n".join(f"{i} x{get_six[i]}" for i in get_six) +
-                "\n五星角色：\n" +
-                "\n".join(f"{i} x{get_five[i]}" for i in get_five) +
-                "\n四星角色：\n" +
-                f"共{four_count}个四星"
+                f"六星角色：\n"
+                + "\n".join(f"{i} x{get_six[i]}" for i in get_six)
+                + "\n五星角色：\n"
+                + "\n".join(f"{i} x{get_five[i]}" for i in get_five)
+                + "\n四星角色：\n"
+                + f"共{four_count}个四星"
             )
             return await ctx.scene.send_message(text)
