@@ -28,7 +28,7 @@ with namespace("coc") as np:
         Args["key#名字格式", ["cn", "en", "jp", "enzh"], "$r"]["cnt#名字数量", int, 1],
         meta=CommandMeta(
             "随机名字",
-            usage="此命令以 '.' 或 '。' 开头",
+            usage="主要为中文名，日文名和英文名",
             example=".name 5",
             compact=True,
         ),
@@ -39,7 +39,7 @@ with namespace("coc") as np:
         Args["key#牌堆名称", str, "调查员信息"]["cnt#抽牌数量", int, 1],
         meta=CommandMeta(
             "抽牌",
-            usage="此命令以 '.' 或 '。' 开头",
+            usage="牌堆包括塔罗牌，调查员等",
             example=".draw 调查员信息 1",
             compact=True,
         ),
@@ -51,7 +51,6 @@ with namespace("coc") as np:
         meta=CommandMeta(
             "投掷指令",
             usage=(
-                "此命令以 '.' 或 '。' 开头\n"
                 "d：骰子设定指令\n"
                 "#：多轮投掷指令，#后接数字即可设定多轮投掷\n"
                 "bp：奖励骰与惩罚骰\n"
@@ -68,22 +67,20 @@ with namespace("coc") as np:
         Args["san", int, 80],
         meta=CommandMeta(
             "疯狂检定",
-            usage="此命令以 '.' 或 '。' 开头\n"
-            "success：判定成功降低san值，支持x或xdy语法\n"
+            usage="success：判定成功降低san值，支持x或xdy语法\n"
             "failure：判定失败降低san值，支持语法如上\n"
             "san_number：当前san值，默认为 80",
             example=".sc 1d6/1d6 80",
         ),
     )
-    st_c = Alconna("st", meta=CommandMeta("射击命中判定", usage="此命令以 '.' 或 '。' 开头; 自动掷骰1d20"))
-    ti_c = Alconna("ti", meta=CommandMeta("临时疯狂症状", usage="此命令以 '.' 或 '。' 开头; 自动掷骰1d10"))
-    li_c = Alconna("li", meta=CommandMeta("总结疯狂症状", usage="此命令以 '.' 或 '。' 开头; 自动掷骰1d10"))
+    st_c = Alconna("st", meta=CommandMeta("射击命中判定", usage="自动掷骰1d20"))
+    ti_c = Alconna("ti", meta=CommandMeta("临时疯狂症状", usage="自动掷骰1d10"))
+    li_c = Alconna("li", meta=CommandMeta("总结疯狂症状", usage="自动掷骰1d10"))
     dnd_c = Alconna(
         "dnd",
         Args["val#生成数量", int, 1],
         meta=CommandMeta(
             "龙与地下城(DND)人物作成",
-            usage="此命令以 '.' 或 '。' 开头",
             example=".dnd 5",
             compact=True,
         ),
@@ -94,7 +91,6 @@ with namespace("coc") as np:
         Args["rule#coc版本", int, 0],
         meta=CommandMeta(
             "设置房规, 默认为0",
-            usage="此命令以 '.' 或 '。' 开头",
             example=".setcoc 2",
             compact=True,
         ),
@@ -106,7 +102,7 @@ with namespace("coc") as np:
         Args["val#生成数量", int, 1],
         meta=CommandMeta(
             "克苏鲁的呼唤(COC)人物作成, 默认生成7版人物卡",
-            usage="此命令以 '.' 或 '。' 开头; 接d为详细作成，一次只能作成一个",
+            usage="接d为详细作成，一次只能作成一个",
             example=".coc6d",
             compact=True,
         ),
@@ -116,7 +112,7 @@ with namespace("coc") as np:
         Args["attr#属性名称，如name、名字、str、力量", str, "快速"]["exp", int, -1],
         meta=CommandMeta(
             "快速检定",
-            usage="此命令以 '.' 或 '。' 开头; 不传入 exp 则不进行结果检定",
+            usage="不传入 exp 则不进行结果检定",
             example=".ra str 80",
             compact=True,
         ),

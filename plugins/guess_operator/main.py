@@ -16,9 +16,9 @@ alc = Alconna(
     "猜干员",
     Args["max_guess", int, 8],
     Args["simple", Kw @ bool, False],
-    Option("更新"),
-    Option("规则"),
-    Option("重置"),
+    Option("更新", help_text="更新干员列表"),
+    Option("规则", help_text="获取游戏规则"),
+    Option("重置", help_text="重置游戏"),
     meta=CommandMeta("明日方舟猜干员游戏", usage="可以指定最大猜测次数"),
 )
 

@@ -42,7 +42,7 @@ async def get_sim_gacha(per: int = 2, status: int = 0):
 cmd = Alconna(
     "抽卡",
     Args["count", int, Field(10, completion=lambda: "试试输入 300")],
-    Option("更新"),
+    Option("更新", help_text="卡池更新"),
     meta=CommandMeta("模拟方舟寻访", example="$抽卡 300"),
 )
 
