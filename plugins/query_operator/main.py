@@ -16,7 +16,7 @@ from app.shortcut import accessable, picture, record
 from library.queryop import handle
 
 bot = RaianBotService.current()
-cache = Path(f"{bot.config.plugin_cache_dir / 'op_query'}")
+cache = Path(f"{bot.config.plugin_data_dir / 'op_query'}")
 cache.mkdir(parents=True, exist_ok=True)
 running = asyncio.Event()
 

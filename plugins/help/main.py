@@ -2,8 +2,8 @@ import random
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, command_manager
-from arclet.alconna.graia import Match, alcommand, endswith, startswith
-from avilla.core import Context, Picture, RawResource
+from arclet.alconna.graia import Match, alcommand
+from avilla.core import Context, Picture, RawResource, MessageChain
 from avilla.core.tools.filter import Filter
 from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.message import MessageReceived
@@ -35,9 +35,9 @@ cmd_help.shortcut("菜单", {"prefix": True})
 @listen(MessageReceived)
 @dispatch(Filter.cx.scene.follows("::group"))
 @allow(QQAPIAccount)
-@endswith(" ")
-@startswith(" ")
-async def send_(ctx: Context, bot: RaianBotService, config: BotConfig):
+async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain):
+    if str(message) != " ":
+        return
     md = f"""\
 # {config.name} {config.account} 帮助菜单
 #{lang.require('manager', 'help_header')}
