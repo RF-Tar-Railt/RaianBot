@@ -9,7 +9,7 @@ from arclet.alconna.graia import Match, alcommand
 from arknights_toolkit.update import main
 from avilla.core import Context, Picture, RawResource
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
-from playwright.async_api import Page, TimeoutError
+from playwright.async_api import Page, TimeoutError as PwTimeoutError
 
 from app.core import RaianBotService
 from app.shortcut import accessable, picture, record
@@ -67,7 +67,7 @@ async def query(ctx: Context, name: Match[str], content: Match[str], pw: Playwri
                 data = await func(page, name)
                 with path.open("wb+") as f:
                     f.write(data)
-            except TimeoutError:
+            except (PwTimeoutError, TimeoutError):
                 return await ctx.scene.send_message("prts超时，请重试！")
             finally:
                 running.clear()

@@ -3,7 +3,7 @@ from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, command_manager
 from arclet.alconna.graia import Match, alcommand
-from avilla.core import Context, Picture, RawResource, MessageChain
+from avilla.core import Context, Picture, RawResource, MessageChain, Text
 from avilla.core.tools.filter import Filter
 from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.message import MessageReceived
@@ -75,7 +75,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
 @accessable
 async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, config: BotConfig):
     if not query.available:
-        return await send_(ctx, bot, config)
+        return await send_(ctx, bot, config, MessageChain([Text(" ")]))
     try:
         if query.result.isdigit():
             cmds = list(command_manager.all_command_raw_help().keys())

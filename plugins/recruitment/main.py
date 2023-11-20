@@ -10,14 +10,14 @@ from graiax.playwright import PlaywrightBrowser, PlaywrightService
 from app.core import RaianBotService
 from app.shortcut import accessable, picture
 
-recruit = Alconna(
+cmd = Alconna(
     "公招",
     Args["tags", MultiVar(str, "*"), Field(completion=lambda: "高资")],
     meta=CommandMeta("自助访问 prts 的公招计算器并截图", usage="标签之间用空格分隔", example="$公招 高资 生存"),
 )
 
 
-@alcommand(recruit, send_error=True, post=True)
+@alcommand(cmd, send_error=True, post=True)
 # @exclusive
 @accessable
 async def recruit(ctx: Context, tags: Match[tuple[str, ...]], pw: PlaywrightService, bot: RaianBotService):
