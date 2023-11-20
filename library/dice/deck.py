@@ -8,7 +8,8 @@ from pathlib import Path
 root = Path(__file__).parent / "assets"
 
 with (root / "public_deck.json").open("r", encoding="utf-8") as f:
-    p_deck: dict[str, list[str]]  = ujson.load(f)
+    p_deck: dict[str, list[str]] = ujson.load(f)
+
 
 def find_deck(name: str) -> int:
     if name in p_deck:
@@ -29,6 +30,7 @@ def draw(key: str, cnt: int = 1) -> str:
             break
         cnt -= 1
     return "|".join(res)
+
 
 def draw_expr(exp: str) -> str:
     tmp_list: dict[str, list[str]] = {}
@@ -66,7 +68,6 @@ def draw_expr(exp: str) -> str:
         exp = f"{exp[:lq]}{rd.calc()}{exp[rq+1:]}"
         cnt = lq + len(str(rd.calc()))
     return exp
-
 
 
 def draw_card(tmp: list[str], is_back: bool = False) -> str:

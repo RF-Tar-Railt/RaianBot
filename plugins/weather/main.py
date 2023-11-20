@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 from pathlib import Path
 from secrets import token_hex
 
 import ujson
 from arclet.alconna import Alconna, Args, CommandMeta
 from arclet.alconna.graia import Match, alcommand
-from avilla.core import Context, Picture, RawResource
+from avilla.core import Context, Notice, Picture, RawResource
+from avilla.standard.core.message import MessageReceived
+from graia.amnesia.message import MessageChain
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
 
 from app.core import RaianBotService
+from app.interrupt import FunctionWaiter
 from app.shortcut import accessable, picture, record
 from library.heweather import CityNotFoundError, HeWeather, render
 
@@ -18,8 +23,8 @@ config = bot.config.plugin.get(WeatherConfig)
 
 cmd = Alconna(
     "天气",
-    Args["city", str],
-    meta=CommandMeta("查询某个城市的天气", example="$北京天气"),
+    Args["city?", str],
+    meta=CommandMeta("查询某个城市的天气", example="$天气 北京\n$北京天气"),
 )
 cmd.shortcut(
     "(?P<city>.+)天气",
@@ -37,17 +42,32 @@ if config.heweather:
     cache_dir = Path(bot.config.data_dir) / "plugins" / "weather"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    @alcommand(cmd, remove_tome=True, post=True)
+    @alcommand(cmd, post=True, send_error=True)
     @record("天气")
     # @exclusive
     @accessable
     async def weather(ctx: Context, city: Match[str], pw: PlaywrightService):
-        if not city.result:
-            return await ctx.scene.send_message("地点是...空气吗?? >_<")
+        if city.available:
+            city_name = city.result
+        else:
+            await ctx.scene.send_message("请输入地点名称：")
+
+            async def waiter(waiter_ctx: Context, message: MessageChain):
+                name = str(message.exclude(Notice)).lstrip()
+                if waiter_ctx.scene.pattern == ctx.scene.pattern:
+                    return name
+
+            city_name: str | None = await FunctionWaiter(
+                waiter,
+                [MessageReceived],
+                block_propagation=ctx.client.follows("::friend") or ctx.client.follows("::guild.user"),
+            ).wait(timeout=30, default=None)
+            if city_name is None:
+                return await ctx.scene.send_message("等待已超时，取消查询。")
         try:
-            data = await heweather.load_data(city.result)
+            data = await heweather.load_data(city_name)
         except CityNotFoundError:
-            return await ctx.scene.send_message("不对劲。。。")
+            return await ctx.scene.send_message("地点是...空气吗?? >_<")
         file = cache_dir / f"{data.city_id}.html"
         with file.open("w+", encoding="utf-8") as f:
             f.write(await render(data, bot.config.platform.heweather_api_hourly_type))
@@ -69,17 +89,34 @@ else:
     with (Path.cwd() / "assets" / "data" / "city.json").open("r", encoding="utf-8") as f:
         city_ids = ujson.load(f)
 
-    @alcommand(cmd, remove_tome=True, post=True)
+    @alcommand(cmd, post=True, send_error=True)
     @record("天气")
     # @exclusive
     @accessable
     async def weather(ctx: Context, city: Match[str], pw: PlaywrightService):
-        if city.result not in city_ids:
-            return await ctx.scene.send_message("不对劲。。。")
+        if city.available:
+            city_name = city.result
+        else:
+            await ctx.scene.send_message("请输入地点名称：")
+
+            async def waiter(waiter_ctx: Context, message: MessageChain):
+                name = str(message.exclude(Notice)).lstrip()
+                if waiter_ctx.scene.pattern == ctx.scene.pattern:
+                    return name
+
+            city_name: str | None = await FunctionWaiter(
+                waiter,
+                [MessageReceived],
+                block_propagation=ctx.client.follows("::friend") or ctx.client.follows("::guild.user"),
+            ).wait(timeout=30, default=None)
+            if city_name is None:
+                return await ctx.scene.send_message("等待已超时，取消查询。")
+        if city_name not in city_ids:
+            return await ctx.scene.send_message("地点是...空气吗?? >_<")
         browser: PlaywrightBrowser = pw.get_interface(PlaywrightBrowser)
         page = await browser.new_page()
         await page.click("html")
-        await page.goto(f"https://m.weather.com.cn/mweather/{city_ids[city.result]}.shtml")
+        await page.goto(f"https://m.weather.com.cn/mweather/{city_ids[city_name]}.shtml")
         ad = page.locator("//div[@class='guanggao']")
         await ad.first.evaluate("node => node.remove()")
         elem1 = page.locator("//div[@class='npage1']")

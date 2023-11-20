@@ -4,14 +4,16 @@ from secrets import token_hex
 from arclet.alconna import Alconna, Args, CommandMeta, Field, command_manager
 from arclet.alconna.graia import Match, alcommand, endswith, startswith
 from avilla.core import Context, Picture, RawResource
+from avilla.core.tools.filter import Filter
+from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.message import MessageReceived
-from graia.saya.builtins.broadcast.shortcut import listen
+from graia.saya.builtins.broadcast.shortcut import dispatch, listen
 from tarina import lang
 
 from app.config import BotConfig
 from app.core import RaianBotService
 from app.image import md2img
-from app.shortcut import accessable, picture
+from app.shortcut import accessable, allow, picture
 
 cmd_help = Alconna(
     "帮助",
@@ -31,6 +33,8 @@ cmd_help.shortcut("菜单", {"prefix": True})
 
 
 @listen(MessageReceived)
+@dispatch(Filter.cx.scene.follows("::group"))
+@allow(QQAPIAccount)
 @endswith(" ")
 @startswith(" ")
 async def send_(ctx: Context, bot: RaianBotService, config: BotConfig):
@@ -66,7 +70,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig):
         return await ctx.scene.send_message(picture(url, ctx))
 
 
-@alcommand(cmd_help, post=True)
+@alcommand(cmd_help, post=True, send_error=True)
 # @exclusive
 @accessable
 async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, config: BotConfig):

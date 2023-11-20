@@ -1,7 +1,7 @@
 import re
 import asyncio
 from app import RaianBotService, RaianBotInterface, Sender, Target, accessable, exclusive, record, logger, render_markdown
-from arclet.alconna import  Alconna, Args, CommandMeta, Option
+from arclet.alconna import Alconna, Args, CommandMeta, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
@@ -13,9 +13,9 @@ from library.skland_autosign import SKAutoSign
 
 alc = Alconna(
     "森空岛签到",
-    Option("绑定", Args["token", str]["uid;?#特定用户", str]),
-    Option("解除", Args["uid;?#特定用户", str]),
-    Option("查询", Args["uid;?#特定用户", str]),
+    Option("绑定", Args["token", str]["uid;?#特定用户", str], compact=True),
+    Option("解除", Args["uid;?#特定用户", str], compact=True),
+    Option("查询", Args["uid;?#特定用户", str], compact=True),
     Option("方法"),
     meta=CommandMeta(
         "森空岛方舟自动签到",
@@ -61,6 +61,7 @@ api = SKAutoSign(f"{bot.config.plugin_cache_dir / 'skautosign.json'}")
 async def notice(app: Ariadne, sender: Sender):
     return await app.send_message(sender, Image(data_bytes=await render_markdown(alc.meta.usage)))
 
+
 @alcommand(alc)
 @assign("绑定")
 @record("森空自动签到")
@@ -71,8 +72,9 @@ async def reg(app: Ariadne, sender: Sender, target: Target, token: Match[str], u
     if "content" in token.result:
         token.result = re.match(".*content(\")?:(\")?(?P<token>[^{}\"]+).*", token.result)["token"]
     try:
-        await api.bind(session, token.result, uid.result if uid.available else "")
-    except RuntimeError as e:
+        if err := await api.bind(session, token.result, uid.result if uid.available else ""):
+            return await app.send_message(sender, err)
+    except Exception as e:
         return await app.send_message(sender, str(e))
     except KeyError:
         return await app.send_message(sender, """
@@ -81,6 +83,7 @@ async def reg(app: Ariadne, sender: Sender, target: Target, token: Match[str], u
 以及是否登录了森空岛官网
 """)
     return await app.send_message(sender, "森空岛自动签到录入成功")
+
 
 @alcommand(alc)
 @assign("解除")
@@ -99,6 +102,7 @@ async def rm(app: Ariadne, sender: Sender, target: Target, uid: Match[str]):
     else:
         api.data.pop(session)
         return await app.send_message(sender, "解除森空岛自动签到成功")
+
 
 @alcommand(alc)
 @assign("查询")
@@ -126,6 +130,7 @@ async def check(app: Ariadne, sender: Sender, target: Target, uid: Match[str], _
     _record.pop(session)
     return app.send_message(sender, "查询完毕，已清除结果")
 
+
 @crontab("30 0 * * * 0")
 @record("森空自动签到", False)
 async def shed():
@@ -145,10 +150,13 @@ async def shed():
                     logger.logger.debug(res)
                 await asyncio.sleep(1)
 
+
 @listen(ApplicationShutdown)
 async def _save():
     api.save()
     await asyncio.sleep(0.1)
+
+
 @every(1, "hour")
 async def save():
     api.save()

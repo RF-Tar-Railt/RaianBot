@@ -2,7 +2,7 @@ import pkgutil
 import traceback
 from contextvars import ContextVar
 from pathlib import Path
-from typing import Union, Literal
+from typing import Literal, Union
 
 from arknights_toolkit.update.main import fetch
 from avilla.core import Context

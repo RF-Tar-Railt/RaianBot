@@ -68,4 +68,5 @@ dev = [
     "isort>=5.12.0",
     "black>=23.11.0",
     "ruff>=0.1.5",
+    "fix-future-annotations>=0.5.0",
 ]

@@ -47,7 +47,7 @@ cmd = Alconna(
 )
 
 
-@alcommand(cmd, remove_tome=True, post=True)
+@alcommand(cmd, post=True, send_error=True)
 @assign("更新")
 @record("抽卡")
 # @exclusive
@@ -67,7 +67,7 @@ async def change(ctx: Context, aio: AiohttpClientService):
     return await ctx.scene.send_message("卡池已经是最新状态！")
 
 
-@alcommand(cmd, send_error=True, remove_tome=True, post=True)
+@alcommand(cmd, send_error=True, post=True)
 @assign("$main")
 @record("抽卡")
 # @exclusive
@@ -106,7 +106,10 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
 
 
 @alcommand(
-    Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="灰色头像表示新干员但是头图未更新")), remove_tome=True, post=True  # noqa: E501
+    Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="灰色头像表示新干员但是头图未更新")),
+    remove_tome=True,
+    send_error=True,
+    post=True,  # noqa: E501
 )
 @record("抽卡")
 # @exclusive

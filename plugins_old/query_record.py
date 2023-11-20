@@ -14,7 +14,7 @@ from graia.ariadne.message.element import Image
 alc = Alconna(
     "抽卡查询",
     Args["count#最近x抽", int, -1],
-    Option("绑定", Args[Arg("token", str, seps="\n")]),
+    Option("绑定", Args[Arg("token", str, seps="\n")], compact=True),
     Option("更新", Args["name?#卡池名", str]["limit", bool, True]),
     meta=CommandMeta(
         "明日方舟抽卡数据查询，数据来源为方舟官网",

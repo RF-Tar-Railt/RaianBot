@@ -79,24 +79,29 @@ class SKAutoSign:
         with self.path.open("w+", encoding="utf-8") as f:
             json.dump(self.data, f, ensure_ascii=False, indent=4)
 
-    async def bind(self, session: str, token: str, uid: str = ""):
+    async def bind(self, session: str, token: str = "", uid: str = ""):
         async with AsyncClient(verify=False, headers=header) as client:
+            if not token and session in self.data:
+                token = self.data[session].get("origin")
+            if not token:
+                return "数据失效！请尝试重新获取 token 来绑定"
             response = await client.post(grant_code_url, json={"appCode": app_code, "token": token, "type": 0})
             if response.status_code != 200:
-                raise RuntimeError(f"获得认证代码失败：{response.status_code}")
+                return f"获得认证代码失败：{response.status_code}"
             resp = response.json()
             if resp["status"] != 0:
-                raise RuntimeError(f'获得认证代码失败：{resp["msg"]}')
+                return f'获得认证代码失败：{resp["msg"]}'
             grant_code = resp["data"]["code"]
             response = await client.post(cred_code_url, json={"code": grant_code, "kind": 1})
             resp = response.json()
             if resp["code"] != 0:
-                raise RuntimeError(f'获得cred失败：{resp["messgae"]}')
+                return f'获得cred失败：{resp["messgae"]}'
             if session not in self.data:
-                self.data[session] = {"cred": resp["data"]["cred"], "uid": [], "token": resp["data"]["token"]}
+                self.data[session] = {"cred": resp["data"]["cred"], "uid": [], "token": resp["data"]["token"], "origin": token}
             else:
                 self.data[session]["cred"] = resp["data"]["cred"]
                 self.data[session]["token"] = resp["data"]["token"]
+                self.data[session]["origin"] = token
             if uid:
                 self.data[session]["uid"].append(uid)
             return
@@ -104,6 +109,9 @@ class SKAutoSign:
     async def sign(self, session: str):
         if session not in self.data:
             yield {"status": False, "text": f"{session} 不存在", "target": ""}
+            return
+        if err := await self.bind(session):
+            yield {"status": False, "text": err, "target": ""}
             return
         data = self.data[session]
         headers = {

@@ -18,6 +18,10 @@ from .core import RaianBotService
 T_Callable = TypeVar("T_Callable", bound=Callable)
 
 
+def is_qqapi_group(ctx: Context):
+    return isinstance(ctx.account, QQAPIAccount) and ctx.scene.follows("::group")
+
+
 def picture(url: str, ctx: Context):
     if isinstance(ctx.account, QQAPIAccount):
         return Picture(QQAPIImageResource(ctx.scene.image(url), "image", url))

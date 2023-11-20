@@ -56,7 +56,7 @@ manager.add_component(
     )
 )
 manager.add_component(AiohttpClientService())
-manager.add_component(AlconnaGraiaService(AlconnaAvillaAdapter, enable_cache=True, cache_dir=config.data_dir))
+manager.add_component(AlconnaGraiaService(AlconnaAvillaAdapter, enable_cache=True, cache_dir=config.data_dir, global_remove_tome=True))
 manager.add_component(FastAPIService(fastapi))
 manager.add_component(UvicornASGIService(config.api.host, config.api.port))
 manager.add_component(SchedulerService(it(GraiaScheduler)))
@@ -103,7 +103,7 @@ async def send_handler(output: str, otype: str, ctx: Context):
     try:
         return await ctx.scene.send_message(Picture(RawResource(img)))
     except Exception:
-        url = await bot_service.upload_to_cos(img, f"output_{token_hex(16)}.jpg")
+        url = await bot_service.upload_to_cos(img, f"output_{token_hex(16)}.png")
         return await ctx.scene.send_message(picture(url, ctx))
 
 
