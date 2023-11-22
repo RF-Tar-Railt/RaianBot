@@ -1,7 +1,7 @@
 from secrets import token_hex
 
-from arclet.alconna import Alconna, Args, CommandMeta, Field, MultiVar
-from arclet.alconna.graia import Match, alcommand
+from arclet.alconna import Alconna, Args, Arparma, CommandMeta, Field, MultiVar
+from arclet.alconna.graia import alcommand
 from arknights_toolkit.recruit import recruitment
 from avilla.core import Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
@@ -21,19 +21,20 @@ cmd = Alconna(
 @alcommand(cmd, send_error=True, post=True)
 # @exclusive
 @accessable
-async def recruit(ctx: Context, tags: Match[tuple[str, ...]], pw: PlaywrightService, bot: RaianBotService):
-    if not tags.available or not tags.result:
+async def recruit(ctx: Context, res: Arparma, pw: PlaywrightService, bot: RaianBotService):
+    if not res.all_matched_args.get("tags"):
         return await ctx.scene.send_message("缺失标签")
+    tags: tuple[str, ...] = res.all_matched_args["tags"]
     await ctx.scene.send_message("正在获取中，请稍等。。。")
     # Click html
     browser: PlaywrightBrowser = pw.get_interface(PlaywrightBrowser)
     # Go to https://prts.wiki/w/%E5%B9%B2%E5%91%98%E4%B8%80%E8%A7%88
-    url = recruitment([x.replace("干员", "").replace("高级资深", "高级资深干员") for x in tags.result])
-    page = await browser.new_page()
+    url = recruitment([x.replace("干员", "").replace("高级资深", "高级资深干员") for x in tags])
+    page = await browser.new_page(viewport={"width": 1200, "height": 2400})
     try:
         await page.goto(url, timeout=60000, wait_until="networkidle")  # type: ignore
         locator = page.locator('//div[@id="root"]')
-        elem = locator.first.locator("//table[1]").nth(1)
+        elem = locator.first.get_by_role("table").nth(1)
         await elem.click()
         await page.wait_for_timeout(1000)
         data = await page.screenshot(type="png", clip=await elem.bounding_box())

@@ -111,8 +111,10 @@ async def send_handler(output: str, otype: str, ctx: Context):
             output = (
                 output.replace("&lt;", "(")
                 .replace("&gt;", ")")
+                .replace(">", ")")
                 .replace("\n\n", "\n")
                 .replace("##", "#")
+                .replace("**", "")
             )
             return await ctx.scene.send_message(output)
 

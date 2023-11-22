@@ -70,7 +70,9 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
         try:
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:
-            return await ctx.scene.send_message(md)
+            return await ctx.scene.send_message(
+                md.replace("\n\n* 想给点饭钱的话，这里有赞助链接：https://afdian.net/@rf_tar_railt", "")
+            )
 
 
 @alcommand(cmd_help, post=True, send_error=True)
@@ -99,7 +101,14 @@ async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, confi
             try:
                 return await ctx.scene.send_message(picture(url, ctx))
             except ActionFailed:
-                output = text.replace("&lt;", "(").replace("&gt;", ")").replace("\n\n", "\n").replace("##", "#")
+                output = (
+                    text.replace("&lt;", "(")
+                    .replace("&gt;", ")")
+                    .replace("\n\n", "\n")
+                    .replace("##", "#")
+                    .replace("**", "")
+                    .replace(">", ")")
+                )
                 return await ctx.scene.send_message(output)
     except (IndexError, TypeError):
         return await ctx.scene.send_message("查询失败！")

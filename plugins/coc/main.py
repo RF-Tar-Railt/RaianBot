@@ -88,9 +88,9 @@ with namespace("coc") as np:
 
     setcoc_c = Alconna(
         "setcoc",
-        Args["rule#coc版本", int, 0],
+        Args["rule?#coc版本", int],
         meta=CommandMeta(
-            "设置房规, 默认为0",
+            "设置房规；不传入参数则为查看当前房规",
             example=".setcoc 2",
             compact=True,
         ),
@@ -198,16 +198,18 @@ async def setcoc_handle(
     db: DatabaseService,
 ):
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
-        return
+        return await ctx.scene.send_message("该指令对私聊无效果")
     if not rule.available:
-        return
+        async with db.get_session() as session:
+            coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.last_value))).one_or_none()
+            rule = coc_rule.rule if coc_rule else 0
+            return await ctx.scene.send_message(f"当前房规为 {rule}")
     if rule.result > 6 or rule.result < 0:
         return await ctx.scene.send_message("规则错误，规则只能为0-6")
     async with db.get_session() as session:
         coc_rule = CocRule(id=ctx.scene.last_value, rule=rule.result)
         await session.merge(coc_rule)
         await session.commit()
-        await session.refresh(coc_rule)
         return await ctx.scene.send_message("设置成功")
 
 
