@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:59217e3ffcd2f03c072294b8544cf152dfc1281b8692d8592b77d0be7eb4dffc"
+content_hash = "sha256:7c13c8abb7df090428caa88d920328eb84a715e3bc606e081bdc5c62292e3617"
 
 [[package]]
 name = "aiohttp"
@@ -259,15 +259,15 @@ files = [
 
 [[package]]
 name = "avilla-qqapi"
-version = "1.0.0a18"
+version = "1.0.0a19"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "aiohttp>=3.8.1",
 ]
 files = [
-    {file = "avilla_qqapi-1.0.0a18-py3-none-any.whl", hash = "sha256:c10d2a02c6cdf09fcc61dac50f19d76817c2149b48afca0260d01ad8d0156cbb"},
-    {file = "avilla_qqapi-1.0.0a18.tar.gz", hash = "sha256:489b9dfb79ef17ffbab35f5c2e0d100d75b6f90f06aacc43573bc305ba9ce76c"},
+    {file = "avilla_qqapi-1.0.0a19-py3-none-any.whl", hash = "sha256:cb4474d9e69731252f74c82d70fbb63c1f5197e90c91ee95be09d76adeb025eb"},
+    {file = "avilla_qqapi-1.0.0a19.tar.gz", hash = "sha256:b413b049b722eb14a0d70b532a50bbce2797092330ab0065dddd9d573d77da32"},
 ]
 
 [[package]]
@@ -806,6 +806,16 @@ dependencies = [
 files = [
     {file = "httpx-0.25.0-py3-none-any.whl", hash = "sha256:181ea7f8ba3a82578be86ef4171554dd45fec26a02556a744db029a0a27b7100"},
     {file = "httpx-0.25.0.tar.gz", hash = "sha256:47ecda285389cb32bb2691cc6e069e3ab0205956f681c5b2ad2325719751d875"},
+]
+
+[[package]]
+name = "humanize"
+version = "4.9.0"
+requires_python = ">=3.8"
+summary = "Python humanize utilities"
+files = [
+    {file = "humanize-4.9.0-py3-none-any.whl", hash = "sha256:ce284a76d5b1377fd8836733b983bfb0b76f1aa1c090de2566fcf008d7f6ab16"},
+    {file = "humanize-4.9.0.tar.gz", hash = "sha256:582a265c931c683a7e9b8ed9559089dea7edcf6cc95be39a3cbc2c5d5ac2bcfa"},
 ]
 
 [[package]]

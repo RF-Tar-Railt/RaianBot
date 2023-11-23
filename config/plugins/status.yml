@@ -1,0 +1,11 @@
+## 卡池的文件路径
+truncate: true
+template: |
+  CPU: {{ "%02d" % cpu_usage }}%
+  Memory: {{ "%02d" % memory_usage.percent }}%
+  Runtime: {{ runtime | relative_time | humanize_delta }}
+  {% if swap_usage.total %}Swap: {{ "%02d" % swap_usage.percent }}%{% endif %}
+  Disk:
+  {% for name, usage in disk_usage.items() %}
+    {{ name }}: {{ "%02d" % usage.percent }}%
+  {% endfor %}

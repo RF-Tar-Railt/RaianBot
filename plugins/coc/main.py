@@ -1,3 +1,4 @@
+import re
 from contextlib import suppress
 
 import diro
@@ -63,7 +64,7 @@ with namespace("coc") as np:
     s_or_f = BasePattern(r"\d+(?:d\d+)?\/\d+(?:d\d+)?", model=MatchMode.REGEX_MATCH, alias="suc/fail")
     sc_c = Alconna(
         "sc",
-        Args["sf#惩罚值", s_or_f],
+        Args["sf#惩罚值", s_or_f, "1d10/1d100"],
         Args["san", int, 80],
         meta=CommandMeta(
             "疯狂检定",
@@ -160,9 +161,13 @@ async def ra_handle(
     else:
         name = attr.result
         anum = exp.result
+        if mat := re.fullmatch(r".+?(\d+)", name):
+            anum = int(mat[1])
+            name = name[: -len(mat[1])]
         if anum < 0:
             await ctx.scene.send_message(rd0("1d100", None, rule))
             raise PropagationCancelled
+
     dices = diro.parse("1D100")
     await ctx.scene.send_message(f"{name}检定:\n{expr(dices, anum, rule)}")
     raise PropagationCancelled
