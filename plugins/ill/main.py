@@ -22,7 +22,12 @@ ill = Alconna(
         dest="tp",
         help_text="指定发病模板",
     ),
-    meta=CommandMeta(description="生成一段模板文字", usage="若不指定模板则会随机挑选一个", example="$发病 老公"),
+    meta=CommandMeta(
+        "生成一段模板文字",
+        usage="若不指定模板则会随机挑选一个",
+        example="$发病 老公",
+        extra={"supports": {"mirai"}},
+    ),
 )
 
 

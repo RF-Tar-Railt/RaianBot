@@ -32,6 +32,7 @@ with namespace("coc") as np:
             usage="主要为中文名，日文名和英文名",
             example=".name 5",
             compact=True,
+            extra={"supports": {"mirai", "qqapi"}}
         ),
     )
 
@@ -43,6 +44,7 @@ with namespace("coc") as np:
             usage="牌堆包括塔罗牌，调查员等",
             example=".draw 调查员信息 1",
             compact=True,
+            extra={"supports": {"mirai", "qqapi"}}
         ),
     )
 
@@ -58,6 +60,7 @@ with namespace("coc") as np:
             ),
             example=".r1d6",
             compact=True,
+            extra={"supports": {"mirai", "qqapi"}}
         ),
     )
 
@@ -79,6 +82,7 @@ with namespace("coc") as np:
             "failure：判定失败降低san值，支持语法如上\n"
             "san_number：当前san值，默认为 80",
             example=".sc 1d6/1d6 80",
+            extra={"supports": {"mirai", "qqapi"}}
         ),
     )
     st_c = Alconna("st", meta=CommandMeta("射击命中判定", usage="自动掷骰1d20"))
@@ -91,6 +95,7 @@ with namespace("coc") as np:
             "龙与地下城(DND)人物作成",
             example=".dnd 5",
             compact=True,
+            extra={"supports": {"mirai", "qqapi"}}
         ),
     )
 
@@ -101,6 +106,7 @@ with namespace("coc") as np:
             "设置房规；不传入参数则为查看当前房规",
             example=".setcoc 2",
             compact=True,
+            extra={"supports": {"mirai", "qqapi"}}
         ),
     )
 
@@ -113,6 +119,7 @@ with namespace("coc") as np:
             usage="接d为详细作成，一次只能作成一个",
             example=".coc6d",
             compact=True,
+            extra={"supports": {"mirai", "qqapi"}}
         ),
     )
     ra_c = Alconna(
@@ -123,6 +130,7 @@ with namespace("coc") as np:
             usage="不传入 exp 则不进行结果检定",
             example=".ra str 80",
             compact=True,
+            extra={"supports": {"mirai", "qqapi"}}
         ),
     )
 

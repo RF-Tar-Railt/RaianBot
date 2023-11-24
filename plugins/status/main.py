@@ -2,7 +2,7 @@ import inspect
 from datetime import datetime
 from secrets import token_hex
 
-from arclet.alconna import Alconna
+from arclet.alconna import Alconna, CommandMeta
 from arclet.alconna.graia import alcommand
 from avilla.core import ActionFailed, BaseAccount, Context, Picture, RawResource
 from avilla.standard.core.account import AccountRegistered, AccountUnregistered
@@ -30,7 +30,7 @@ from .data import (
 )
 from .helpers import humanize_date, humanize_delta, relative_time
 
-cmd = Alconna("status")
+cmd = Alconna("status", meta=CommandMeta(extra={"supports": {"mirai", "qqapi"}}))
 
 
 # bot status

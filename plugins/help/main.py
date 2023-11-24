@@ -5,6 +5,7 @@ from arclet.alconna import Alconna, Args, CommandMeta, Field, command_manager
 from arclet.alconna.graia import Match, alcommand
 from avilla.core import ActionFailed, Context, MessageChain, Picture, RawResource, Text
 from avilla.core.tools.filter import Filter
+from avilla.elizabeth.account import ElizabethAccount
 from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.message import MessageReceived
 from graia.saya.builtins.broadcast.shortcut import dispatch, listen
@@ -25,7 +26,7 @@ cmd_help = Alconna(
             completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands()))}",
         ),
     ],
-    meta=CommandMeta("查看帮助"),
+    meta=CommandMeta("查看帮助", extra={"supports": {"mirai", "qqapi"}}),
 )
 cmd_help.shortcut("help", {"prefix": True})
 cmd_help.shortcut(r"帮助(\d+)", {"prefix": True, "args": ["{0}"]})
@@ -38,6 +39,7 @@ cmd_help.shortcut("菜单", {"prefix": True})
 async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain):
     if str(message) != " ":
         return
+    plat: str = {ElizabethAccount: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore
     md = f"""\
 # {config.name} {config.account} 帮助菜单
 #{lang.require('manager', 'help_header')}
@@ -52,6 +54,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
             f"{slot.meta.description} | {slot.meta.usage.splitlines()[0] if slot.meta.usage else None} |"
         )
         for index, slot in enumerate(cmds)
+        if plat in slot.meta.extra["support"]
     )
     md += command_string
 
@@ -70,9 +73,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
         try:
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:
-            return await ctx.scene.send_message(
-                md.replace("\n\n* 想给点饭钱的话，这里有赞助链接：https://afdian.net/@rf_tar_railt", "")
-            )
+            return await ctx.scene.send_message(command_manager.all_command_help())
 
 
 @alcommand(cmd_help, post=True, send_error=True)

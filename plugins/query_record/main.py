@@ -34,6 +34,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 再通过 ’渊白抽卡查询 绑定 你的token‘ 命令来绑定
         """,
         compact=True,
+        extra={"supports": {"mirai", "qqapi"}},
     ),
 )
 

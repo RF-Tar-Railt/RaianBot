@@ -27,7 +27,17 @@ def get_draw():
     return draw_ans, text
 
 
-@alcommand(Alconna("抽签", meta=CommandMeta("进行一次抽签, 可以解除")), post=True, send_error=True)
+@alcommand(
+    Alconna(
+        "抽签",
+        meta=CommandMeta(
+            "进行一次抽签, 可以解除",
+            extra={"supports": {"mirai", "qqapi"}},
+        ),
+    ),
+    post=True,
+    send_error=True,
+)
 @record("抽签")
 # @exclusive
 @accessable
@@ -63,7 +73,17 @@ async def draw(ctx: Context, msg: Message, db: DatabaseService):
         return await ctx.scene.send_message(f"您今日的运势抽签为：{answer}\n{poetry}", reply=msg)
 
 
-@alcommand(Alconna("解签", meta=CommandMeta("解除上一次的抽签")), post=True, send_error=True)
+@alcommand(
+    Alconna(
+        "解签",
+        meta=CommandMeta(
+            "解除上一次的抽签",
+            extra={"supports": {"mirai", "qqapi"}},
+        ),
+    ),
+    post=True,
+    send_error=True,
+)
 @record("抽签")
 # @exclusive
 @accessable

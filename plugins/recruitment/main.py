@@ -14,7 +14,12 @@ from app.shortcut import accessable, picture
 cmd = Alconna(
     "公招",
     Args["tags", MultiVar(str, "*"), Field(completion=lambda: "高资")],
-    meta=CommandMeta("自助访问 prts 的公招计算器并截图", usage="标签之间用空格分隔", example="$公招 高资 生存"),
+    meta=CommandMeta(
+        "自助访问 prts 的公招计算器并截图",
+        usage="标签之间用空格分隔",
+        example="$公招 高资 生存",
+        extra={"supports": {"mirai", "qqapi"}},
+    ),
 )
 
 
@@ -23,7 +28,7 @@ cmd = Alconna(
 @accessable
 async def recruit(ctx: Context, res: Arparma, pw: PlaywrightService, bot: RaianBotService):
     if not res.all_matched_args.get("tags"):
-        return await ctx.scene.send_message("缺失标签")
+        return await ctx.scene.send_message("缺失标签\n试试比如 公招 高资")
     tags: tuple[str, ...] = res.all_matched_args["tags"]
     await ctx.scene.send_message("正在获取中，请稍等。。。")
     # Click html

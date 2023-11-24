@@ -25,7 +25,7 @@ config = bot.config.plugin.get(WeatherConfig)
 cmd = Alconna(
     "天气",
     Args["city?", str],
-    meta=CommandMeta("查询某个城市的天气", example="$天气 北京\n$北京天气"),
+    meta=CommandMeta("查询某个城市的天气", example="$天气 北京\n$北京天气", extra={"supports": {"mirai", "qqapi"}}),
 )
 cmd.shortcut(
     "(?P<city>.+)天气",

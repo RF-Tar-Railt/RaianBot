@@ -49,6 +49,7 @@ $解除森空岛签到
 $森空岛签到结果
 """,
         compact=True,
+        extra={"supports": {"mirai", "qqapi"}},
     ),
 )
 alc.shortcut("绑定森空岛签到", {"command": "森空岛签到 绑定", "prefix": True})

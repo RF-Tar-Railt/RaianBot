@@ -17,7 +17,11 @@ from app.shortcut import accessable, is_qqapi_group, picture, record
     Alconna(
         "测试干员",
         Args["name?#你的代号", [str, Notice], Field(completion=lambda: "你的代号是?")],
-        meta=CommandMeta("依据名字测试你会是什么干员", example="$测试干员 海猫"),
+        meta=CommandMeta(
+            "依据名字测试你会是什么干员",
+            example="$测试干员 海猫",
+            extra={"supports": {"mirai", "qqapi"}},
+        ),
     ),
     send_error=True,
     post=True,

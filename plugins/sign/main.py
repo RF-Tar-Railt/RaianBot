@@ -13,7 +13,17 @@ from .config import SignConfig
 from .model import SignRecord
 
 
-@alcommand(Alconna("签到", meta=CommandMeta("在机器人处登记用户信息")), post=True, send_error=True)
+@alcommand(
+    Alconna(
+        "签到",
+        meta=CommandMeta(
+            "在机器人处登记用户信息",
+            extra={"supports": {"mirai", "qqapi"}},
+        ),
+    ),
+    post=True,
+    send_error=True,
+)
 @record("sign")
 # @exclusive
 @accessable
