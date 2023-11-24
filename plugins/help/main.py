@@ -28,7 +28,6 @@ cmd_help = Alconna(
     ],
     meta=CommandMeta("查看帮助", extra={"supports": {"mirai", "qqapi"}}),
 )
-cmd_help.shortcut("help", {"prefix": True})
 cmd_help.shortcut(r"帮助(\d+)", {"prefix": True, "args": ["{0}"]})
 cmd_help.shortcut("菜单", {"prefix": True})
 
@@ -74,6 +73,17 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:
             return await ctx.scene.send_message(command_manager.all_command_help())
+
+
+@alcommand(
+    Alconna("help", meta=CommandMeta("查看帮助", extra={"supports": {"mirai", "qqapi"}})),
+    post=True,
+    send_error=True,
+)
+@exclusive
+@accessable
+async def send_text_help(ctx: Context):
+    return await ctx.scene.send_message(command_manager.all_command_help())
 
 
 @alcommand(cmd_help, post=True, send_error=True)

@@ -47,10 +47,20 @@ with namespace("coc") as np:
             extra={"supports": {"mirai", "qqapi"}}
         ),
     )
-
+    ra_c = Alconna(
+        "ra",
+        Args["attr#属性名称，如name、名字、str、力量", str, "快速"]["exp", int, -1],
+        meta=CommandMeta(
+            "快速检定",
+            usage="不传入 exp 则不进行结果检定",
+            example=".ra str 80",
+            compact=True,
+            extra={"supports": {"mirai", "qqapi"}}
+        ),
+    )
     rd_c = Alconna(
         "r",
-        Args["pattern#骰子表达式", str, "1d100"]["exp#期望值", int, -1],
+        Args["pattern#骰子表达式", "re:[^a]+", "1d100"]["exp#期望值", int, -1],
         meta=CommandMeta(
             "投掷指令",
             usage=(
@@ -63,7 +73,6 @@ with namespace("coc") as np:
             extra={"supports": {"mirai", "qqapi"}}
         ),
     )
-
     s_or_f = BasePattern(r"\d+(?:d\d+)?\/\d+(?:d\d+)?", model=MatchMode.REGEX_MATCH, alias="suc/fail")
     sc_c = Alconna(
         "sc",
@@ -85,9 +94,9 @@ with namespace("coc") as np:
             extra={"supports": {"mirai", "qqapi"}}
         ),
     )
-    st_c = Alconna("st", meta=CommandMeta("射击命中判定", usage="自动掷骰1d20"))
-    ti_c = Alconna("ti", meta=CommandMeta("临时疯狂症状", usage="自动掷骰1d10"))
-    li_c = Alconna("li", meta=CommandMeta("总结疯狂症状", usage="自动掷骰1d10"))
+    st_c = Alconna("st", meta=CommandMeta("射击命中判定", usage="自动掷骰1d20", extra={"supports": {"mirai", "qqapi"}}))
+    ti_c = Alconna("ti", meta=CommandMeta("临时疯狂症状", usage="自动掷骰1d10", extra={"supports": {"mirai", "qqapi"}}))
+    li_c = Alconna("li", meta=CommandMeta("总结疯狂症状", usage="自动掷骰1d10", extra={"supports": {"mirai", "qqapi"}}))
     dnd_c = Alconna(
         "dnd",
         Args["val#生成数量", int, 1],
@@ -98,7 +107,6 @@ with namespace("coc") as np:
             extra={"supports": {"mirai", "qqapi"}}
         ),
     )
-
     setcoc_c = Alconna(
         "setcoc",
         Args["rule?#coc版本", int],
@@ -109,7 +117,6 @@ with namespace("coc") as np:
             extra={"supports": {"mirai", "qqapi"}}
         ),
     )
-
     coc_c = Alconna(
         "coc",
         Args["mode", ["6", "7", "6d", "7d"], Field("7", unmatch_tips=lambda x: "coc后随模式只能为 6，7，6d 和 7d")],
@@ -118,17 +125,6 @@ with namespace("coc") as np:
             "克苏鲁的呼唤(COC)人物作成, 默认生成7版人物卡",
             usage="接d为详细作成，一次只能作成一个",
             example=".coc6d",
-            compact=True,
-            extra={"supports": {"mirai", "qqapi"}}
-        ),
-    )
-    ra_c = Alconna(
-        "ra",
-        Args["attr#属性名称，如name、名字、str、力量", str, "快速"]["exp", int, -1],
-        meta=CommandMeta(
-            "快速检定",
-            usage="不传入 exp 则不进行结果检定",
-            example=".ra str 80",
             compact=True,
             extra={"supports": {"mirai", "qqapi"}}
         ),
@@ -188,7 +184,7 @@ async def ra_handle(
     raise PropagationCancelled
 
 
-@alcommand(rd_c, post=True, send_error=True)
+@alcommand(rd_c, post=True)
 @record("coc")
 @exclusive
 @accessable

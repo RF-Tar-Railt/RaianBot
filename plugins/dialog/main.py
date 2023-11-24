@@ -125,13 +125,13 @@ async def smatch(
                 break
         else:
             rand_str = await random_ai(ctx, content[:120], aio, conf, gpt=0.6, tx=0.35)
-    await app.send_message(sender, MessageChain(rand_str))  # noqa
+    await ctx.scene.send_message(rand_str)  # noqa
     raise PropagationCancelled
 
 
 @listen(MessageReceived)
 @record("dialog")
-@priority(20)
+@priority(21)
 @exclusive
 @accessable
 async def ematch(
@@ -156,7 +156,7 @@ async def ematch(
                 break
         else:
             rand_str = await random_ai(ctx, content[:120], aio, conf, gpt=0.4, tx=0.55)
-    await app.send_message(sender, MessageChain(rand_str))  # noqa
+    await ctx.scene.send_message(rand_str)  # noqa
     raise PropagationCancelled
 
 

@@ -330,11 +330,7 @@ async def update(avilla: Avilla):
             else:
                 mapping[group_id] = list(union)
         for group in (
-            await session.scalars(
-                Select(Group)
-                .where(Group.platform == "qq")
-                .where(Group.id.in_(mapping))
-            )
+            await session.scalars(Select(Group).where(Group.platform == "qq").where(Group.id.in_(mapping)))
         ).all():
             if "微博动态自动获取" in group.disabled:
                 continue

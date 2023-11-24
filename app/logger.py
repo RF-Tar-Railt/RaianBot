@@ -109,7 +109,7 @@ def setup_logger(level="INFO"):
         "./logs/latest.log",
         format=log_format,
         level=level.upper(),
-        enqueue=True,
+        enqueue=False,
         rotation="00:00",
         compression="zip",
         encoding="utf-8",

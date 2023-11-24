@@ -7,13 +7,11 @@ from typing import Any
 from avilla.core import Context
 from avilla.core.account import BaseAccount
 from avilla.core.elements import Notice, Text
-from avilla.core.event import AvillaEvent
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
-from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from sqlalchemy.sql import select
 
 from .config import BotConfig
@@ -22,9 +20,7 @@ from .database import DatabaseService, Group
 
 
 def require_admin(only: bool = False, __record: Any = None):
-    async def __wrapper__(
-        interface: DispatcherInterface[AvillaEvent], serv: RaianBotService, bot: BotConfig, ctx: Context
-    ):
+    async def __wrapper__(event: MessageReceived, serv: RaianBotService, bot: BotConfig, ctx: Context):
         if not isinstance(ctx.account, ElizabethAccount):
             if ctx.scene.pattern.get("group"):
                 return True
@@ -33,7 +29,7 @@ def require_admin(only: bool = False, __record: Any = None):
             private = "user" in ctx.scene.pattern
         else:
             private = "friend" in ctx.scene.pattern
-        id_ = f"{id(interface.event)}"
+        id_ = f"{id(event)}"
         cache = serv.cache.setdefault("$admin", {})
         if ctx.client.last_value in [bot.master_id, bot.account]:
             serv.cache.pop("$admin", None)
@@ -89,11 +85,10 @@ def check_disabled(path: str):
 
 
 def check_exclusive():
-    async def __wrapper__(interface: DispatcherInterface[AvillaEvent], serv: RaianBotService, ctx: Context):
+    async def __wrapper__(event: MessageReceived, serv: RaianBotService, ctx: Context):
         if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
             return True
-        event = interface.event
-        if isinstance(event, MessageReceived) and len(serv.config.bots) > 1:
+        if len(serv.config.bots) > 1:
             seed = datetime.now().timestamp()
             async with serv.db.get_session() as session:
                 group = (
