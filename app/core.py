@@ -23,6 +23,7 @@ BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
 class RaianBotService(Service):
     id = "raian.core.service"
     config: RaianConfig
+    db: DatabaseService
 
     def __init__(self, config: RaianConfig):
         super().__init__()
@@ -37,11 +38,12 @@ class RaianBotService(Service):
             if not self.config.database.name.endswith(".db"):
                 self.config.database.name = f"{self.config.database.name}.db"
         manager.add_component(
-            DatabaseService(
+            db := DatabaseService(
                 get_engine_url(**self.config.database.dict()),
                 {"echo": None, "pool_pre_ping": True},
             )
         )
+        self.db = db
 
     @property
     def required(self) -> set[str]:

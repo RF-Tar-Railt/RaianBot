@@ -62,7 +62,7 @@ bot = RaianBotService.current()
 config = bot.config.plugin.get(StatusConfig)
 
 
-_ev = Environment(trim_blocks=True, lstrip_blocks=True, autoescape=False, enable_async=True)
+_ev = Environment(trim_blocks=True, lstrip_blocks=True, autoescape=True, enable_async=True)
 _ev.globals["relative_time"] = relative_time
 _ev.filters["relative_time"] = relative_time
 _ev.filters["humanize_date"] = humanize_date

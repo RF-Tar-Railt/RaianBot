@@ -2,7 +2,7 @@ import re
 from contextlib import suppress
 
 import diro
-from arclet.alconna import Alconna, Args, CommandMeta, namespace
+from arclet.alconna import Alconna, Args, CommandMeta, Field, namespace
 from arclet.alconna.graia import Match, alcommand
 from arclet.alconna.tools import MarkdownTextFormatter
 from avilla.core import Context
@@ -64,7 +64,14 @@ with namespace("coc") as np:
     s_or_f = BasePattern(r"\d+(?:d\d+)?\/\d+(?:d\d+)?", model=MatchMode.REGEX_MATCH, alias="suc/fail")
     sc_c = Alconna(
         "sc",
-        Args["sf#惩罚值", s_or_f, "1d10/1d100"],
+        Args[
+            "sf#惩罚值",
+            s_or_f,
+            Field(
+                unmatch_tips=lambda x: "表达式格式错误，应为 '数字/数字' 或 '骰子表达式/骰子表达式'\n比如 '1d10/1d100'",
+                missing_tips=lambda: "需要判断表达式。\n可以尝试输入 '/sc 1d10/1d100'"
+            )
+        ],
         Args["san", int, 80],
         meta=CommandMeta(
             "疯狂检定",
@@ -99,7 +106,7 @@ with namespace("coc") as np:
 
     coc_c = Alconna(
         "coc",
-        Args["mode", ["6", "7", "6d", "7d"], "7"],
+        Args["mode", ["6", "7", "6d", "7d"], Field("7", unmatch_tips=lambda x: "coc后随模式只能为 6，7，6d 和 7d")],
         Args["val#生成数量", int, 1],
         meta=CommandMeta(
             "克苏鲁的呼唤(COC)人物作成, 默认生成7版人物卡",
