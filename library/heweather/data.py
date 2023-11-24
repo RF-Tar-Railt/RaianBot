@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import asyncio
 from dataclasses import dataclass
-from typing import Optional, Union
 
 from httpx import AsyncClient, Response
 from httpx._types import ProxiesTypes
@@ -71,7 +72,7 @@ class HeWeather:
                 f"\n当前为: ({type(self.api_type)}){self.api_type}"
             )
 
-    def __init__(self, api_key: str, api_type: Union[int, str] = 0, proxies: Optional[ProxiesTypes] = None):
+    def __init__(self, api_key: str, api_type: int | str = 0, proxies: ProxiesTypes | None = None):
         self.apikey = api_key
         self.api_type = int(api_type)
         self.proxies = proxies
@@ -147,7 +148,7 @@ class HeWeather:
         self._check_response(res)
         return AirApi(**res.json())
 
-    async def warning(self, city_id: str) -> Optional[WarningApi]:
+    async def warning(self, city_id: str) -> WarningApi | None:
         res = await self._get_data(
             url=self.url_weather_warning,
             params={"location": city_id, "key": self.apikey},

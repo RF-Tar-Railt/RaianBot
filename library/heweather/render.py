@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 import platform
 from datetime import datetime
-from typing import List
 from pathlib import Path
 
 import jinja2
 
-from .model import Air, Daily, Hourly, HourlyType
 from .data import HeWeatherData
+from .model import Air, Daily, Hourly, HourlyType
 
 template_path = (Path(__file__).parent / "assets").absolute()
 
@@ -35,7 +36,7 @@ async def render(weather: HeWeatherData, hourly_type: int) -> str:
     return await template.render_async(**templates)
 
 
-def add_hour_data(hourly: List[Hourly], hourly_type: int):
+def add_hour_data(hourly: list[Hourly], hourly_type: int):
     min_temp = min([int(hour.temp) for hour in hourly])
     high = max([int(hour.temp) for hour in hourly])
     low = int(min_temp - (high - min_temp))
@@ -53,7 +54,7 @@ def add_hour_data(hourly: List[Hourly], hourly_type: int):
     return hourly
 
 
-def add_date(daily: List[Daily]):
+def add_date(daily: list[Daily]):
     week_map = [
         "周日",
         "周一",

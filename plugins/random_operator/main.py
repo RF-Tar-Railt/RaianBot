@@ -10,7 +10,7 @@ from avilla.standard.core.message import MessageReceived
 from app.core import RaianBotService
 from app.image import text2img
 from app.interrupt import FunctionWaiter
-from app.shortcut import accessable, is_qqapi_group, picture, record
+from app.shortcut import accessable, exclusive, is_qqapi_group, picture, record
 
 
 @alcommand(
@@ -27,7 +27,7 @@ from app.shortcut import accessable, is_qqapi_group, picture, record
     post=True,
 )
 @record("随机干员")
-# @exclusive
+@exclusive
 @accessable
 async def ro(ctx: Context, name: Match[Union[str, Notice]], bot: RaianBotService):
     """依据名字随机生成干员"""

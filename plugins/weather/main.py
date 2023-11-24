@@ -14,7 +14,7 @@ from graiax.playwright import PlaywrightBrowser, PlaywrightService
 
 from app.core import RaianBotService
 from app.interrupt import FunctionWaiter
-from app.shortcut import accessable, picture, record
+from app.shortcut import accessable, exclusive, picture, record
 from library.heweather import CityNotFoundError, HeWeather, render
 
 from .config import WeatherConfig
@@ -45,7 +45,7 @@ if config.heweather:
 
     @alcommand(cmd, post=True, send_error=True)
     @record("天气")
-    # @exclusive
+    @exclusive
     @accessable
     async def weather(ctx: Context, city: Match[str], pw: PlaywrightService):
         if city.available:
@@ -95,7 +95,7 @@ else:
 
     @alcommand(cmd, post=True, send_error=True)
     @record("天气")
-    # @exclusive
+    @exclusive
     @accessable
     async def weather(ctx: Context, city: Match[str], pw: PlaywrightService):
         if city.available:

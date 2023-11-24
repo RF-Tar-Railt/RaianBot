@@ -36,6 +36,11 @@ class Group(Base):
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     """群组 ID"""
 
+    platform: Mapped[str] = mapped_column(String(128), nullable=False)
+    """对应平台"""
+
+    accounts: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=[])
+
     in_blacklist: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     """是否在黑名单中"""
 

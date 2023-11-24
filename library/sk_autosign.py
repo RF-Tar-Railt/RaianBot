@@ -2,12 +2,16 @@ import hashlib
 import hmac
 import json
 import time
-from typing import Optional
+from typing import Any, Optional, Protocol
 from urllib import parse
 
 from httpx import AsyncClient
 
-from .model import SKAutoSignRecord
+
+class SKAutoSignRecord(Protocol):
+    id: Any
+    token: Any
+
 
 app_code = "4ca99fa6b56cc2ba"
 header = {
@@ -111,8 +115,6 @@ async def sign(record: SKAutoSignRecord):
             yield {"status": False, "text": f"{record.id} 未创建方舟账号", "target": ""}
             return
         for i in binding:
-            if record.uids and i["uid"] not in record.uids:
-                continue
             query = {"uid": i["uid"], "gameId": i["channelMasterId"]}
             drname = i["nickName"]
             server = i["channelName"]

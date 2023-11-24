@@ -1,1 +1,1 @@
-from .main import TencentCloudApi
+from .main import TencentCloudApi as TencentCloudApi

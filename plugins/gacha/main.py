@@ -12,7 +12,7 @@ from sqlalchemy.sql import select
 from app.client import AiohttpClientService
 from app.core import RaianBotService
 from app.database import DatabaseService, User
-from app.shortcut import accessable, picture, record
+from app.shortcut import accessable, exclusive, picture, record
 
 from .config import GachaConfig
 from .model import ArkgachaRecord
@@ -51,7 +51,7 @@ cmd = Alconna(
 @alcommand(cmd, post=True, send_error=True)
 @assign("更新")
 @record("抽卡")
-# @exclusive
+@exclusive
 @accessable
 async def change(ctx: Context, aio: AiohttpClientService):
     if new := (await gacha.update()):
@@ -80,7 +80,7 @@ async def change(ctx: Context, aio: AiohttpClientService):
 @alcommand(cmd, send_error=True, post=True)
 @assign("$main")
 @record("抽卡")
-# @exclusive
+@exclusive
 @accessable
 async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
     """模拟抽卡"""
@@ -148,7 +148,7 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
     post=True,  # noqa: E501
 )
 @record("抽卡")
-# @exclusive
+@exclusive
 @accessable
 async def simulate(ctx: Context, db: DatabaseService):
     from arknights_toolkit.gacha.simulate import simulate_image

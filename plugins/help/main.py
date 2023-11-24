@@ -14,7 +14,7 @@ from tarina import lang
 from app.config import BotConfig
 from app.core import RaianBotService
 from app.image import md2img
-from app.shortcut import accessable, allow, picture
+from app.shortcut import accessable, allow, exclusive, picture
 
 cmd_help = Alconna(
     "帮助",
@@ -54,7 +54,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
             f"{slot.meta.description} | {slot.meta.usage.splitlines()[0] if slot.meta.usage else None} |"
         )
         for index, slot in enumerate(cmds)
-        if plat in slot.meta.extra["support"]
+        if plat in slot.meta.extra["supports"]
     )
     md += command_string
 
@@ -77,7 +77,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
 
 
 @alcommand(cmd_help, post=True, send_error=True)
-# @exclusive
+@exclusive
 @accessable
 async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, config: BotConfig):
     if not query.available:

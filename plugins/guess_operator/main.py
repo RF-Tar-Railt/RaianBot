@@ -11,7 +11,7 @@ from avilla.core.exceptions import ActionFailed
 
 from app.core import RaianBotService
 from app.interrupt import FunctionWaiter
-from app.shortcut import accessable, picture, record
+from app.shortcut import accessable, exclusive, picture, record
 
 alc = Alconna(
     "猜干员",
@@ -30,7 +30,7 @@ wordle = OperatorWordle(f"{bot.config.plugin_data_dir / 'guess'}")
 @alcommand(alc, post=True, send_error=True)
 @record("猜干员")
 @assign("规则")
-# @exclusive
+@exclusive
 @accessable
 async def guess_info(ctx: Context):
     img = Path("assets/image/guess.png").read_bytes()
@@ -58,7 +58,7 @@ async def guess_info(ctx: Context):
 @alcommand(alc, post=True, send_error=True)
 @record("猜干员")
 @assign("更新")
-# @exclusive
+@exclusive
 @accessable
 async def guess_update(ctx: Context):
     await wordle.update(bot.config.proxy)
@@ -68,7 +68,7 @@ async def guess_update(ctx: Context):
 @alcommand(alc, post=True, send_error=True)
 @record("猜干员")
 @assign("重置")
-# @exclusive
+@exclusive
 @accessable
 async def guess_reset(ctx: Context):
     session = "_".join(ctx.scene.pattern.values())
@@ -80,7 +80,7 @@ async def guess_reset(ctx: Context):
 @alcommand(alc, post=True, send_error=True)
 @record("猜干员")
 @assign("$main")
-# @exclusive
+@exclusive
 @accessable
 async def guess(
     ctx: Context,

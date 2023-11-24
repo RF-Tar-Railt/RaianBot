@@ -8,7 +8,7 @@ from avilla.standard.qq.elements import MusicShare, MusicShareKind
 
 from app.client import AiohttpClientService
 from app.interrupt import FunctionWaiter
-from app.shortcut import accessable, allow
+from app.shortcut import accessable, allow, exclusive
 
 from .config import MusicConfig
 
@@ -20,7 +20,7 @@ music = Alconna(
         "在网易云点歌",
         usage="可以指定歌手, 与歌名用空格分开",
         example="$点歌 Rise",
-        extra={"support": {"mirai"}},
+        extra={"supports": {"mirai"}},
     ),
 )
 JUMP_URL = "https://music.163.com/song?id={id}"
@@ -29,7 +29,7 @@ MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"
 
 @alcommand(music)
 @allow(ElizabethAccount)
-# @exclusive
+@exclusive
 @accessable
 async def song(ctx: Context, name: Match[str], singer: Match[str], config: MusicConfig, aio: AiohttpClientService):
     _singer = f"{singer.result} " if singer.available else ""

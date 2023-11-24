@@ -12,7 +12,7 @@ from avilla.core import ActionFailed, Context, Picture, RawResource
 
 from app.core import RaianBotService
 from app.image import md2img
-from app.shortcut import accessable, picture, record
+from app.shortcut import accessable, exclusive, picture, record
 
 alc = Alconna(
     "抽卡查询",
@@ -53,7 +53,7 @@ alc.shortcut("方舟卡池更新", {"command": "抽卡查询 更新", "prefix": 
 @alcommand(alc)
 @assign("$main")
 @record("抽卡查询")
-# @exclusive
+@exclusive
 @accessable
 async def query(ctx: Context, count: Match[int]):
     try:
@@ -101,7 +101,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
 @alcommand(alc)
 @assign("更新")
 @record("抽卡查询")
-# @exclusive
+@exclusive
 @accessable
 async def update(ctx: Context, arp: Arparma):
     if not arp.other_args.get("name"):
@@ -117,7 +117,7 @@ async def update(ctx: Context, arp: Arparma):
 @alcommand(alc)
 @assign("绑定")
 @record("抽卡查询")
-# @exclusive
+@exclusive
 @accessable
 async def bind(ctx: Context, token: Match[str]):
     if "content" in token.result:

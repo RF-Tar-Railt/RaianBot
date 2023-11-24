@@ -1,7 +1,7 @@
 from enum import IntEnum
-from typing import List, Optional
+from typing import Optional
 
-from pydantic import Extra, BaseModel
+from pydantic import BaseModel, Extra
 
 
 class Now(BaseModel, extra=Extra.allow):
@@ -35,7 +35,7 @@ class Daily(BaseModel, extra=Extra.allow):
 
 class DailyApi(BaseModel, extra=Extra.allow):
     code: str
-    daily: List[Daily]
+    daily: list[Daily]
 
 
 class Air(BaseModel, extra=Extra.allow):
@@ -64,7 +64,7 @@ class Warning(BaseModel, extra=Extra.allow):
 
 class WarningApi(BaseModel, extra=Extra.allow):
     code: str
-    warning: Optional[List[Warning]]
+    warning: Optional[list[Warning]]
 
 
 class Hourly(BaseModel, extra=Extra.allow):
@@ -78,7 +78,7 @@ class Hourly(BaseModel, extra=Extra.allow):
 
 class HourlyApi(BaseModel, extra=Extra.allow):
     code: str
-    hourly: List[Hourly]
+    hourly: list[Hourly]
 
 
 class HourlyType(IntEnum):

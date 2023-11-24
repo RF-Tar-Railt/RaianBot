@@ -12,7 +12,7 @@ from nepattern import BasePattern, MatchMode
 from sqlalchemy import select
 
 from app.database import DatabaseService
-from app.shortcut import accessable, record
+from app.shortcut import accessable, exclusive, record
 from library.dice import coc6, coc6d, coc7, coc7d, dnd, draw, expr, long_insane, rd0, st, temp_insane
 from library.dice.constant import help_sc
 
@@ -140,7 +140,7 @@ with namespace("coc") as np:
 
 @alcommand(name_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def name_handle(ctx: Context, key: Match[str], cnt: Match[int]):
     if key.result == "$r" or key.result.isdigit():
@@ -150,7 +150,7 @@ async def name_handle(ctx: Context, key: Match[str], cnt: Match[int]):
 
 @alcommand(draw_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def draw_handle(ctx: Context, key: Match[str], cnt: Match[int]):
     return await ctx.scene.send_message(draw(key.result, cnt.result))
@@ -159,7 +159,7 @@ async def draw_handle(ctx: Context, key: Match[str], cnt: Match[int]):
 @alcommand(ra_c, post=True, send_error=True)
 @priority(14)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def ra_handle(
     ctx: Context,
@@ -190,7 +190,7 @@ async def ra_handle(
 
 @alcommand(rd_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def rd_handle(
     ctx: Context,
@@ -210,7 +210,7 @@ async def rd_handle(
 
 @alcommand(setcoc_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def setcoc_handle(
     ctx: Context,
@@ -235,7 +235,7 @@ async def setcoc_handle(
 
 @alcommand(st_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def st_handle(ctx: Context):
     return await ctx.scene.send_message(st())
@@ -243,7 +243,7 @@ async def st_handle(ctx: Context):
 
 @alcommand(ti_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def ti_handle(ctx: Context):
     return await ctx.scene.send_message(temp_insane())
@@ -251,7 +251,7 @@ async def ti_handle(ctx: Context):
 
 @alcommand(li_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def li_handle(ctx: Context):
     return await ctx.scene.send_message(long_insane())
@@ -259,7 +259,7 @@ async def li_handle(ctx: Context):
 
 @alcommand(coc_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def coc_handle(ctx: Context, val: Match[int], mode: Match[str]):
     if mode.result == "6d":
@@ -273,7 +273,7 @@ async def coc_handle(ctx: Context, val: Match[int], mode: Match[str]):
 
 @alcommand(dnd_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def dnd_handle(ctx: Context, val: Match[int]):
     return await ctx.scene.send_message(dnd(val.result))
@@ -281,7 +281,7 @@ async def dnd_handle(ctx: Context, val: Match[int]):
 
 @alcommand(sc_c, post=True, send_error=True)
 @record("coc")
-# @exclusive
+@exclusive
 @accessable
 async def sc_handle(ctx: Context, sf: Match[str], san: Match[int]):
     try:

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import ujson
 import random
-import diro
 from pathlib import Path
+
+import diro
+import ujson
 
 root = Path(__file__).parent / "assets"
 
@@ -37,10 +38,10 @@ def draw_expr(exp: str) -> str:
     cnt = 0
     while (lq := exp.find("{", cnt)) > -1 and (rq := exp.find("}", lq)) > -1:
         if lq and exp[lq - 1] == "\\":
-            exp = exp[:lq - 1]
+            exp = exp[: lq - 1]
             cnt = rq
             continue
-        tmp = exp[lq+1:rq]
+        tmp = exp[lq + 1 : rq]
         if tmp not in p_deck:
             cnt = rq + 1
             continue
@@ -55,10 +56,10 @@ def draw_expr(exp: str) -> str:
     cnt = 0
     while (lq := exp.find("[", cnt)) > -1 and (rq := exp.find("]", lq)) > -1:
         if lq and exp[lq - 1] == "\\":
-            exp = exp[:lq - 1]
+            exp = exp[: lq - 1]
             cnt = rq
             continue
-        roll = exp[lq+1:rq]
+        roll = exp[lq + 1 : rq]
         cnt = rq + 1
         try:
             rd = diro.parse(roll)

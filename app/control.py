@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import random
+from datetime import datetime
 from typing import Any
 
 from avilla.core import Context
@@ -7,6 +9,7 @@ from avilla.core.account import BaseAccount
 from avilla.core.elements import Notice, Text
 from avilla.core.event import AvillaEvent
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
@@ -85,30 +88,33 @@ def check_disabled(path: str):
     return Depend(__wrapper__)
 
 
-# def check_exclusive():
-#     def __wrapper__(app: Ariadne, target: Union[Friend, Member], event: MiraiEvent):
-#         from .core import RaianBotInterface
-#
-#         interface = app.launch_manager.get_interface(RaianBotInterface)
-#
-#         if target.id in interface.base_config.bots:
-#             raise ExecutionStop
-#
-#         if isinstance(event, GroupMessage) and len(interface.base_config.bots) > 1:
-#             seed = int(event.source.id + datetime.now().timestamp())
-#             bots = {k : v for k, v in DataInstance.get().items() if v.exist(event.sender.group.id)}
-#             if len(bots) > 1:
-#                 default = DataInstance.get()[interface.base_config.default_account]
-#                 excl = default.cache.setdefault("$exclusive", {})
-#                 if str(event.source.id) not in excl:
-#                     excl.clear()
-#                     rand = random.Random()
-#                     rand.seed(seed)
-#                     choice = rand.choice(list(bots.keys()))
-#                     excl[str(event.source.id)] = choice
-#                 if excl[str(event.source.id)] != app.account:
-#                     raise ExecutionStop
-#
-#         return True
-#
-#     return Depend(__wrapper__)
+def check_exclusive():
+    async def __wrapper__(interface: DispatcherInterface[AvillaEvent], serv: RaianBotService, ctx: Context):
+        if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
+            return True
+        event = interface.event
+        if isinstance(event, MessageReceived) and len(serv.config.bots) > 1:
+            seed = datetime.now().timestamp()
+            async with serv.db.get_session() as session:
+                group = (
+                    await session.scalars(
+                        select(Group)
+                        .where(Group.id == ctx.scene.last_key)
+                        .where(Group.platform == "qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi")
+                    )
+                ).one_or_none()
+                if not group or len(group.accounts) < 2:
+                    return True
+                excl = serv.cache.setdefault("$exclusive", {})
+                if event.message.to_selector() not in excl:
+                    excl.clear()
+                    rand = random.Random()
+                    rand.seed(seed)
+                    choice = rand.choice(group.accounts)
+                    excl[event.message.id] = choice
+                if not ctx.account.route.follows(excl[event.message.to_selector()]):
+                    raise ExecutionStop
+
+        return True
+
+    return Depend(__wrapper__)

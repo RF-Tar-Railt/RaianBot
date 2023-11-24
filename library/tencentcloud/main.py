@@ -33,11 +33,14 @@ class TencentCloudApi:
                 req = Request(http.method, http.url, json=params, headers={})
             else:
                 raise NotImplementedError(http.method)
-            signature(self.secret_id, self.secret_key, action, req, http, {
-                "api_version": "2019-06-27",
-                "service": "tbp",
-                "region": self.region
-            })
+            signature(
+                self.secret_id,
+                self.secret_key,
+                action,
+                req,
+                http,
+                {"api_version": "2019-06-27", "service": "tbp", "region": self.region},
+            )
             try:
                 resp = (await client.send(req)).json()
                 if message := resp.get("Response", {}).get("ResponseText"):
@@ -87,11 +90,14 @@ class TencentCloudApi:
                 req = Request(http.method, http.url, json=params, headers={})
             else:
                 raise NotImplementedError(http.method)
-            signature(self.secret_id, self.secret_key, action, req, http, {
-                "api_version": "2018-03-21",
-                "service": "tmt",
-                "region": self.region
-            })
+            signature(
+                self.secret_id,
+                self.secret_key,
+                action,
+                req,
+                http,
+                {"api_version": "2018-03-21", "service": "tmt", "region": self.region},
+            )
             try:
                 resp = (await client.send(req)).json()
                 if res := resp.get("Response", {}).get("TargetText"):

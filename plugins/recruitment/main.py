@@ -9,7 +9,7 @@ from avilla.qqapi.exception import ActionFailed
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
 
 from app.core import RaianBotService
-from app.shortcut import accessable, picture
+from app.shortcut import accessable, exclusive, picture
 
 cmd = Alconna(
     "公招",
@@ -24,7 +24,7 @@ cmd = Alconna(
 
 
 @alcommand(cmd, send_error=True, post=True)
-# @exclusive
+@exclusive
 @accessable
 async def recruit(ctx: Context, res: Arparma, pw: PlaywrightService, bot: RaianBotService):
     if not res.all_matched_args.get("tags"):

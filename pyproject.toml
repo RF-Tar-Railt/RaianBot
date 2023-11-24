@@ -62,7 +62,7 @@ pythonPlatform = "All"
 typeCheckingMode = "basic"
 
 [tool.pdm.scripts]
-format = { composite = ["isort ./app/ ./plugins/","black ./app/ ./plugins/","ruff ./app/ ./plugins/"] }
+format = { composite = ["isort ./app/ ./plugins/ ./library","black ./app/ ./plugins/ ./library","ruff ./app/ ./plugins/ ./library"] }
 
 [tool.pdm.dev-dependencies]
 dev = [

@@ -1,15 +1,18 @@
+from __future__ import annotations
+
 import asyncio
-from typing import Union, Type, Optional, Dict, Any, Literal, List
+from typing import Any, Literal
+
 import aiohttp
 import ujson
 from pyquery import PyQuery as Query
-from .storage import DefaultWeiboData, BaseWeiboData
-from .model import WeiboUser, WeiboDynamic
-from .exceptions import RespStatusError, RespDataError, RespDataErrnoError, WeiboError
+
+from .exceptions import RespDataErrnoError, RespDataError, RespStatusError, WeiboError
+from .model import WeiboDynamic, WeiboUser
+from .storage import BaseWeiboData, DefaultWeiboData
 
 
 class WeiboAPI:
-
     user_agent = (
         "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) "
         "AppleWebKit/601.1.46 (KHTML, like Gecko) "
@@ -21,7 +24,7 @@ class WeiboAPI:
     def __init__(
         self,
         filepath: str,
-        storage: Optional[Type[BaseWeiboData]] = None,
+        storage: type[BaseWeiboData] | None = None,
     ):
         self.data = (storage or DefaultWeiboData)(filepath)
         self.data.load()
@@ -37,13 +40,13 @@ class WeiboAPI:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
 
-    async def _call(self, params: dict, timeout: int = 10) -> Optional[Dict[str, Any]]:
+    async def _call(self, params: dict, timeout: int = 10) -> dict[str, Any] | None:
         base_url = "https://m.weibo.cn/api/container/getIndex?"
         headers = {
             "Host": "m.weibo.cn",
             "Referer": "https://m.weibo.cn/u/XXX",
             "User-Agent": self.user_agent,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         async with self.session.get(base_url, params=params, headers=headers, timeout=timeout) as resp:
             if resp.status != 200:
@@ -59,7 +62,7 @@ class WeiboAPI:
                 raise RespDataErrnoError(f"Error: {data['data']['errno']}\n{params}")
             return data["data"]
 
-    async def search_users(self, target: str) -> List[int]:
+    async def search_users(self, target: str) -> list[int]:
         """搜索用户名，返回可能的所有用户的ids"""
         params = {"containerid": f"100103type%3D3%26q%3D{target}%26t%3D0"}
         d_data = await self._call(params)
@@ -70,7 +73,7 @@ class WeiboAPI:
         uid: int,
         save: bool = False,
         cache: bool = True,
-    ) -> Optional[WeiboUser]:
+    ) -> WeiboUser | None:
         if cache and str(uid) in self.data.followers:
             return self.data.followers[str(uid)]
         params = {"type": "uid", "value": uid}
@@ -102,19 +105,18 @@ class WeiboAPI:
         index: int = 0,
         save: bool = False,
         cache: bool = True,
-    ) -> Optional[WeiboUser]:
+    ) -> WeiboUser | None:
         index = max(index, 0)
         return await self.get_profile((await self.search_users(name))[index], save, cache)
 
-    async def get_profiles(self, name: str) -> List[WeiboUser]:
+    async def get_profiles(self, name: str) -> list[WeiboUser]:
         res = []
         for i in await self.search_users(name):
             if prof := await self.get_profile(i):
                 res.append(prof)
         return res
 
-
-    def _handler_dynamic(self, data: Dict) -> WeiboDynamic:
+    def _handler_dynamic(self, data: dict) -> WeiboDynamic:
         text: str = Query(data["text"]).text(squash_space=False) + "\n"
         dynamic = WeiboDynamic(bid=data["bid"], text=text)
         if len(data["pic_ids"]) > 0:
@@ -130,13 +132,13 @@ class WeiboAPI:
 
     async def get_dynamic(
         self,
-        target: Union[int, WeiboUser],
+        target: int | WeiboUser,
         keyword: Literal["profile", "weibo", "video", "album"] = "weibo",
         index: int = -1,
         page: int = 1,
         save: bool = False,
         cache: bool = False,
-    ) -> Optional[WeiboDynamic]:
+    ) -> WeiboDynamic | None:
         if not isinstance(target, WeiboUser):
             target = await self.get_profile(target, save, cache)
             if not target:
@@ -166,7 +168,7 @@ class WeiboAPI:
             self.data.save()
         return res
 
-    async def update(self, target: int) -> Optional[WeiboDynamic]:
+    async def update(self, target: int) -> WeiboDynamic | None:
         profile = await self.get_profile(target)
         if not profile:
             return

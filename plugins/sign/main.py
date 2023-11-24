@@ -7,7 +7,7 @@ from avilla.core import Context, Message
 from sqlalchemy.sql import select
 
 from app.database import DatabaseService, User
-from app.shortcut import accessable, is_qqapi_group, record
+from app.shortcut import accessable, exclusive, is_qqapi_group, record
 
 from .config import SignConfig
 from .model import SignRecord
@@ -25,7 +25,7 @@ from .model import SignRecord
     send_error=True,
 )
 @record("sign")
-# @exclusive
+@exclusive
 @accessable
 async def sign_up(ctx: Context, msg: Message, db: DatabaseService, config: SignConfig):
     """在机器人处登记信息"""

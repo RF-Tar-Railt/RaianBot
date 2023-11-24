@@ -56,7 +56,7 @@ def get_tc3_signature(secret_key: str, req: Request, date: str, service: str):
         payload = b""
 
     if req.headers.get("X-TC-Content-SHA256") == "UNSIGNED-PAYLOAD":
-        payload = "UNSIGNED-PAYLOAD".encode("utf8")
+        payload = b"UNSIGNED-PAYLOAD"
 
     payload_hash = hashlib.sha256(payload).hexdigest()
 
@@ -69,7 +69,7 @@ def get_tc3_signature(secret_key: str, req: Request, date: str, service: str):
         f"{canonical_headers}\n"
         f"{signed_headers}\n"
         f"{payload_hash}"
-    ).encode("utf8")
+    ).encode()
 
     algorithm = "TC3-HMAC-SHA256"
     credential_scope = date + "/" + service + "/tc3_request"
@@ -79,9 +79,7 @@ def get_tc3_signature(secret_key: str, req: Request, date: str, service: str):
     return sign_tc3(secret_key, date, service, string2sign)
 
 
-def signature(
-    secret_id: str, secret_key: str, action: str, req: Request, http: HttpProfile, options: dict[str, str]
-):
+def signature(secret_id: str, secret_key: str, action: str, req: Request, http: HttpProfile, options: dict[str, str]):
     content_type = _form_urlencoded_content
     if req.method == "GET":
         content_type = _form_urlencoded_content
@@ -110,5 +108,8 @@ def signature(
     date = datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d")
     sign = get_tc3_signature(secret_key, req, date, service)
 
-    auth = f"TC3-HMAC-SHA256 Credential={secret_id}/{date}/{service}/tc3_request, SignedHeaders=content-type;host, Signature={sign}"
+    auth = (
+        f"TC3-HMAC-SHA256 Credential={secret_id}/{date}/{service}/tc3_request, "
+        f"SignedHeaders=content-type;host, Signature={sign}"
+    )
     req.headers["Authorization"] = auth

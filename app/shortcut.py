@@ -12,7 +12,7 @@ from avilla.qqapi.account import QQAPIAccount
 from avilla.qqapi.resource import QQAPIImageResource
 from graia.saya.factory import ensure_buffer
 
-from .control import check_disabled, require_account, require_admin, require_function
+from .control import check_disabled, check_exclusive, require_account, require_admin, require_function
 from .core import RaianBotService
 
 T_Callable = TypeVar("T_Callable", bound=Callable)
@@ -80,7 +80,7 @@ def allow(*atype: type[BaseAccount]):
     return wrapper
 
 
-# def exclusive(func: T_Callable) -> T_Callable:
-#     buffer = ensure_buffer(func)
-#     buffer.setdefault("decorators", []).append(check_exclusive())
-#     return func
+def exclusive(func: T_Callable) -> T_Callable:
+    buffer = ensure_buffer(func)
+    buffer.setdefault("decorators", []).append(check_exclusive())
+    return func

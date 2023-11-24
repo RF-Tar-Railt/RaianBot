@@ -1,5 +1,6 @@
-import diro
 import math
+
+import diro
 
 
 def coc7(num: int) -> str:
@@ -93,6 +94,7 @@ def coc6d():
     mans += str(rd1d10.calc())
     return mans
 
+
 def coc7d():
     rd3d6 = diro.parse("3d6")
     rd2d6p6 = diro.parse("2d6+6")
@@ -174,6 +176,7 @@ def coc7d():
         MOV = 8
     mans += f"\n移动力MOV={MOV}"
     return mans
+
 
 def dnd(num: int) -> str:
     output = ""

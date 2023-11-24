@@ -4,7 +4,7 @@ from datetime import datetime
 from avilla.core import Context, Message, MessageChain, MessageReceived, Notice
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 
-from app.shortcut import accessable, is_qqapi_group, record
+from app.shortcut import accessable, exclusive, is_qqapi_group, record
 
 pat = re.compile("^(早上好|早安|中午好|下午好|晚上好).*?")
 pat1 = re.compile(".*?(早上好|早安|中午好|下午好|晚上好)$")
@@ -13,7 +13,7 @@ pat1 = re.compile(".*?(早上好|早安|中午好|下午好|晚上好)$")
 @listen(MessageReceived)
 @record("greet")
 @priority(7)
-# @exclusive
+@exclusive
 @accessable
 async def greet(ctx: Context, message: MessageChain, source: Message):
     """简单的问好"""

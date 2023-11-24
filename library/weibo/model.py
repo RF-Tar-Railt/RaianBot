@@ -1,24 +1,19 @@
-from typing import Literal, Optional, List
+from typing import Literal, Optional
+
 from pydantic import BaseModel, Field
 
 
 class WeiboUser(BaseModel):
     id: int
     name: str
-    description: str = Field(default='')
-    avatar: str = Field(default='')
+    description: str = Field(default="")
+    avatar: str = Field(default="")
     statuses: int = Field(default=0)
     visitable: bool = Field(default=True)
     total: int = Field(default=0)
-    latest: str = Field(default='')
+    latest: str = Field(default="")
 
-    __mapping = {
-        "info": 100505,
-        "profile": 230283,
-        "weibo": 107603,
-        "video": 231567,
-        "album": 107803
-    }
+    __mapping = {"info": 100505, "profile": 230283, "weibo": 107603, "video": 231567, "album": 107803}
 
     @property
     def info_link(self):
@@ -35,9 +30,9 @@ class WeiboUser(BaseModel):
 class WeiboDynamic(BaseModel):
     bid: str
     text: str
-    img_urls: List[str] = Field(default_factory=list)
+    img_urls: list[str] = Field(default_factory=list)
     video_url: Optional[str] = Field(default=None)
-    retweet: Optional['WeiboDynamic'] = Field(default=None)
+    retweet: Optional["WeiboDynamic"] = Field(default=None)
     user: Optional[WeiboUser] = Field(default=None)
 
     @property

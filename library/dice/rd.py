@@ -1,9 +1,12 @@
 # 参考[OlivaDiceDocs](https://oliva.dicer.wiki/userdoc)实现的nonebot2骰娘插件
+from __future__ import annotations
+
 import contextlib
 import random
-from typing import Optional
+
 import diro
-from .constant import *
+
+from .constant import Fear, LongInsanity, Panic, SuccessLevel, TempInsanity
 
 
 def to_circled(num: int, c: int) -> str:
@@ -127,7 +130,7 @@ def _roll_success_level_rule0(res, rate):
 def long_insane():
     sym_res = random.randint(1, 10)
     res = f"调查员的疯狂发作-总结症状:1D10={sym_res}\n症状: \n"
-    fmap = {"dur" : f"1D10={random.randint(1, 10)}"}
+    fmap = {"dur": f"1D10={random.randint(1, 10)}"}
     j = random.randint(1, 100)
     if sym_res == 10:
         fmap["detail_roll"] = f"1D100={j}"
@@ -141,7 +144,7 @@ def long_insane():
 def temp_insane():
     sym_res = random.randint(1, 10)
     res = f"调查员的疯狂发作-临时症状:1D10={sym_res}\n症状: \n"
-    fmap = {"dur" : f"1D10={random.randint(1, 10)}"}
+    fmap = {"dur": f"1D10={random.randint(1, 10)}"}
     j = random.randint(1, 100)
     if sym_res == 10:
         fmap["detail_roll"] = f"1D100={j}"
@@ -151,8 +154,10 @@ def temp_insane():
         fmap["detail"] = Fear[j]
     return f"{res}{TempInsanity[sym_res].format(**fmap)}"
 
+
 def dhr(t, o):
     return 100 if t == 0 and o == 0 else t * 10 + o
+
 
 def st():
     result = random.randint(1, 20)
@@ -182,7 +187,7 @@ def en(arg: int) -> str:
     return r + "\n温馨提示：如果技能提高到90%或更高，增加2D6理智点数。"
 
 
-def expr(d: diro.Diro, anum: Optional[int], rule: int = 0) -> str:
+def expr(d: diro.Diro, anum: int | None, rule: int = 0) -> str:
     d.roll()
     result = d.calc()
     s = f"{d.expr()}={(d.detail_expr())}={result}"
@@ -192,7 +197,7 @@ def expr(d: diro.Diro, anum: Optional[int], rule: int = 0) -> str:
     return s
 
 
-def rd0(pattern: str, anum: Optional[int] = None, rule: int = 0) -> str:
+def rd0(pattern: str, anum: int | None = None, rule: int = 0) -> str:
     d_str = pattern.lower().split("#")
     rd = diro.parse(d_str.pop(0))
     time = 1

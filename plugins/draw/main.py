@@ -8,7 +8,7 @@ from avilla.core import Context, Message
 from sqlalchemy import select
 
 from app.database import DatabaseService, User
-from app.shortcut import accessable, is_qqapi_group, record
+from app.shortcut import accessable, exclusive, is_qqapi_group, record
 from library.rand import random_pick_small
 
 from .model import DrawRecord
@@ -39,7 +39,7 @@ def get_draw():
     send_error=True,
 )
 @record("抽签")
-# @exclusive
+@exclusive
 @accessable
 async def draw(ctx: Context, msg: Message, db: DatabaseService):
     """每日运势抽签"""
@@ -85,7 +85,7 @@ async def draw(ctx: Context, msg: Message, db: DatabaseService):
     send_error=True,
 )
 @record("抽签")
-# @exclusive
+@exclusive
 @accessable
 async def undraw(ctx: Context, msg: Message, db: DatabaseService):
     async with db.get_session() as session:

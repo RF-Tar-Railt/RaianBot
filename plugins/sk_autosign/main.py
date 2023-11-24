@@ -13,10 +13,10 @@ from sqlalchemy import select
 from app.core import RaianBotService
 from app.database import DatabaseService
 from app.image import md2img
-from app.shortcut import accessable, picture, record
+from app.shortcut import accessable, exclusive, picture, record
+from library.sk_autosign import bind, sign
 
 from .model import SKAutoSignRecord, SKAutoSignResultRecord
-from .request import bind, sign
 
 alc = Alconna(
     "森空岛签到",
@@ -63,7 +63,7 @@ bot = RaianBotService.current()
 @alcommand(alc)
 @assign("方法")
 @record("森空自动签到")
-# @exclusive
+@exclusive
 @accessable
 async def notice(ctx: Context, db: DatabaseService):
     sender = ctx.client.last_value
@@ -93,7 +93,7 @@ async def notice(ctx: Context, db: DatabaseService):
 @alcommand(alc)
 @assign("绑定")
 @record("森空自动签到")
-# @exclusive
+@exclusive
 @accessable
 async def reg(ctx: Context, token: Match[str], db: DatabaseService):
     sender = ctx.client.last_value
@@ -113,7 +113,7 @@ async def reg(ctx: Context, token: Match[str], db: DatabaseService):
 @alcommand(alc)
 @assign("解除")
 @record("森空自动签到")
-# @exclusive
+@exclusive
 @accessable
 async def rm(ctx: Context, db: DatabaseService):
     sender = ctx.client.last_value
@@ -133,7 +133,7 @@ async def rm(ctx: Context, db: DatabaseService):
 @alcommand(alc)
 @assign("查询")
 @record("森空自动签到")
-# @exclusive
+@exclusive
 @accessable
 async def check(ctx: Context, uid: Match[str], db: DatabaseService):
     sender = ctx.client.last_value

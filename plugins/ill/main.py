@@ -7,7 +7,7 @@ from arclet.alconna.graia import Match, alcommand
 from avilla.core import Context, Nick, Notice
 from avilla.elizabeth.account import ElizabethAccount
 
-from app.shortcut import accessable, allow, record
+from app.shortcut import accessable, allow, exclusive, record
 
 json_filename = "assets/data/ill_templates.json"
 with open(json_filename, encoding="UTF-8") as f_obj:
@@ -34,6 +34,7 @@ ill = Alconna(
 @alcommand(ill, send_error=True)
 @allow(ElizabethAccount)
 @record("发病")
+@exclusive
 @accessable
 async def ill_(ctx: Context, name: Match[Union[str, Notice]], template: Match[str]):
     """依据模板发病"""

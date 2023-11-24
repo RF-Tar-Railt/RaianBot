@@ -12,7 +12,7 @@ from jinja2.meta import find_undeclared_variables
 
 from app.core import RaianBotService
 from app.image import text2img
-from app.shortcut import accessable, picture
+from app.shortcut import accessable, exclusive, picture
 
 from .config import StatusConfig
 from .data import (
@@ -106,6 +106,7 @@ async def render_template() -> str:
 
 
 @alcommand(cmd, post=True, send_error=True)
+@exclusive
 @accessable
 async def status(ctx: Context):
     text = await render_template()
