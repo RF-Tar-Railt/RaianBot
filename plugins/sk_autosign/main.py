@@ -170,8 +170,7 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
 
 @crontab("30 0 * * * 0")
 @record("森空自动签到", False)
-async def shed():
-    avilla = Avilla.current()
+async def shed(avilla: Avilla):
     results = {}
     async with bot.db.get_session() as session:
         for rec in (await session.scalars(select(SKAutoSignRecord))).all():

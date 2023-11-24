@@ -60,7 +60,7 @@ weibo_fetch = Alconna(
     ),
 )
 
-api = WeiboAPI(f"{bot.config.plugin_cache_dir / 'weibo_data.json'}")
+api = WeiboAPI(f"{bot.config.plugin_data_dir / 'weibo_data.json'}")
 
 
 @listen(ApplicationClosing)
@@ -295,9 +295,8 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
 
 @every(5, "minute")
 @record("微博动态自动获取", False)
-async def update():
+async def update(avilla: Avilla):
     dynamics = {}
-    avilla = Avilla.current()
     pw = Launart.current().get_component(PlaywrightService)
     followers = set()
     async with bot.db.get_session() as session:
@@ -334,10 +333,11 @@ async def update():
             await session.scalars(
                 Select(Group)
                 .where(Group.platform == "qq")
-                .where("微博动态自动获取" not in Group.disabled)
                 .where(Group.id.in_(mapping))
             )
         ).all():
+            if "微博动态自动获取" in group.disabled:
+                continue
             account = avilla.get_account(Selector.from_follows_pattern(random.choice(group.accounts)))
             ctx = account.account.get_context(Selector().land("qq").group(group.id))
             for uid in mapping[group.id]:

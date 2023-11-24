@@ -107,7 +107,7 @@ async def smatch(
 ):
     """依据语料进行匹配回复"""
     mid = msg.id
-    for alc, cache in result_cache.items():
+    for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
             raise PropagationCancelled
     content = str(message.include(Text)).lstrip()
@@ -174,7 +174,7 @@ async def aitalk(
 ):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
     mid = msg.id
-    for alc, cache in result_cache.items():
+    for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
             raise PropagationCancelled
     content = str(message.include(Text)).lstrip()
