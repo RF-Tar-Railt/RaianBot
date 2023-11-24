@@ -57,7 +57,9 @@ manager.add_component(
     )
 )
 manager.add_component(AiohttpClientService())
-manager.add_component(AlconnaGraiaService(AlconnaAvillaAdapter, enable_cache=False, cache_dir=config.data_dir, global_remove_tome=True))
+manager.add_component(
+    AlconnaGraiaService(AlconnaAvillaAdapter, enable_cache=False, cache_dir=config.data_dir, global_remove_tome=True)
+)
 manager.add_component(FastAPIService(fastapi))
 manager.add_component(UvicornASGIService(config.api.host, config.api.port))
 manager.add_component(SchedulerService(it(GraiaScheduler)))
@@ -117,6 +119,7 @@ async def send_handler(output: str, otype: str, ctx: Context):
                 .replace("**", "")
             )
             return await ctx.scene.send_message(output)
+
 
 logger.success("------------------机器人初始化完毕--------------------")
 avilla.launch()

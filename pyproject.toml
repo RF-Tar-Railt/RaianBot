@@ -52,7 +52,7 @@ extra_standard_library = ["typing_extensions"]
 [tool.ruff]
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
 ignore = ["C901", "T201", "E731", "E402"]
-
+include = ["app/**.py", "plugins/**.py", "library/**.py", "./main.py"]
 line-length = 120
 target-version = "py39"
 
@@ -62,7 +62,7 @@ pythonPlatform = "All"
 typeCheckingMode = "basic"
 
 [tool.pdm.scripts]
-format = { composite = ["isort ./app/ ./plugins/ ./library","black ./app/ ./plugins/ ./library","ruff ./app/ ./plugins/ ./library"] }
+format = { composite = ["isort ./main.py ./app/ ./plugins/ ./library","black ./main.py ./app/ ./plugins/ ./library","ruff ./main.py ./app/ ./plugins/ ./library"] }
 
 [tool.pdm.dev-dependencies]
 dev = [
