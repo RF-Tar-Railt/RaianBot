@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-import ujson
 import random
-import diro
 from pathlib import Path
+
+import diro
+import ujson
 
 root = Path(__file__).parent / "assets"
 
 with (root / "public_deck.json").open("r", encoding="utf-8") as f:
-    p_deck: dict[str, list[str]]  = ujson.load(f)
+    p_deck: dict[str, list[str]] = ujson.load(f)
+
 
 def find_deck(name: str) -> int:
     if name in p_deck:
@@ -30,15 +32,16 @@ def draw(key: str, cnt: int = 1) -> str:
         cnt -= 1
     return "|".join(res)
 
+
 def draw_expr(exp: str) -> str:
     tmp_list: dict[str, list[str]] = {}
     cnt = 0
     while (lq := exp.find("{", cnt)) > -1 and (rq := exp.find("}", lq)) > -1:
         if lq and exp[lq - 1] == "\\":
-            exp = exp[:lq - 1]
+            exp = exp[: lq - 1]
             cnt = rq
             continue
-        tmp = exp[lq+1:rq]
+        tmp = exp[lq + 1 : rq]
         if tmp not in p_deck:
             cnt = rq + 1
             continue
@@ -53,10 +56,10 @@ def draw_expr(exp: str) -> str:
     cnt = 0
     while (lq := exp.find("[", cnt)) > -1 and (rq := exp.find("]", lq)) > -1:
         if lq and exp[lq - 1] == "\\":
-            exp = exp[:lq - 1]
+            exp = exp[: lq - 1]
             cnt = rq
             continue
-        roll = exp[lq+1:rq]
+        roll = exp[lq + 1 : rq]
         cnt = rq + 1
         try:
             rd = diro.parse(roll)
@@ -66,7 +69,6 @@ def draw_expr(exp: str) -> str:
         exp = f"{exp[:lq]}{rd.calc()}{exp[rq+1:]}"
         cnt = lq + len(str(rd.calc()))
     return exp
-
 
 
 def draw_card(tmp: list[str], is_back: bool = False) -> str:

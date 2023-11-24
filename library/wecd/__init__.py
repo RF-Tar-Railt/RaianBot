@@ -1,13 +1,12 @@
 from io import BytesIO
 from pathlib import Path
-from PIL import Image, ImageFont, ImageDraw
+
+from PIL import Image, ImageDraw, ImageFont
 
 ENG_FONT = ImageFont.truetype(
     str(Path(__file__).parent / "assets" / "fonts" / "Alte DIN 1451 Mittelschrift gepraegt Regular.ttf"), 36
 )
-CHN_FONT = ImageFont.truetype(
-    str(Path(__file__).parent / "assets" / "fonts" / "字魂59号-创粗黑.ttf"), 36
-)
+CHN_FONT = ImageFont.truetype(str(Path(__file__).parent / "assets" / "fonts" / "字魂59号-创粗黑.ttf"), 36)
 COUNTING_FONT = ImageFont.truetype(
     str(Path(__file__).parent / "assets" / "fonts" / "Alte DIN 1451 Mittelschrift gepraegt Regular.ttf"), 110
 )
@@ -15,9 +14,11 @@ BOTTOM_FONT = ImageFont.truetype(
     str(Path(__file__).parent / "assets" / "fonts" / "Alte DIN 1451 Mittelschrift gepraegt Regular.ttf"), 18
 )
 
+
 def getsize(txt: str, font: ImageFont.FreeTypeFont):
     bbox = font.getbbox(txt, "L")
     return bbox[2] - bbox[0], bbox[3] - bbox[1]
+
 
 def gen_counting_down(
     top_text: str, start_text: str, counting: int, end_text: str, bottom_text: str, rgba: bool = False
@@ -31,10 +32,10 @@ def gen_counting_down(
     top_over_width = top_size[0] - start_size[0] - 20
     top_over_width = max(top_over_width, 0)
     start_over_width = start_size[0] - top_size[0] if start_size[0] >= top_size[0] else 0
-    width = max([
-        max(top_size[0], start_size[0]) + 20 + counting_size[0] + end_size[0],
-        top_over_width + bottom_size[0]
-    ]) + 60
+    width = (
+        max([max(top_size[0], start_size[0]) + 20 + counting_size[0] + end_size[0], top_over_width + bottom_size[0]])
+        + 60
+    )
     height = 104 + 46 * len(bottom_texts) + 40
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0)) if rgba else Image.new("RGB", (width, height), (0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -63,19 +64,14 @@ def gen_counting_down(
 def gen_gif(
     top_text: str, start_text: str, counting: int, end_text: str, bottom_text: str, rgba: bool = False
 ) -> bytes:
-    frames = [
-        gen_counting_down(
-            top_text, start_text, i, end_text, bottom_text, rgba
-        )
-        for i in range(counting, -1, -1)
-    ]
+    frames = [gen_counting_down(top_text, start_text, i, end_text, bottom_text, rgba) for i in range(counting, -1, -1)]
     bytesio = BytesIO()
     frames[0].save(
         bytesio,
         format="GIF",
         append_images=frames,
         save_all=True,
-        duration=1000, # ms
+        duration=1000,  # ms
         loop=0,
         quality=90,
         # optimize=False,
@@ -83,7 +79,8 @@ def gen_gif(
     )
     return bytesio.getvalue()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     gen_counting_down(
         "中文内容",
         "还有(剩余)",

@@ -1,77 +1,87 @@
 from __future__ import annotations
 
-from typing import Union, Optional, Any
-from loguru import logger
+import random
+from datetime import datetime
+from typing import Any
+
+from avilla.core import Context
+from avilla.core.account import BaseAccount
+from avilla.core.elements import Notice, Text
+from avilla.core.event import AvillaEvent
+from avilla.elizabeth.account import ElizabethAccount
+from avilla.standard.core.message import MessageReceived
+from avilla.standard.core.privilege import Privilege
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
-from graia.ariadne.model import Friend, Member, Group, MemberPerm
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import At, Plain
-from graia.ariadne.event import MiraiEvent
-from graia.ariadne.event.message import MessageEvent, GroupMessage
-from graia.ariadne.app import Ariadne
-from datetime import datetime
-from app import DataInstance
-import random
+from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from sqlalchemy.sql import select
+
+from .config import BotConfig
+from .core import RaianBotService
+from .database import DatabaseService, Group
 
 
 def require_admin(only: bool = False, __record: Any = None):
     async def __wrapper__(
-        app: Ariadne,
-        sender: Union[Friend, Group],
-        target: Union[Member, Friend],
-        event: Optional[MessageEvent],
+        interface: DispatcherInterface[AvillaEvent], serv: RaianBotService, bot: BotConfig, ctx: Context
     ):
-        from .core import RaianBotInterface
-
-        interface = app.launch_manager.get_interface(RaianBotInterface)
-        id_ = f"{id(event)}" if event else "_"
-        cache = interface.data.cache.setdefault("$admin", {})
-        if target.id in [interface.config.admin.master_id, interface.config.account]:
-            interface.data.cache.pop("$admin", None)
+        if not isinstance(ctx.account, ElizabethAccount):
+            if ctx.scene.pattern.get("group"):
+                return True
+            if ctx.scene.pattern.get("friend"):
+                return True
+            private = "user" in ctx.scene.pattern
+        else:
+            private = "friend" in ctx.scene.pattern
+        id_ = f"{id(interface.event)}"
+        cache = serv.cache.setdefault("$admin", {})
+        if ctx.client.last_value in [bot.master_id, bot.account]:
+            serv.cache.pop("$admin", None)
             return True
-        if not only and (
-            (isinstance(target, Member) and target.permission in (MemberPerm.Administrator, MemberPerm.Owner))
-            or target.id in interface.config.admin.admins
-        ):
-            interface.data.cache.pop("$admin", None)
+        pri = await ctx.client.pull(Privilege)
+        if not only and (pri.available or ctx.client.last_value in bot.admins):
+            serv.cache.pop("$admin", None)
             return True
-        text = "权限不足！" if isinstance(sender, Friend) else [At(target.id), Plain("\n权限不足！")]
-        logger.debug(f"permission denied for {sender.id} in {__record}")
+        text = "权限不足！" if private else [Notice(ctx.client), Text("\n权限不足！")]
         if id_ not in cache:
             cache.clear()
             cache[id_] = True
-            await Ariadne.current().send_message(sender, MessageChain(text))
+            await ctx.scene.send_message(text)
         raise ExecutionStop
 
     return Depend(__wrapper__)
 
 
 def require_function(name: str):
-    def __wrapper__(app: Ariadne, sender: Union[Friend, Group]):
-        from .core import RaianBotInterface
-
-        data = app.launch_manager.get_interface(RaianBotInterface).data
-        if isinstance(sender, Friend):
+    async def __wrapper__(ctx: Context, bot: RaianBotService, db: DatabaseService):
+        if ctx.scene == ctx.client:
             return True
-        if name not in data.funcs:
+        if name not in bot.functions:
             return True
-        if group_data := data.get_group(sender.id):
-            if name in group_data.disabled:
-                raise ExecutionStop
-            elif group_data.in_blacklist or sender.id in data.cache.get("blacklist", []):
-                raise ExecutionStop
-        return True
+        async with db.get_session() as session:
+            group = (await session.scalars(select(Group).where(Group.id == ctx.scene.last_value))).one_or_none()
+            if group:
+                if name in group.disabled:
+                    raise ExecutionStop
+                elif group.in_blacklist:
+                    raise ExecutionStop
+            return True
 
     return Depend(__wrapper__)
 
 
-def check_disabled(path: str):
-    def __wrapper__(app: Ariadne):
-        from .core import RaianBotInterface
+def require_account(atype: type[BaseAccount] | tuple[type[BaseAccount], ...]):
+    async def __wrapper__(ctx: Context):
+        if isinstance(ctx.account, atype):
+            return True
+        raise ExecutionStop
 
-        config = app.launch_manager.get_interface(RaianBotInterface).config
-        if path in config.disabled:
+    return __wrapper__
+
+
+def check_disabled(path: str):
+    def __wrapper__(serv: RaianBotService, bot: BotConfig):
+        if path in bot.disabled or path in serv.config.plugin.disabled:
             raise ExecutionStop
         return True
 
@@ -79,27 +89,30 @@ def check_disabled(path: str):
 
 
 def check_exclusive():
-    def __wrapper__(app: Ariadne, target: Union[Friend, Member], event: MiraiEvent):
-        from .core import RaianBotInterface
-
-        interface = app.launch_manager.get_interface(RaianBotInterface)
-
-        if target.id in interface.base_config.bots:
-            raise ExecutionStop
-
-        if isinstance(event, GroupMessage) and len(interface.base_config.bots) > 1:
-            seed = int(event.source.id + datetime.now().timestamp())
-            bots = {k : v for k, v in DataInstance.get().items() if v.exist(event.sender.group.id)}
-            if len(bots) > 1:
-                default = DataInstance.get()[interface.base_config.default_account]
-                excl = default.cache.setdefault("$exclusive", {})
-                if str(event.source.id) not in excl:
+    async def __wrapper__(interface: DispatcherInterface[AvillaEvent], serv: RaianBotService, ctx: Context):
+        if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
+            return True
+        event = interface.event
+        if isinstance(event, MessageReceived) and len(serv.config.bots) > 1:
+            seed = datetime.now().timestamp()
+            async with serv.db.get_session() as session:
+                group = (
+                    await session.scalars(
+                        select(Group)
+                        .where(Group.id == ctx.scene.last_key)
+                        .where(Group.platform == "qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi")
+                    )
+                ).one_or_none()
+                if not group or len(group.accounts) < 2:
+                    return True
+                excl = serv.cache.setdefault("$exclusive", {})
+                if event.message.to_selector() not in excl:
                     excl.clear()
                     rand = random.Random()
                     rand.seed(seed)
-                    choice = rand.choice(list(bots.keys()))
-                    excl[str(event.source.id)] = choice
-                if excl[str(event.source.id)] != app.account:
+                    choice = rand.choice(group.accounts)
+                    excl[event.message.id] = choice
+                if not ctx.account.route.follows(excl[event.message.to_selector()]):
                     raise ExecutionStop
 
         return True

@@ -1,16 +1,15 @@
-from typing import Dict, List, Optional
-
-import ujson
-
-from .investigator import Investigator
-from .constant import help_sc, help_del_, help_sa
-from .rd import expr
-
-import diro
+from __future__ import annotations
 
 from pathlib import Path
 
-attrs_dict: Dict[str, List[str]] = {
+import diro
+import ujson
+
+from .constant import help_del_, help_sa, help_sc
+from .investigator import Investigator
+from .rd import expr
+
+attrs_dict: dict[str, list[str]] = {
     "名字": ["name", "名字", "名称"],
     "年龄": ["age", "年龄"],
     "力量": ["str", "力量"],
@@ -29,8 +28,8 @@ attrs_dict: Dict[str, List[str]] = {
 class Cards:
     def __init__(self, filepath: str) -> None:
         self.path: Path = Path(filepath)
-        self.data: Dict[str, Dict[str, dict]] = {}
-        self.cache: Dict[str, Dict[str, dict]] = {}
+        self.data: dict[str, dict[str, dict]] = {}
+        self.cache: dict[str, dict[str, dict]] = {}
 
     def save(self) -> None:
         with self.path.open("w", encoding="utf-8") as f:
@@ -46,17 +45,17 @@ class Cards:
             with self.path.open("r", encoding="utf-8") as f:
                 self.data = ujson.load(f)
 
-    def update(self, inv_dict: dict, level: str = '0', uid: int = 0, save: bool = True):
+    def update(self, inv_dict: dict, level: str = "0", uid: int = 0, save: bool = True):
         uid = str(uid)
         data = self.data.setdefault(level, {})
         data.update({uid: inv_dict})
         if save:
             self.save()
 
-    def get(self, level: str = '0', uid: int = 0) -> Optional[Dict[str, dict]]:
+    def get(self, level: str = "0", uid: int = 0) -> dict[str, dict] | None:
         return data.get(str(uid)) if (data := self.data.get(level)) else None
 
-    def delete(self, level: str = '0', uid: int = 0, save: bool = True) -> bool:
+    def delete(self, level: str = "0", uid: int = 0, save: bool = True) -> bool:
         if inv := self.get(level, uid):
             inv.clear()
             self.data[level].pop(str(uid), None)
@@ -67,22 +66,22 @@ class Cards:
             return True
         return False
 
-    def delete_skill(self, skill_name: str, level: str = '0', uid: int = 0, save: bool = True) -> bool:
+    def delete_skill(self, skill_name: str, level: str = "0", uid: int = 0, save: bool = True) -> bool:
         if (inv := self.get(level, uid)) and inv.get("skills", {}).get(skill_name):
             del inv["skills"][skill_name]
             self.update(inv, level, uid, save=save)
             return True
         return False
 
-    def cache_update(self, inv_dict: dict, level: str = '0', uid: int = 0):
+    def cache_update(self, inv_dict: dict, level: str = "0", uid: int = 0):
         uid = str(uid)
         data = self.cache.setdefault(level, {})
         data.update({uid: inv_dict})
 
-    def cache_get(self, level: str = '0', uid: int = 0) -> Optional[Dict[str, dict]]:
+    def cache_get(self, level: str = "0", uid: int = 0) -> dict[str, dict] | None:
         return cache.get(str(uid)) if (cache := self.cache.get(level)) else None
 
-    def cache_delete(self, level: str = '0', uid: int = 0) -> bool:
+    def cache_delete(self, level: str = "0", uid: int = 0) -> bool:
         if inv := self.cache_get(level, uid):
             inv.clear()
             self.cache[level].pop(str(uid), None)
@@ -91,20 +90,14 @@ class Cards:
             return True
         return False
 
-    def cache_delete_skill(self, skill_name: str, level: str = '0', uid: int = 0) -> bool:
+    def cache_delete_skill(self, skill_name: str, level: str = "0", uid: int = 0) -> bool:
         if (inv := self.cache_get(level, uid)) and inv.get("skills", {}).get(skill_name):
             del inv["skills"][skill_name]
             self.cache_update(inv, level, uid)
             return True
         return False
 
-    def set_handler(
-        self,
-        name: Optional[str] = None,
-        num: Optional[str] = None,
-        level: str = '0',
-        uid: int = 0
-    ):
+    def set_handler(self, name: str | None = None, num: str | None = None, level: str = "0", uid: int = 0):
         if not name and not num:
             if card_data := self.cache_get(level, uid):
                 self.update(card_data, level, uid)
@@ -151,7 +144,7 @@ class Cards:
             return Investigator().load(card_data).skills_output()
         return "无保存/暂存信息"
 
-    def del_handler(self, args: List[str], level: str = "0", uid: int = 0):
+    def del_handler(self, args: list[str], level: str = "0", uid: int = 0):
         r = []
         for arg in args:
             if not arg:
@@ -190,9 +183,9 @@ class Cards:
         else:
             value = exp
         dices = diro.parse("1D100")
-        return f"{args}检定:\n{expr(dices, value, rule)}" if isinstance(value, int) else "请输入正确的别名，或传入检定值"
+        return f"{args}检定:\n{expr(dices, value, rule)}" if isinstance(value, int) else "请输入正确的别名，或传入检定值"  # noqa: E501
 
-    def sc_handler(self, sf: str, san: Optional[int] = None, level: str = "0", uid: int = 0) -> str:
+    def sc_handler(self, sf: str, san: int | None = None, level: str = "0", uid: int = 0) -> str:
         try:
             s_and_f = sf.split("/")
             success = diro.parse(s_and_f[0])

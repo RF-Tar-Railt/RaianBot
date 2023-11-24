@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import List, TypeVar
+from typing import TypeVar
 
 from lxml.builder import E
 
@@ -18,7 +18,7 @@ def wrap_text(text: str | list, newline: bool = True, hyperlink: bool = True) ->
     return wrapped
 
 
-def _newline_to_br(text: List[_T]) -> List[_T]:
+def _newline_to_br(text: list[_T]) -> list[_T]:
     wrapped = []
     for part in text:
         if not isinstance(part, str):
@@ -31,7 +31,7 @@ def _newline_to_br(text: List[_T]) -> List[_T]:
     return wrapped
 
 
-def _add_hyperlink(text: List[_T]) -> List[_T]:
+def _add_hyperlink(text: list[_T]) -> list[_T]:
     wrapped = []
     for part in text:
         if not isinstance(part, str):

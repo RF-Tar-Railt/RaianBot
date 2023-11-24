@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import ujson
 from pathlib import Path
 from urllib.parse import quote
+
 import httpx
+import ujson
 from loguru import logger
 
+from library.ak_closure_talk.exceptions import CharacterNotExist, RecordMaxExceed, SessionAlreadyExist, SessionNotExist
 from library.ak_closure_talk.model import ClosureCharacter, ClosureChatArea, _ChatItem
-from library.ak_closure_talk.exceptions import *
 
 GITHUB_RAW_LINK = "https://raw.githubusercontent.com/ClosureTalk/closuretalk.github.io/master/{path}"
 
@@ -25,23 +26,15 @@ class ArknightsClosureStore:
         with (self.base_path / "char.json").open("r", encoding="utf-8") as f:
             data = ujson.load(f)
         self.characters = {ClosureCharacter(**char) for char in data}
-        self.characters.add(ClosureCharacter(
-            "char_001_doctor",
-            ["char_001_doctor"],
-            {
-                "en": "Doctor",
-                "ja": "ドクター",
-                "zh-cn": "博士",
-                "zh-tw": "博士"
-            },
-            [],
-            {
-                "en": "Doctor",
-                "ja": "ドクター",
-                "zh-cn": "博士",
-                "zh-tw": "博士"
-            },
-        ))
+        self.characters.add(
+            ClosureCharacter(
+                "char_001_doctor",
+                ["char_001_doctor"],
+                {"en": "Doctor", "ja": "ドクター", "zh-cn": "博士", "zh-tw": "博士"},
+                [],
+                {"en": "Doctor", "ja": "ドクター", "zh-cn": "博士", "zh-tw": "博士"},
+            )
+        )
         self.avatars = {}
         self.session = {}
 
@@ -68,8 +61,10 @@ class ArknightsClosureStore:
             if split[1].isdigit() and 0 < int(split[1]) <= len(character.images):
                 index = int(split[1]) - 1
             self.avatars[field][uid] = (
-                #f"https://raw.githubusercontent.com/ClosureTalk/closuretalk.github.io/master/resources/ak/characters/{quote(character.images[index])}.webp"
-                (self.base_path / "characters" / f"{character.images[index]}.webp").absolute().as_uri()
+                # f"https://raw.githubusercontent.com/ClosureTalk/closuretalk.github.io/master/resources/ak/characters/{quote(character.images[index])}.webp"
+                (self.base_path / "characters" / f"{character.images[index]}.webp")
+                .absolute()
+                .as_uri()
             )
             return character
 
@@ -124,7 +119,7 @@ class ArknightsClosureStore:
                             "http://": "http://127.0.0.1:7890",
                             "https://": "http://127.0.0.1:7890",
                         },
-                        verify=False
+                        verify=False,
                     )
                     with (char_path / image_path).open("wb+") as f:
                         f.write(resp.read())
@@ -133,6 +128,7 @@ class ArknightsClosureStore:
                 except Exception as e:
                     logger.error(f"[ClosureTalk] [{char_index} / {total}] 下载 {image} 时出现错误：{e}")
         logger.debug("[ClosureTalk] 已下载资源")
+
 
 if __name__ == "__main__":
     _store = ArknightsClosureStore()

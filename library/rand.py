@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import random
-from typing import List, TypeVar, Iterable
+from collections.abc import Iterable
+from typing import TypeVar
 
 T = TypeVar("T")
 
 
-def random_pick_big(sequence: Iterable[T], relative_odds: List[int]):
+def random_pick_big(sequence: Iterable[T], relative_odds: list[int]):
     """
     sequence: [a, b, c, d]
     relative_odds: [pa, pb, pc, pd], 其中 pa~pd > 0
@@ -14,7 +17,7 @@ def random_pick_big(sequence: Iterable[T], relative_odds: List[int]):
         yield random.choice(table)
 
 
-def random_pick_small(some_list: List[T], probabilities: List[float]) -> T:
+def random_pick_small(some_list: list[T], probabilities: list[float]) -> T:
     """
     some_list: [a, b, c, d]
     probabilities: [pa, pb, pc, pd], 其中 0 < pa ~ pd < 1

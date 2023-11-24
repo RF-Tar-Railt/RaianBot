@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .ui import wrap_text
-
 from lxml.html import builder, tostring
 from lxml.html.builder import CLASS
+
+from .ui import wrap_text
 
 
 @dataclass(unsafe_hash=True)
@@ -70,7 +70,7 @@ class ClosureChatArea:
             self._head,
             builder.BODY(
                 builder.DIV(
-                    *map(lambda item: item.elem(), self.items),
+                    *(item.elem() for item in self.items),
                     CLASS("akn-area"),
                     style="background-color: rgb(35, 27, 20); " "padding-top: 16px; padding-bottom: 16px;",
                 )

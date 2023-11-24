@@ -1,16 +1,15 @@
 import random
 
-
 build_dict = {64: -2, 84: -1, 124: 0, 164: 1, 204: 2, 284: 3, 364: 4, 444: 5, 524: 6}
 db_dict = {-2: "-2", -1: "-1", 0: "0", 1: "1d4", 2: "1d6", 3: "2d6", 4: "3d6", 5: "4d6", 6: "5d6"}
 
 
 def randattr(time: int = 3, ex: int = 0):
     r = sum(random.randint(1, 6) for _ in range(time))
-    return (r+ex)*5
+    return (r + ex) * 5
 
 
-class Investigator(object):
+class Investigator:
     def __init__(self) -> None:
         self.name = "佚名调查员"
         self.age = 20
@@ -34,7 +33,7 @@ class Investigator(object):
         return db_dict[self.body_build()]
 
     def lp_max(self) -> int:
-        return (self.con+self.siz)//10
+        return (self.con + self.siz) // 10
 
     def mov(self) -> int:
         r = 8
@@ -49,9 +48,9 @@ class Investigator(object):
         elif self.age >= 40:
             r -= 1
         if self.str < self.siz and self.dex < self.siz:
-            return r-1
+            return r - 1
         elif self.str > self.siz and self.dex > self.siz:
-            return r+1
+            return r + 1
         else:
             return r
 
@@ -70,18 +69,18 @@ class Investigator(object):
         return "".join(self.edu_up() for _ in range(times))
 
     def sum_down(self, sum_):
-        if self.str + self.con + self.dex-45 < sum_:
+        if self.str + self.con + self.dex - 45 < sum_:
             self.str = 15
             self.con = 15
             self.dex = 15
         else:
             str_lost = random.randint(0, min(sum_, self.str - 15))
-            while sum_ - str_lost > self.con + self.dex-30:
+            while sum_ - str_lost > self.con + self.dex - 30:
                 str_lost = random.randint(0, min(sum_, self.str - 15))
             self.str -= str_lost
             sum_ -= str_lost
             con_lost = random.randint(0, min(sum_, self.con - 15))
-            while sum_ - con_lost > self.dex-15:
+            while sum_ - con_lost > self.dex - 15:
                 con_lost = random.randint(0, min(sum_, self.con - 15))
             self.con -= con_lost
             sum_ -= con_lost
@@ -133,8 +132,13 @@ class Investigator(object):
             return "外貌-25，力量、体型、敏捷合计降低80，教育增强判定四次"
 
     def __repr__(self) -> str:
-        return "%s 年龄:%d\n力量:%d 体质:%d 体型:%d\n敏捷:%d 外貌:%d 智力:%d\n意志:%d 教育:%d 幸运:%d\nDB:%s 生命值:%d 移动速度:%d SAN:%d" % (
-            self.name, self.age, self.str, self.con, self.siz, self.dex, self.app, self.int, self.pow, self.edu, self.luc, self.db(), self.lp_max(), self.mov(), self.san)
+        return (
+            f"{self.name} 年龄:{self.age}\n"
+            f"力量:{self.str} 体质:{self.con} 体型:{self.siz}\n"
+            f"敏捷:{self.dex} 外貌:{self.app} 智力:{self.int}\n"
+            f"意志:{self.pow} 教育:{self.edu} 幸运:{self.luc}\n"
+            f"DB:{self.db()} 生命值:{self.lp_max()} 移动速度:{self.mov()} SAN:{self.san}"
+        )
 
     def skills_output(self) -> str:
         if not self.skills:

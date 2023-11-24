@@ -1,6 +1,8 @@
 # RaianBot
 
-`RaianBot` 是基于 `graia-ariadne` 与 `arclet-alconna` 的简易 QQ 机器人 
+`RaianBot` 是基于 [`Avilla`](https://github.com/GraiaProject/Avilla) 与 [`Alconna`](https://github.com/ArcletProject/Alconna) 的简易机器人框架 
+
+目前支持平台有 `Mirai`, QQ频道&群全域接口
 
 ## 交流反馈
 
@@ -26,7 +28,6 @@ QQ交流：[122680593](https://jq.qq.com/?_wv=1027&k=lhxRkibY)
 RaianBot
 ├─── app                         机器人功能相关
 │   ├─── core.py                 机器人核心代码, 负责统一调度资源
-│   ├─── data.py                 机器人数据访问/修改接口
 │   ├─── config.py               机器人配置访问接口
 │   ├─── logger.py               为log增加文件输出
 │   ├─── control.py              鉴权接口
@@ -37,19 +38,13 @@ RaianBot
 │   │   └─── ...
 │   ├─── image                   存放插件运行时需要图片资源
 │   └─── ...
-├─── cache                       机器人运行时产生的临时文件或缓存数据
+├─── data                       机器人运行时产生的临时文件或缓存数据
 │   ├─── plugins 
 │   │   ├─── weibo_data.json     插件运行时产生的临时文件或缓存数据
 │   │   └─── ...
-│   ├─── {account}
-│   │   ├─── users_data.json     用户数据文件
-│   │   ├─── groups_data.json    群组数据文件
-│   │   └─── basic_data.json     基础数据文件
+│   ├─── data.db                 总数据库
 │   └─── ...
 ├─── config
-│   ├─── bots
-│   │   ├─── {account}.yml       账号配置文件
-│   │   └─── ...
 │   ├─── plugins                 机器人插件的配置目录 (可以在主配置文件中自行变更)
 │   │   └─── ...                 各插件的配置 (如需要)
 │   └─── config.yml              主配置文件
@@ -57,7 +52,7 @@ RaianBot
 │   ├─── latest.log
 │   └─── ...
 ├─── library                     插件依赖的功能库，但没有上传到 pypi等中
-│   ├─── gacha                   抽卡功能库
+│   ├─── dice                    骰娘功能库
 │   ├─── weibo                   微博 api 功能库
 │   ├─── rand                    存放随机函数
 │   └─── ...
@@ -74,9 +69,7 @@ RaianBot
 - 聊天对话 （需要适配）
 - 管理
 - 签到
-- 以图搜图
 - 获取微博动态
-- 人机五子棋
 - 方舟公招计算截图
 - 天气查询
 - 发病
@@ -85,18 +78,10 @@ RaianBot
 - 每日抽签
 - 状态获取
 - 跑团掷骰
-- 随机涩图
 - 点歌
-- 分组管理
-- rua图
-- 日本语
-- 文转图
 - 查询干员信息
-- AI作画 （需要适配）
 - 猜干员游戏
-- 流浪地球倒计时梗图
-- 地下城资格抽签
-- 原神角色卡
+- 森空岛自动签到
 
 ## 下载
 

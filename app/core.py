@@ -1,84 +1,52 @@
-from __future__ import annotations
-
+import pkgutil
 import traceback
-from contextlib import suppress
-from types import TracebackType
-from typing import Literal
+from contextvars import ContextVar
+from pathlib import Path
+from typing import Literal, Union
 
-from arclet.alconna import namespace
-from arclet.alconna.graia import AlconnaBehaviour, AlconnaDispatcher, AlconnaGraiaService
-from arclet.alconna.ariadne import AlconnaAriadneAdapter
-from arclet.alconna.tools.formatter import MarkdownTextFormatter
 from arknights_toolkit.update.main import fetch
+from avilla.core import Context
 from creart import it
-from fastapi import FastAPI
-from graia.broadcast import Broadcast
-from graia.amnesia.builtins.uvicorn import UvicornService
-from graia.ariadne.app import Ariadne
-from graia.ariadne.connection.config import HttpClientConfig, WebsocketClientConfig
-from graia.ariadne.connection.config import config as conn_cfg
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.saya import Saya
-from graia.scheduler import GraiaScheduler
-from graiax.fastapi import FastAPIBehaviour, FastAPIService
-from graiax.playwright import PlaywrightService
-from launart import ExportInterface, Service, Launart
+from launart import Launart, Service
 from loguru import logger
-import pkgutil
-from pathlib import Path
 
-from .config import BotConfig, extract_plugin_config, RaianConfig, load_config, BasePluginConfig
-from .context import BotInstance, DataInstance, MainConfigInstance, AccountDataInstance, BotConfigInstance
-from .data import BotDataManager
-from .logger import set_output
-from .utils import send_handler
+from .config import BasePluginConfig, BotConfig, RaianConfig, SqliteDatabaseConfig, extract_plugin_config
+from .cos import CosConfig, put_object
+from .database import DatabaseService, get_engine_url
 
-
-class RaianBotInterface(ExportInterface["RaianBotService"]):
-    service: "RaianBotService"
-    def __init__(self, service: "RaianBotService", account: int | None = None):
-        self.service = service
-        self.account = account or Ariadne.current().account
-
-    def bind(self, account: int):
-        return RaianBotInterface(self.service, account)
-
-    @property
-    def data(self) -> BotDataManager:
-        if self.account is None:
-            return AccountDataInstance.get()
-        return DataInstance.get()[self.account]
-
-    @property
-    def base_config(self) -> RaianConfig:
-        return self.service.config
-
-    @property
-    def config(self) -> BotConfig:
-        if self.account is None:
-            return BotConfigInstance.get()
-        return self.service.config.bots[self.account]
+BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
 
 
 class RaianBotService(Service):
     id = "raian.core.service"
-    supported_interface_types = {RaianBotInterface}
     config: RaianConfig
+    db: DatabaseService
 
     def __init__(self, config: RaianConfig):
         super().__init__()
         self.config = config
-        BotInstance.set(self)
-        DataInstance.set(
-            {account: BotDataManager(bot_config) for account, bot_config in config.bots.items()}
-        )
+        (Path.cwd() / self.config.data_dir).mkdir(parents=True, exist_ok=True)
+        self.cache = {}
 
-    def get_interface(self, _: type[RaianBotInterface]) -> RaianBotInterface:
-        return RaianBotInterface(self)
+    def ensure_manager(self, manager: Launart):
+        super().ensure_manager(manager)
+        if isinstance(self.config.database, SqliteDatabaseConfig):
+            self.config.database.name = f"/{self.config.data_dir}/{self.config.database.name}"
+            if not self.config.database.name.endswith(".db"):
+                self.config.database.name = f"{self.config.database.name}.db"
+        manager.add_component(
+            db := DatabaseService(
+                get_engine_url(**self.config.database.dict()),
+                {"echo": None, "pool_pre_ping": True},
+            )
+        )
+        self.db = db
 
     @property
-    def required(self) -> set[str | type[ExportInterface]]:
+    def required(self) -> set[str]:
         return set()
 
     @property
@@ -88,19 +56,16 @@ class RaianBotService(Service):
     @classmethod
     def current(cls):
         """获取当前上下文的 Bot"""
-        return BotInstance.get()
+        return BotServiceCtx.get()
 
     async def launch(self, manager: Launart):
-        datas = DataInstance.get()
+        token = BotServiceCtx.set(self)
         async with self.stage("preparing"):
-            for account, data in datas.items():
-                data.load()
-                logger.debug(f"账号 {account} 数据加载完毕")
             logger.success("机器人数据加载完毕")
-            # if not await fetch():
-            #     logger.error("方舟数据获取失败")
-            #     manager.status.exiting = True
-            #     return
+            if not await fetch(proxy=self.config.proxy):
+                logger.error("方舟数据获取失败")
+                manager.status.exiting = True
+                return
             saya = it(Saya)
             with saya.module_context():
                 for module_info in pkgutil.iter_modules(self.config.plugin.paths):
@@ -109,12 +74,9 @@ class RaianBotService(Service):
                     if name == "config" or name.startswith("_") or f"{path}.{name}" in self.config.plugin.disabled:
                         continue
                     try:
-                        if model := extract_plugin_config(path, name):
-                            self.config.plugin.data[type(model)] = model
-                        export_meta = saya.require(f"{path}.{name}")
-                        if isinstance(export_meta, dict):
-                            for data in datas.values():
-                                data.add_meta(**export_meta)
+                        if model := extract_plugin_config(self.config, path, name):
+                            self.config.plugin.configs[type(model)] = model
+                        saya.require(f"{path}.{name}.main")
                     except BaseException as e:
                         logger.warning(
                             f"fail to load {path}.{name}, caused by "
@@ -122,102 +84,62 @@ class RaianBotService(Service):
                         )
                         traceback.print_exc()
                         continue
-
         async with self.stage("cleanup"):
-            for account, data in datas.items():
-                for k in list(data.cache.keys()):
-                    if k.startswith("$"):
-                        del data.cache[k]
-                data.save()
-                data.clear()
-                logger.debug(f"账号 {account} 数据保存完毕")
+            self.cache.clear()
             logger.success("机器人数据保存完毕")
+
+        BotServiceCtx.reset(token)
+
+    def record(self, name: str, disable: bool = False):
+        def __wrapper__(func):
+            record = self.cache.setdefault("function::record", {})
+            disables = self.cache.setdefault("function::disables", set())
+            record.setdefault(name, func)
+            func.__record__ = name
+            if disable:
+                disables.add(name)
+            return func
+
+        return __wrapper__
+
+    @property
+    def functions(self):
+        return self.cache.get("function::record", {})
+
+    def func_description(self, name: str):
+        return func.__doc__ if (func := self.cache.get("function::record", {}).get(name)) else "Unknown"
+
+    async def upload_to_cos(self, content: Union[bytes, str], name: str):
+        config = CosConfig(
+            secret_id=self.config.platform.tencentcloud_secret_id,
+            secret_key=self.config.platform.tencentcloud_secret_key,
+            region=self.config.platform.tencentcloud_region,
+            scheme="https",
+        )
+        await put_object(
+            config, self.config.platform.tencentcloud_bucket, content, name, headers={"StorageClass": "STANDARD"}
+        )
+        return config.uri(self.config.platform.tencentcloud_bucket, name)
 
 
 class RaianBotDispatcher(BaseDispatcher):
-
     def __init__(self, service: RaianBotService):
         self.service = service
 
-    async def beforeExecution(self, interface: DispatcherInterface):
-        interface.local_storage["$raian_bot_config_token"] = BotConfigInstance.set(
-            self.service.config.bots[Ariadne.current().account]
-        )
-        interface.local_storage["$raian_bot_data_token"] = AccountDataInstance.set(
-            DataInstance.get()[Ariadne.current().account]
-        )
     async def catch(self, interface: DispatcherInterface):
+        if interface.annotation is RaianBotService:
+            return self.service
+        if interface.annotation is RaianConfig:
+            return self.service.config
         if isinstance(interface.annotation, type):
-            if interface.annotation is RaianConfig:
-                return MainConfigInstance.get()
-            if interface.annotation is BotConfig:
-                return BotConfigInstance.get()
-            if interface.annotation is BotDataManager:
-                return AccountDataInstance.get()
+            if issubclass(interface.annotation, Service):
+                manager = Launart.current()
+                return manager.get_component(interface.annotation)
             if issubclass(interface.annotation, BasePluginConfig):
                 return self.service.config.plugin.get(interface.annotation)
-
-    async def afterDispatch(
-        self,
-        interface: DispatcherInterface,
-        exception: Exception | None,
-        tb: TracebackType | None,
-    ):
-        with suppress(KeyError, RuntimeError):
-            AccountDataInstance.reset(interface.local_storage["$raian_bot_data_token"])
-            BotConfigInstance.reset(interface.local_storage["$raian_bot_config_token"])
-
-def launch(debug_log: bool = True):
-    """启动机器人"""
-    if not (config := MainConfigInstance.get(None)):
-        config = load_config()
-    with namespace("Alconna") as np:
-        np.headers = config.command.headers
-        np.builtin_option_name["help"] = set(config.command.help)
-        np.builtin_option_name["shortcut"] = set(config.command.shortcut)
-        np.builtin_option_name["completion"] = set(config.command.completion)
-        np.formatter_type = MarkdownTextFormatter
-
-    saya = it(Saya)
-    bcc = it(Broadcast)
-    manager = Launart()
-    it(AlconnaBehaviour)
-    it(GraiaScheduler)
-    fastapi = FastAPI()
-    saya.install_behaviours(FastAPIBehaviour(fastapi))
-    manager.add_service(
-        PlaywrightService(
-            config.browser.type,
-            headless=True,
-            channel=config.browser.channel,
-            auto_download_browser=(not config.browser.channel),
-            # user_data_dir=Path(config.cache_dir) / "browser"
-        )
-    )
-    manager.add_service(AlconnaGraiaService(AlconnaAriadneAdapter, enable_cache=True, cache_dir=config.cache_dir))
-    manager.add_service(FastAPIService(fastapi))
-    manager.add_service(UvicornService(config.api.host, config.api.port))
-    # manager.add_service(SchedulerService(it(GraiaScheduler)))
-    manager.add_service(bot_service := RaianBotService(config))
-    bcc.prelude_dispatchers.append(RaianBotDispatcher(bot_service))
-    Ariadne.config(launch_manager=manager, default_account=config.default_account)
-    AlconnaDispatcher.default_send_handler = send_handler
-    set_output("DEBUG" if debug_log else "INFO")
-    for account in config.bots:
-        Ariadne(
-            connection=conn_cfg(
-                account,
-                config.mirai.verify_key,
-                HttpClientConfig(config.mirai_addr),
-                WebsocketClientConfig(config.mirai_addr),
-            )
-        )
-    logger.success("------------------机器人初始化完毕--------------------")
-    try:
-        Ariadne.launch_blocking()
-    finally:
-        Ariadne.stop()
-        logger.success("机器人关闭成功. 晚安")
-
-
-__all__ = ["RaianBotService", "send_handler", "launch", "RaianBotInterface"]
+            if hasattr(interface.event, "context"):
+                context: Context = interface.event.context
+                if issubclass(interface.annotation, BotConfig):
+                    return next(
+                        (bot for bot in self.service.config.bots if bot.ensure(context.account)), None  # type: ignore
+                    )

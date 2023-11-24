@@ -12,4 +12,4 @@
 #         )
 #         logger.success("[ClosureTalk] Done.")
 #         return img
-from .main import ArknightsClosureStore
+from .main import ArknightsClosureStore as ArknightsClosureStore

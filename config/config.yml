@@ -1,15 +1,9 @@
-## bot 默认登录账号
-default_account: 'NOT-A-NUMBER'
 ## 缓存数据存放的文件夹, 默认为 cache
-cache_dir: 'cache'
-## mirai-api-http 相关配置
-mirai:
-  ## mirai-api-http 的链接
-  host: "localhost"
-  ## mirai-api-http 的端口
-  port: 8080
-  ## mirai-api-http 的验证码
-  verify_key: "INITKEYWylsVdbr"
+data_dir: 'data'
+## 日志等级
+log_level: "info"
+## 代理配置
+proxy: null
 ## 浏览器相关配置
 browser:
   type: "chromium"
@@ -17,10 +11,8 @@ browser:
 ## bot 命令相关配置
 command:
   ## 命令前缀
-  ## At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)
   prefix:
-    - "莱安"
-    - "At:123456789"
+    - "/"
   ## 帮助选项的名称
   help:
     - "--help"
@@ -33,6 +25,11 @@ command:
   completion:
     - "--comp"
     - "-cp"
+## bot 数据库相关配置
+database:
+  type: sqlite
+  name: data
+  driver: aiosqlite
 ## bot 模块相关配置
 plugin:
   ## 模块缓存的根路径
@@ -54,6 +51,8 @@ api:
   port: 8000
 ## 腾讯云相关配置
 platform:
+  ## 腾讯云API 的 region
+  tencentcloud_region: null
   ## 腾讯云API 的 secret-id
   tencentcloud_secret_id: null
   ## 腾讯云API 的 secret-key
@@ -62,3 +61,70 @@ platform:
   tencentcloud_tbp_bot_id: null
   ## 腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env
   tencentcloud_tbp_bot_env: null
+  ## 腾讯云API 下 COS 的 bucket
+  tencentcloud_bucket: null
+  ## 和风天气API 的 key
+  ## 获取地址: https://id.qweather.com/#/login
+  heweather_api_key: null
+  ## 和风天气API 的类型
+  ##  0 = 普通版，免费订阅 (3 天天气预报)
+  ##  1 = 个人开发版，标准订阅 (7 天天气预报)
+  ##  2 = 商业版 (7 天天气预报)
+  heweather_api_type: null
+  ## 和风天气API 的逐小时类型
+  ## 1 = 未来12小时 (默认值)
+  ## 2 = 未来24小时
+  heweather_api_hourly_type: 1
+## bot 配置
+bots:
+  -
+    ## 类型为 mirai-api-http
+    type: mirai
+    ## 机器人名字, 请尽量不要与 prefix 重合
+    name: 莱安
+    ## bot 登录账号
+    account: "UNDEFINED"
+    ## mirai-api-http 的链接
+    host: "localhost"
+    ## mirai-api-http 的端口
+    port: 8080
+    ## mirai-api-http 的验证码
+    access_token: "INITKEYWylsVdbr"
+    ## bot 初始禁用的模块名称
+    disabled: []
+    ## bot 权限相关配置
+    admin:
+      ## bot 的控制者的账号
+      master_id: "UNDEFINED"
+      ## bot 的管理者(除开控制者)的账号
+      admins: []
+  -
+    ## 类型为 qq-api
+    type: qqapi
+    ## 机器人名字, 请尽量不要与 prefix 重合
+    name: 莱安
+    ## bot 的 appid
+    account: "UNDEFINED"
+    ## bot 的令牌
+    token: "UNDEFINED"
+    ## bot 的密钥
+    secret: "UNDEFINED"
+    ## 分片设置
+    shard: null
+    ## 事件接收配置
+    intent:
+      # 仅作示范
+      ## 是否接收频道所有消息
+      guild_messages: true
+      ## 是否接受 at 机器人的消息
+      at_messages: false
+      ## 是否接受频道私聊消息
+      direct_message: true
+    ## 是否为沙箱环境
+    is_sandbox: true
+    ## bot 初始禁用的模块名称
+    disabled: []
+    ## bot 的控制者的账号
+    master_id: "UNDEFINED"
+    ## bot 的管理者(除开控制者)的账号
+    admins: []
