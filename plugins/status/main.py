@@ -114,7 +114,7 @@ async def status(ctx: Context):
     try:
         return await ctx.scene.send_message(Picture(RawResource(data)))
     except Exception:
-        url = await bot.upload_to_cos(data, f"rand_op_{token_hex(16)}.png")
+        url = await bot.upload_to_cos(data, f"status_{token_hex(16)}.png")
         try:
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:

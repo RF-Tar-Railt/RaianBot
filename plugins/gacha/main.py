@@ -142,8 +142,14 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
 
 
 @alcommand(
-    Alconna("十连", meta=CommandMeta("生成仿真寻访图", usage="灰色头像表示新干员但是头图未更新")),
-    remove_tome=True,
+    Alconna(
+        "十连",
+        meta=CommandMeta(
+            "生成仿真寻访图",
+            usage="灰色头像表示新干员但是头图未更新",
+            extra={"supports": {"mirai", "qqapi"}},
+        ),
+    ),
     send_error=True,
     post=True,  # noqa: E501
 )

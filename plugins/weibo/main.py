@@ -196,7 +196,16 @@ async def wfetch(
         return await ctx.scene.send_message("获取失败啦")
 
     nodes = await _handle_dynamic(dynamic, pw)
-    await ctx.scene.send_message(nodes[0])
+    try:
+        await ctx.scene.send_message(nodes[0])
+    except Exception as e:
+        if isinstance(nodes[0], Picture):
+            url = await bot.upload_to_cos(nodes[0].resource.data, f"weibo_dym_{token_hex(16)}.png")  # type: ignore
+            try:
+                return await ctx.scene.send_message(picture(url, ctx))
+            except ActionFailed:
+                return await ctx.scene.send_message(picture(url, ctx))
+        await ctx.scene.send_message(str(e))
     if isinstance(ctx.account, ElizabethAccount) and nodes[1]:
         await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in nodes[1])])
 
