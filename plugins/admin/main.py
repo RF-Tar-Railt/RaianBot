@@ -9,6 +9,8 @@ from sqlalchemy import select
 
 from app.database import DatabaseService, Group
 
+from . import debug  # noqa: F401
+
 
 @listen(MessageReceived, RelationshipCreated)
 @priority(7)

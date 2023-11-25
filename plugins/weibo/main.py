@@ -323,10 +323,7 @@ async def update(avilla: Avilla):
             wp = wp.copy()
             try:
                 if res := await api.update(int(uid)):
-                    dynamics[int(uid)] = (
-                        await _handle_dynamic(res, pw),
-                        res.user.name if res.user else ""
-                    )
+                    dynamics[int(uid)] = (await _handle_dynamic(res, pw), res.user.name if res.user else "")
                     await asyncio.sleep(5)
                 else:
                     continue
