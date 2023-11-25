@@ -26,7 +26,7 @@ from app.image import md2img
 from app.logger import loguru_exc_callback_async, setup_logger
 from app.shortcut import picture
 
-config = load_config(root_dir="my_config")
+config = load_config(root_dir="config")
 setup_logger(config.log_level)
 
 with namespace("Alconna") as np:

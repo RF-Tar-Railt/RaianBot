@@ -25,7 +25,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from graia.saya.builtins.broadcast.shortcut import listen
 from graia.scheduler.saya.shortcut import every
 from graiax.fastapi import route
-from graiax.playwright import PlaywrightService
+from graiax.playwright import PlaywrightBrowser, PlaywrightService
 from launart import Launart
 from loguru import logger
 from sqlalchemy import Select
@@ -72,7 +72,7 @@ async def _handle_dynamic(
     data: WeiboDynamic,
     pw: PlaywrightService,
 ):
-    page = await pw.browser.new_page(viewport={"width": 800, "height": 2400})
+    page = await pw.get_interface(PlaywrightBrowser).new_page(viewport={"width": 800, "height": 2400})
     try:
         await page.click("html")
         await page.goto(data.url, timeout=60000, wait_until="networkidle")
@@ -119,6 +119,7 @@ async def wget(ctx: Context, user: Match[str], select: Match[int]):
         return await ctx.scene.send_message("不对劲。。。")
     _index = select.result
     count = -1
+    profiles = []
     with contextlib.suppress(asyncio.TimeoutError):
         profiles = await api.get_profiles(user.result)
         count = len(profiles)
@@ -308,6 +309,8 @@ async def update(avilla: Avilla):
     dynamics = {}
     pw = Launart.current().get_component(PlaywrightService)
     followers = set()
+    if not avilla.get_accounts(account_type=ElizabethAccount):
+        return
     async with bot.db.get_session() as session:
         mapping = {}
         for follower in (await session.scalars(Select(WeiboFollower))).all():
@@ -322,7 +325,7 @@ async def update(avilla: Avilla):
                 if res := await api.update(int(uid)):
                     dynamics[int(uid)] = (
                         await _handle_dynamic(res, pw),
-                        res.user.name,
+                        res.user.name if res.user else ""
                     )
                     await asyncio.sleep(5)
                 else:
@@ -343,7 +346,10 @@ async def update(avilla: Avilla):
         ).all():
             if "微博动态自动获取" in group.disabled:
                 continue
-            account = avilla.get_account(Selector.from_follows_pattern(random.choice(group.accounts)))
+            try:
+                account = avilla.get_account(Selector.from_follows_pattern(random.choice(group.accounts)))
+            except KeyError:
+                continue
             ctx = account.account.get_context(Selector().land("qq").group(group.id))
             for uid in mapping[group.id]:
                 dy, name = dynamics[uid]

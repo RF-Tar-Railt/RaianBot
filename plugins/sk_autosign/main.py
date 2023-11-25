@@ -172,6 +172,8 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
 @record("森空自动签到", False)
 async def shed(avilla: Avilla):
     results = {}
+    if not (accounts := avilla.get_accounts(account_type=ElizabethAccount)):
+        return
     async with bot.db.get_session() as session:
         for rec in (await session.scalars(select(SKAutoSignRecord))).all():
             ans = results.setdefault(rec.id, [])
@@ -182,7 +184,7 @@ async def shed(avilla: Avilla):
                     ans.append(resp["text"])
                 await asyncio.sleep(1)
         await session.commit()
-    for account in avilla.get_accounts(account_type=ElizabethAccount):
+    for account in accounts:
         async for friend in account.account.staff.query_entities("land.friend", friend=lambda x: x in results):
             ctx = account.account.get_context(friend)
             await ctx.scene.send_message("\n".join(results[friend["friend"]]))

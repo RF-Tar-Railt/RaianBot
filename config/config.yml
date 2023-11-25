@@ -92,12 +92,10 @@ bots:
     access_token: "INITKEYWylsVdbr"
     ## bot 初始禁用的模块名称
     disabled: []
-    ## bot 权限相关配置
-    admin:
-      ## bot 的控制者的账号
-      master_id: "UNDEFINED"
-      ## bot 的管理者(除开控制者)的账号
-      admins: []
+    ## bot 的控制者的账号
+    master_id: "UNDEFINED"
+    ## bot 的管理者(除开控制者)的账号
+    admins: []
   -
     ## 类型为 qq-api
     type: qqapi
