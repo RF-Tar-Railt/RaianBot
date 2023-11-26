@@ -36,7 +36,7 @@ cmd_help.shortcut("菜单", {"prefix": True})
 @dispatch(Filter.cx.scene.follows("::group"))
 @allow(QQAPIAccount)
 async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain):
-    if str(message) != " ":
+    if str(message) != "":
         return
     plat: str = {ElizabethAccount: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore
     md = f"""\
@@ -91,7 +91,7 @@ async def send_text_help(ctx: Context):
 @accessable
 async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, config: BotConfig):
     if not query.available:
-        return await send_(ctx, bot, config, MessageChain([Text(" ")]))
+        return await send_(ctx, bot, config, MessageChain([Text("")]))
     try:
         if query.result.isdigit():
             cmds = list(command_manager.all_command_raw_help().keys())

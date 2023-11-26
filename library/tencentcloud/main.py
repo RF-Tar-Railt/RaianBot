@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 
 from httpx import AsyncClient, Request
@@ -46,6 +47,46 @@ class TencentCloudApi:
                 if message := resp.get("Response", {}).get("ResponseText"):
                     return message.replace("小微", name) if name else message
                 logger.warning(resp)
+            except Exception as e:
+                logger.error(repr(e))
+                return
+
+    async def send_email(
+        self,
+        addr: str,
+        target: list[str],
+        subject: str,
+        template_id: str,
+        template_data: dict[str, str],
+        name: str | None = None,
+    ):
+        http = HttpProfile(endpoint="ses.tencentcloudapi.com")
+        async with AsyncClient(proxies=self.proxy) as client:
+            params = {
+                "FromEmailAddress": f"{name} <{addr}>" if name else addr,
+                "Destination": target,
+                "Subject": subject,
+                "ReplyToAddresses": addr,
+                "Template": {"TemplateID": template_id, "TemplateData": json.dumps(template_data, ensure_ascii=False)},
+            }
+            action = "SendEmail"
+            if http.method == "GET":
+                req = Request(http.method, http.url, params=params, headers={})
+            elif http.method == "POST":
+                req = Request(http.method, http.url, json=params, headers={})
+            else:
+                raise NotImplementedError(http.method)
+            signature(
+                self.secret_id,
+                self.secret_key,
+                action,
+                req,
+                http,
+                {"api_version": "2020-10-02", "service": "ses", "region": self.region},
+            )
+            try:
+                resp = (await client.send(req)).json()
+                return resp
             except Exception as e:
                 logger.error(repr(e))
                 return
