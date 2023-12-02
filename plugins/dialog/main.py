@@ -106,7 +106,7 @@ async def smatch(
     aio: AiohttpClientService,
 ):
     """依据语料进行匹配回复"""
-    mid = msg.id
+    mid = f"{msg.id}@{ctx.account}"
     for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
             raise PropagationCancelled
@@ -173,7 +173,7 @@ async def aitalk(
     aio: AiohttpClientService,
 ):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
-    mid = msg.id
+    mid = f"{msg.id}@{ctx.account}"
     for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
             raise PropagationCancelled

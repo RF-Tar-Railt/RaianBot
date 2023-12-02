@@ -30,7 +30,7 @@ async def fill_font(route: Route, request: Request):
     await route.fallback()
 
 
-footer = (
+footer = lambda: (
     "<style>.footer{box-sizing:border-box;position:absolute;left:0;width:100%;background:#eee;"
     "padding:30px 40px;margin-top:50px;font-size:1rem;color:#6b6b6b;}"
     ".footer p{margin:5px auto;}</style>"
@@ -65,7 +65,7 @@ md_converter = MarkdownConverter()
 
 async def text2img(text: str, width: int = 800) -> bytes:
     html = convert_text(text)
-    html += footer
+    html += footer()
 
     return await html_render.render(
         html,
@@ -75,7 +75,7 @@ async def text2img(text: str, width: int = 800) -> bytes:
 
 async def md2img(text: str, width: int = 800) -> bytes:
     html = md_converter.convert(text)
-    html += footer
+    html += footer()
 
     return await html_render.render(
         html,

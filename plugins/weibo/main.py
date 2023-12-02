@@ -33,7 +33,6 @@ from sqlalchemy import Select
 from app.config import BotConfig
 from app.core import RaianBotService
 from app.database import DatabaseService, Group
-from app.image import md2img
 from app.interrupt import FunctionWaiter
 from app.shortcut import accessable, allow, exclusive, picture, record
 from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser
@@ -109,7 +108,7 @@ async def get_check(user: str, index: int = 0):
     )
 
 
-@alcommand(weibo_fetch, comp_session={})
+@alcommand(weibo_fetch, comp_session={}, post=True)
 @record("微博功能")
 @assign("$main")
 @accessable
@@ -131,7 +130,7 @@ async def wget(ctx: Context, user: Match[str], select: Match[int]):
         await ctx.scene.send_message("查找到多名用户，请选择其中一位，限时 15秒")
         await ctx.scene.send_message(
             "\n".join(
-                f"{str(index).rjust(len(str(count)), '0')}. {slot.name} - {slot.description}"
+                f"{str(index).rjust(len(str(count)), '0')}. {slot.name} - {slot.description.replace('.', '. ')}"
                 for index, slot in enumerate(profiles)
             ),
         )
@@ -151,28 +150,26 @@ async def wget(ctx: Context, user: Match[str], select: Match[int]):
         if _index >= count:
             return await ctx.scene.send_message("别捣乱！")
         prof = profiles[max(_index, 0)]
-    md = f"""\
-![]({prof.avatar})
+        try:
+            return await ctx.scene.send_message(
+                [
+                    Picture(UrlResource(prof.avatar)),
+                    Text(
+                        f"用户名: {prof.name}\n"
+                        f"介绍: {prof.description.replace('.', '. ')}\n"
+                        f"动态数: {prof.statuses}\n"
+                        f"是否可见: {'是' if prof.visitable else '否'}"
+                    )
+                ]
+            )
+        except ActionFailed:
+            return await ctx.scene.send_message(
+                f"""\
 用户名: {prof.name}
-介绍: {prof.description}
+介绍: {prof.description.replace('.', '. ')}
 动态数: {prof.statuses}
 是否可见: {'是' if prof.visitable else '否'}
 """
-    data = await md2img(md)
-    try:
-        return await ctx.scene.send_message(Picture(RawResource(data)))
-    except Exception:
-        url = await bot.upload_to_cos(data, f"weibo_usr_{token_hex(16)}.png")
-        try:
-            return await ctx.scene.send_message(picture(url, ctx))
-        except ActionFailed:
-            return await ctx.scene.send_message(
-                f"""
-        用户名: {prof.name}
-        介绍: {prof.description}
-        动态数: {prof.statuses}
-        是否可见: {'是' if prof.visitable else '否'}
-        """
             )
 
 
@@ -184,7 +181,7 @@ async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = Fals
     return JSONResponse((await api.get_dynamic(prof, index=index, page=page)).dict(), headers={"charset": "utf-8"})
 
 
-@alcommand(weibo_fetch, comp_session={})
+@alcommand(weibo_fetch, comp_session={}, post=True)
 @record("微博功能")
 @assign("动态")
 @accessable
@@ -211,7 +208,7 @@ async def wfetch(
         await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in nodes[1])])
 
 
-@alcommand(weibo_fetch, comp_session={}, need_tome=True)
+@alcommand(weibo_fetch, comp_session={}, need_tome=True, post=True)
 @allow(ElizabethAccount)
 @record("微博功能")
 @assign("follow")
@@ -236,7 +233,7 @@ async def wfollow(ctx: Context, user: Match[str], select: Match[int], db: Databa
         return await ctx.scene.send_message(f"关注 {follower.name} 成功！")
 
 
-@alcommand(weibo_fetch, comp_session={}, need_tome=True)
+@alcommand(weibo_fetch, comp_session={}, need_tome=True, post=True)
 @record("微博功能")
 @allow(ElizabethAccount)
 @assign("unfollow")
@@ -262,7 +259,7 @@ async def wunfollow(ctx: Context, user: Match[str], select: Match[int], db: Data
         return await ctx.scene.send_message(f"解除关注 {follower.name} 成功！")
 
 
-@alcommand(weibo_fetch, comp_session={}, need_tome=True)
+@alcommand(weibo_fetch, comp_session={}, need_tome=True, post=True)
 @allow(ElizabethAccount)
 @record("微博功能")
 @assign("list")

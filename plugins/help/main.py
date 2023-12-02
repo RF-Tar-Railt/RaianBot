@@ -3,7 +3,7 @@ from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, command_manager
 from arclet.alconna.graia import Match, alcommand
-from avilla.core import ActionFailed, Context, MessageChain, Picture, RawResource, Text
+from avilla.core import ActionFailed, Context, MessageChain, Picture, RawResource, Text, Notice
 from avilla.core.tools.filter import Filter
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.qqapi.account import QQAPIAccount
@@ -36,7 +36,7 @@ cmd_help.shortcut("菜单", {"prefix": True})
 @dispatch(Filter.cx.scene.follows("::group"))
 @allow(QQAPIAccount)
 async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain):
-    if str(message) != "":
+    if str(message.exclude(Notice)).lstrip() != "":
         return
     plat: str = {ElizabethAccount: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore
     md = f"""\

@@ -95,11 +95,15 @@ def check_exclusive():
                     await session.scalars(
                         select(Group)
                         .where(Group.id == ctx.scene.last_key)
-                        .where(Group.platform == "qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi")
+                        .where(Group.platform == ("qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi"))
                     )
                 ).one_or_none()
                 if not group or len(group.accounts) < 2:
                     return True
+                # if event.message.content and isinstance(event.message.content[0], Notice):
+                #     notice: Notice = event.message.content.get_first(Notice)
+                #     if notice.target.last_value == ctx.self.last_value:
+                #         return True
                 excl = serv.cache.setdefault("$exclusive", {})
                 if event.message.to_selector() not in excl:
                     excl.clear()
@@ -107,7 +111,7 @@ def check_exclusive():
                     rand.seed(seed)
                     choice = rand.choice(group.accounts)
                     excl[event.message.id] = choice
-                if not ctx.account.route.follows(excl[event.message.to_selector()]):
+                elif not ctx.account.route.follows(excl[event.message.to_selector()]):
                     raise ExecutionStop
 
         return True

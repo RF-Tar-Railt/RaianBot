@@ -158,7 +158,7 @@ class WeiboAPI:
                 index = ids.index(max(ids))
             else:
                 index = 0
-        if d_data["cards"][index]["card_type"] == 156:
+        if d_data["cards"][0]["card_type"] == 156:
             index += 1
         res = self._handler_dynamic(d_data["cards"][index]["mblog"])
         res.user = target

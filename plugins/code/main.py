@@ -40,6 +40,19 @@ code.shortcut(
     prefix=True,
 )
 
+code.shortcut(
+    "(?:https?://)?github.com/(.+)/([^#]+).*?",
+    command=
+    """\
+/执行 --no-output --pure-text
+import secrets
+from avilla.core import UrlResource
+token = secrets.token_urlsafe(16)
+url = \\'https://opengraph.githubassets.com/\\' + token + \\'/{0}/{1}\\'
+await ctx.scene.send_message(Picture(UrlResource(url)))
+    """
+)
+
 
 @alcommand(code, send_error=True, post=True)
 @permission("admin")
