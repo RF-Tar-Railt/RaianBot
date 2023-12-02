@@ -159,7 +159,7 @@ async def wget(ctx: Context, user: Match[str], select: Match[int]):
                         f"介绍: {prof.description.replace('.', '. ')}\n"
                         f"动态数: {prof.statuses}\n"
                         f"是否可见: {'是' if prof.visitable else '否'}"
-                    )
+                    ),
                 ]
             )
         except ActionFailed:

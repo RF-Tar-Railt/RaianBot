@@ -6,6 +6,7 @@ from typing import Literal
 from launart import Launart, Service
 from loguru import logger
 from sqlalchemy.engine.result import Result
+from sqlalchemy.engine.url import URL
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.sql.base import Executable
 from sqlalchemy.sql.selectable import TypedReturnsRows
@@ -20,7 +21,7 @@ class DatabaseService(Service):
     db: DatabaseManager
     get_session: async_sessionmaker[AsyncSession]
 
-    def __init__(self, url: str, engine_options: EngineOptions | None = None) -> None:
+    def __init__(self, url: str | URL, engine_options: EngineOptions | None = None) -> None:
         self.db = DatabaseManager(url, engine_options)
         super().__init__()
 

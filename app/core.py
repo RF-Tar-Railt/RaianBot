@@ -13,9 +13,9 @@ from graia.saya import Saya
 from launart import Launart, Service
 from loguru import logger
 
-from .config import BasePluginConfig, BotConfig, RaianConfig, SqliteDatabaseConfig, extract_plugin_config
+from .config import BasePluginConfig, BotConfig, RaianConfig, extract_plugin_config
 from .cos import CosConfig, put_object
-from .database import DatabaseService, get_engine_url
+from .database import DatabaseService
 
 BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
 
@@ -33,13 +33,13 @@ class RaianBotService(Service):
 
     def ensure_manager(self, manager: Launart):
         super().ensure_manager(manager)
-        if isinstance(self.config.database, SqliteDatabaseConfig):
-            self.config.database.name = f"/{self.config.data_dir}/{self.config.database.name}"
+        if self.config.database.type == "sqlite":
+            self.config.database.name = f"{self.config.data_dir}/{self.config.database.name}"
             if not self.config.database.name.endswith(".db"):
                 self.config.database.name = f"{self.config.database.name}.db"
         manager.add_component(
             db := DatabaseService(
-                get_engine_url(**self.config.database.dict()),
+                self.config.database.url,
                 {"echo": None, "pool_pre_ping": True},
             )
         )

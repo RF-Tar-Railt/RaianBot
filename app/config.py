@@ -17,6 +17,7 @@ from avilla.qqapi.protocol import QQAPIConfig as _QQAPIConfig
 from avilla.qqapi.protocol import QQAPIProtocol
 from loguru import logger
 from pydantic import BaseModel, Field
+from sqlalchemy.engine.url import URL
 
 
 class BaseConfig(BaseModel):
@@ -94,26 +95,23 @@ class CommandConfig(BaseConfig):
         return res
 
 
-class SqliteDatabaseConfig(BaseConfig):
-    type: Literal["sqlite"] = "sqlite"
+class DatabaseConfig(BaseConfig):
+    type: str = "sqlite"
     name: str
     driver: str = "aiosqlite"
+    host: Optional[str] = None
+    port: Optional[int] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    query: dict[str, Union[list[str], str]] = Field(default_factory=dict)
 
-    class Config:
-        extra = "allow"
-
-
-class MySqlDatabaseConfig(BaseConfig):
-    type: Literal["mysql"] = "mysql"
-    name: str
-    driver: str = "pymysql"
-    host: str
-    port: int = 3306
-    username: str
-    password: str
-
-    class Config:
-        extra = "allow"
+    @property
+    def url(self) -> URL:
+        if self.type == "sqlite":
+            return URL.create(f"{self.type}+{self.driver}", database=self.name, query=self.query)
+        return URL.create(
+            f"{self.type}+{self.driver}", self.username, self.password, self.host, self.port, self.name, self.query
+        )
 
 
 class PluginConfig(BaseConfig):
@@ -316,7 +314,7 @@ class RaianConfig(BaseConfig):
     command: CommandConfig
     """bot 命令相关配置"""
 
-    database: Union[SqliteDatabaseConfig, MySqlDatabaseConfig]
+    database: DatabaseConfig
     """bot 数据库相关配置"""
 
     plugin: PluginConfig
