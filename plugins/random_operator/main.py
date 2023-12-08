@@ -16,7 +16,11 @@ from app.shortcut import accessable, exclusive, is_qqapi_group, picture, record
 @alcommand(
     Alconna(
         "测试干员",
-        Args["name?#你的代号", [str, Notice], Field(completion=lambda: "你的代号是?", unmatch_tips=lambda x: f"输入的应该是名字或者 @提及某人，而不是 {x}")],
+        Args[
+            "name?#你的代号",
+            [str, Notice],
+            Field(completion=lambda: "你的代号是?", unmatch_tips=lambda x: f"输入的应该是名字或者 @提及某人，而不是 {x}"),  # noqa: E501
+        ],
         meta=CommandMeta(
             "依据名字测试你会是什么干员",
             example="$测试干员 海猫",

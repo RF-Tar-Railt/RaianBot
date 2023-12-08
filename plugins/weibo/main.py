@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 import random
 from secrets import token_hex
 
@@ -44,18 +43,15 @@ bot = RaianBotService.current()
 weibo_fetch = Alconna(
     "微博",
     Arg(
-        "user;?#微博用户名称", 
-        str, 
-        Field(
-            completion=lambda: "比如说, 育碧", 
-            unmatch_tips=lambda x: f"请输入微博用户名称，而不是{x}\n例如: /微博 育碧"
-        )
+        "user;?#微博用户名称",
+        str,
+        Field(completion=lambda: "比如说, 育碧", unmatch_tips=lambda x: f"请输入微博用户名称，而不是{x}\n例如: /微博 育碧"),  # noqa: E501
     ),
     Arg("select#选择第几个用户", int, Field(default=-1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
     Option(
         "动态",
-        Arg("index#从最前动态排起的第几个动态", int, Field(default=-1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")) + 
-        Arg("page#第几页动态", int, Field(default=1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
+        Arg("index#从最前动态排起的第几个动态", int, Field(default=-1, unmatch_tips=lambda x: f"请输入数字，而不是{x}"))
+        + Arg("page#第几页动态", int, Field(default=1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
         help_text="从微博获取指定用户的动态",
     ),
     Option("关注|增加关注", dest="follow", help_text="增加一位微博动态关注对象"),

@@ -45,10 +45,10 @@ footer = lambda: (
     ".footer p{margin:5px auto;}</style>"
     '<div class="footer">'
     f'<img align="right" src="data:image/png;base64,{b64}" />'
-    '<p>由 RaianBot 生成</p>'
-    '<br/>'
+    "<p>由 RaianBot 生成</p>"
+    "<br/>"
     f'<p>{datetime.now().strftime("%Y/%m/%d %p %I:%M:%S")}</p>'
-    f'</div>'
+    f"</div>"
 )
 
 html_render = HTMLRenderer(

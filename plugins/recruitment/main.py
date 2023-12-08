@@ -13,7 +13,11 @@ from app.shortcut import accessable, exclusive, picture
 
 cmd = Alconna(
     "公招",
-    Args["tags", MultiVar(str, "*"), Field(completion=lambda: "高资", unmatch_tips=lambda x: f"输入的应该是公招标签，而不是{x}\n例如：/公招 高资")],
+    Args[
+        "tags",
+        MultiVar(str, "*"),
+        Field(completion=lambda: "高资", unmatch_tips=lambda x: f"输入的应该是公招标签，而不是{x}\n例如：/公招 高资"),
+    ],
     meta=CommandMeta(
         "自助访问 prts 的公招计算器并截图",
         usage="标签之间用空格分隔",

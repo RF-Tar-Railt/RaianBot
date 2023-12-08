@@ -38,9 +38,7 @@ cmd.shortcut(
 
 if config.heweather and bot.config.platform.heweather_api_key and bot.config.platform.heweather_api_type:
     heweather = HeWeather(
-        bot.config.platform.heweather_api_key, 
-        bot.config.platform.heweather_api_type, 
-        bot.config.proxy
+        bot.config.platform.heweather_api_key, bot.config.platform.heweather_api_type, bot.config.proxy
     )
     cache_dir = Path(bot.config.data_dir) / "plugins" / "weather"
     cache_dir.mkdir(parents=True, exist_ok=True)

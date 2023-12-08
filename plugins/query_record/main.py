@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from secrets import token_hex
 
-from arclet.alconna import Alconna, Arg, Args, Arparma, CommandMeta, Option, Field
+from arclet.alconna import Alconna, Arg, Args, Arparma, CommandMeta, Field, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.images import update_operators
 from arknights_toolkit.record import ArkRecord
@@ -17,7 +17,11 @@ from app.shortcut import accessable, exclusive, picture, record
 alc = Alconna(
     "抽卡查询",
     Args["count#最近x抽", int, -1],
-    Option("绑定", Args[Arg("token", str, Field(unmatch_tips=lambda x: f"请输入您的凭证，而不是{x}"), seps="\n")], compact=True),
+    Option(
+        "绑定",
+        Args[Arg("token", str, Field(unmatch_tips=lambda x: f"请输入您的凭证，而不是{x}"), seps="\n")],
+        compact=True,  # noqa: E501
+    ),
     Option("更新", Args["name?#卡池名", str]["limit", bool, True]),
     meta=CommandMeta(
         "明日方舟抽卡数据查询，数据来源为方舟官网",

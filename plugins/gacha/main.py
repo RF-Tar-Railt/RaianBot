@@ -42,7 +42,11 @@ async def get_sim_gacha(per: int = 2, status: int = 0):
 
 cmd = Alconna(
     "抽卡",
-    Args["count", int, Field(10, completion=lambda: "试试输入 300", unmatch_tips=lambda x: f"预期参数为数字，而不是 {x}\n例如：/抽卡 100")],
+    Args[
+        "count",
+        int,
+        Field(10, completion=lambda: "试试输入 300", unmatch_tips=lambda x: f"预期参数为数字，而不是 {x}\n例如：/抽卡 100"),  # noqa: E501
+    ],
     Option("更新", help_text="卡池更新"),
     meta=CommandMeta("模拟方舟寻访", example="$抽卡 300", extra={"supports": {"mirai", "qqapi"}}),
 )
