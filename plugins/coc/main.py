@@ -218,7 +218,7 @@ async def setcoc_handle(
     if not rule.available:
         async with db.get_session() as session:
             coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.last_value))).one_or_none()
-            rule = coc_rule.rule if coc_rule else 0
+            rule.result = coc_rule.rule if coc_rule else 0
             return await ctx.scene.send_message(f"当前房规为 {rule}")
     if rule.result > 6 or rule.result < 0:
         return await ctx.scene.send_message("规则错误，规则只能为0-6")

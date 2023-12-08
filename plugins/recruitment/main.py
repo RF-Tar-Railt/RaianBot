@@ -13,7 +13,7 @@ from app.shortcut import accessable, exclusive, picture
 
 cmd = Alconna(
     "公招",
-    Args["tags", MultiVar(str, "*"), Field(completion=lambda: "高资")],
+    Args["tags", MultiVar(str, "*"), Field(completion=lambda: "高资", unmatch_tips=lambda x: f"输入的应该是公招标签，而不是{x}\n例如：/公招 高资")],
     meta=CommandMeta(
         "自助访问 prts 的公招计算器并截图",
         usage="标签之间用空格分隔",
@@ -28,7 +28,7 @@ cmd = Alconna(
 @accessable
 async def recruit(ctx: Context, res: Arparma, pw: PlaywrightService, bot: RaianBotService):
     if not res.all_matched_args.get("tags"):
-        return await ctx.scene.send_message("缺失标签\n试试比如 公招 高资")
+        return await ctx.scene.send_message("缺失标签\n试试比如 /公招 高资")
     tags: tuple[str, ...] = res.all_matched_args["tags"]
     await ctx.scene.send_message("正在获取中，请稍等。。。")
     # Click html

@@ -51,25 +51,12 @@ async def report(event: ExceptionThrown, avilla: Avilla):
     with StringIO() as fp:
         traceback.print_tb(event.exception.__traceback__, file=fp)
         tb = fp.getvalue()
-    msg = f"""\
-## 异常事件：
-
-`{str(event.event.__repr__())}`
-
-## 异常类型：
-
-`{type(event.exception)}`
-
-## 异常内容：
-
-{str(event.exception)}
-
-## 异常追踪：
-
-```py
-{tb}
-```
-"""
+    data = {
+        "event": str(event.event.__repr__()),
+        "exctype": str(type(event.exception)),
+        "exc": str(event.exception),
+        "traceback": tb,
+    }
     masters = {conf.master_id for conf in bot.config.bots}
     if api:
         masters = {f"{conf.master_id}@qq.com" for conf in bot.config.bots}
@@ -78,15 +65,29 @@ async def report(event: ExceptionThrown, avilla: Avilla):
                 "notice@dunnoaskrf.top",
                 [f"{master}@qq.com" for master in masters],
                 "Exception Occur",
-                "27228",
-                {
-                    "event": str(event.event.__repr__()),
-                    "exctype": str(type(event.exception)),
-                    "exc": str(event.exception),
-                    "traceback": tb,
-                },
+                27228,
+                data,
             )
-    img = await md2img(msg, 1500)
+    template = """\
+## 异常事件：
+
+`{event}`
+
+## 异常类型：
+
+`{exctype}`
+
+## 异常内容：
+
+{exc}
+
+## 异常追踪：
+
+```py
+{traceback}
+```
+"""
+    img = await md2img(template.format_map(data), 1500)
     if not (accounts := avilla.get_accounts(account_type=ElizabethAccount)):
         return
     for account in accounts:

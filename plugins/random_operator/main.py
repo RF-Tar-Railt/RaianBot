@@ -16,7 +16,7 @@ from app.shortcut import accessable, exclusive, is_qqapi_group, picture, record
 @alcommand(
     Alconna(
         "测试干员",
-        Args["name?#你的代号", [str, Notice], Field(completion=lambda: "你的代号是?")],
+        Args["name?#你的代号", [str, Notice], Field(completion=lambda: "你的代号是?", unmatch_tips=lambda x: f"输入的应该是名字或者 @提及某人，而不是 {x}")],
         meta=CommandMeta(
             "依据名字测试你会是什么干员",
             example="$测试干员 海猫",
@@ -39,7 +39,7 @@ async def ro(ctx: Context, name: Match[Union[str, Notice]], bot: RaianBotService
             text = RandomOperator().generate(_name.display or (await ctx.client.pull(Nick)).nickname)
     else:
         if is_qqapi_group(ctx):
-            await ctx.scene.send_message("请输入测试干员的名称：")
+            await ctx.scene.send_message("请输入测试干员的名称：\n如 [回复机器人] XXX")
 
             async def waiter(waiter_ctx: Context, message: MessageChain):
                 ans = str(message.exclude(Notice)).lstrip()

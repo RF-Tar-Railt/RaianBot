@@ -24,6 +24,7 @@ cmd_help = Alconna(
         Field(
             -1,
             completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands()))}",
+            unmatch_tips=lambda x: f"预期输入为某个命令的id或者名称，而不是 {x}\n例如：/帮助 0"
         ),
     ],
     meta=CommandMeta("查看帮助", extra={"supports": {"mirai", "qqapi"}}),

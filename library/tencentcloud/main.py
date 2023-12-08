@@ -56,7 +56,7 @@ class TencentCloudApi:
         addr: str,
         target: list[str],
         subject: str,
-        template_id: str,
+        template_id: int,
         template_data: dict[str, str],
         name: str | None = None,
     ):

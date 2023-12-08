@@ -40,7 +40,7 @@ class WeiboAPI:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
 
-    async def _call(self, params: dict, timeout: int = 10) -> dict[str, Any] | None:
+    async def _call(self, params: dict, timeout: int = 10) -> dict[str, Any]:
         base_url = "https://m.weibo.cn/api/container/getIndex?"
         headers = {
             "Host": "m.weibo.cn",
@@ -54,7 +54,6 @@ class WeiboAPI:
             try:
                 data = await resp.json(loads=ujson.loads)
             except aiohttp.ContentTypeError as e:
-                print(await resp.text(), e)
                 raise RespDataError(f"Error: {await resp.text()}\n{params}") from e
             if not data or data.get("ok") != 1:
                 raise RespDataError(f"Error: {data}\n{params}")
@@ -73,14 +72,11 @@ class WeiboAPI:
         uid: int,
         save: bool = False,
         cache: bool = True,
-    ) -> WeiboUser | None:
+    ) -> WeiboUser:
         if cache and str(uid) in self.data.followers:
             return self.data.followers[str(uid)]
         params = {"type": "uid", "value": uid}
-        try:
-            d_data = await self._call(params)
-        except (WeiboError, asyncio.TimeoutError):
-            return
+        d_data = await self._call(params)
         user = WeiboUser(
             id=uid,
             name=d_data["userInfo"]["screen_name"],
@@ -105,7 +101,7 @@ class WeiboAPI:
         index: int = 0,
         save: bool = False,
         cache: bool = True,
-    ) -> WeiboUser | None:
+    ) -> WeiboUser:
         index = max(index, 0)
         return await self.get_profile((await self.search_users(name))[index], save, cache)
 
@@ -117,7 +113,7 @@ class WeiboAPI:
         return res
 
     def _handler_dynamic(self, data: dict) -> WeiboDynamic:
-        text: str = Query(data["text"]).text(squash_space=False) + "\n"
+        text: str = Query(data["text"]).text(squash_space=False) + "\n"  # type: ignore
         dynamic = WeiboDynamic(bid=data["bid"], text=text)
         if len(data["pic_ids"]) > 0:
             pics = data["pics"]
@@ -138,11 +134,9 @@ class WeiboAPI:
         page: int = 1,
         save: bool = False,
         cache: bool = False,
-    ) -> WeiboDynamic | None:
+    ) -> WeiboDynamic:
         if not isinstance(target, WeiboUser):
             target = await self.get_profile(target, save, cache)
-            if not target:
-                return
         params = {
             "type": "uid",
             "value": target.id,
@@ -151,7 +145,7 @@ class WeiboAPI:
         }
         d_data = await self._call(params)
         if index > len(d_data["cards"]) - 1:
-            return
+            raise WeiboError("Index out of range")
         if index < 0:
             if len(d_data["cards"]) > 1:
                 ids = [int(i["mblog"]["id"]) for i in d_data["cards"] if i["card_type"] == 9]

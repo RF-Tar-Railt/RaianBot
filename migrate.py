@@ -5,8 +5,8 @@ from pathlib import Path
 import ujson
 from loguru import logger
 
-from app.config import SqliteDatabaseConfig, load_config
-from app.database import Base, Group, User, get_engine_url
+from app.config import load_config
+from app.database import Base, Group, User
 from app.database.manager import DatabaseManager
 from app.logger import setup_logger
 from plugins.coc.model import CocRule
@@ -29,11 +29,11 @@ config = load_config(root_dir=str(config_dir_root))
 setup_logger(config.log_level)
 
 
-if isinstance(config.database, SqliteDatabaseConfig):
+if config.database.type == "sqlite":
     config.database.name = f"/{config.data_dir}/{config.database.name}"
     if not config.database.name.endswith(".db"):
         config.database.name = f"{config.database.name}.db"
-db = DatabaseManager(get_engine_url(**config.database.dict()), {"echo": None, "pool_pre_ping": True})
+db = DatabaseManager(config.database.url, {"echo": None, "pool_pre_ping": True})
 
 
 async def main():

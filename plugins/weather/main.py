@@ -4,7 +4,7 @@ from pathlib import Path
 from secrets import token_hex
 
 import ujson
-from arclet.alconna import Alconna, Args, CommandMeta
+from arclet.alconna import Alconna, Args, CommandMeta, Field
 from arclet.alconna.graia import Match, alcommand
 from avilla.core import Context, Notice, Picture, RawResource
 from avilla.qqapi.exception import ActionFailed
@@ -24,7 +24,7 @@ config = bot.config.plugin.get(WeatherConfig)
 
 cmd = Alconna(
     "天气",
-    Args["city?", str],
+    Args["city?", str, Field(unmatch_tips=lambda x: f"请输入城市名字，而不是{x}")],
     meta=CommandMeta("查询某个城市的天气", example="$天气 北京\n$北京天气", extra={"supports": {"mirai", "qqapi"}}),
 )
 cmd.shortcut(
@@ -36,9 +36,11 @@ cmd.shortcut(
     },
 )
 
-if config.heweather:
+if config.heweather and bot.config.platform.heweather_api_key and bot.config.platform.heweather_api_type:
     heweather = HeWeather(
-        bot.config.platform.heweather_api_key, bot.config.platform.heweather_api_type, bot.config.proxy
+        bot.config.platform.heweather_api_key, 
+        bot.config.platform.heweather_api_type, 
+        bot.config.proxy
     )
     cache_dir = Path(bot.config.data_dir) / "plugins" / "weather"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -51,7 +53,7 @@ if config.heweather:
         if city.available:
             city_name = city.result
         else:
-            await ctx.scene.send_message("请输入地点名称：")
+            await ctx.scene.send_message("请输入地点名称：\n如 [回复机器人] 北京")
 
             async def waiter(waiter_ctx: Context, message: MessageChain):
                 name = str(message.exclude(Notice)).lstrip()
@@ -101,7 +103,7 @@ else:
         if city.available:
             city_name = city.result
         else:
-            await ctx.scene.send_message("请输入地点名称：")
+            await ctx.scene.send_message("请输入地点名称：\n如 [回复机器人] 北京")
 
             async def waiter(waiter_ctx: Context, message: MessageChain):
                 name = str(message.exclude(Notice)).lstrip()

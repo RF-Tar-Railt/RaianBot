@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from secrets import token_hex
 
-from arclet.alconna import Alconna, Args, CommandMeta, Option
+from arclet.alconna import Alconna, Args, CommandMeta, Option, Field
 from arclet.alconna.graia import Match, alcommand, assign
 from avilla.core import ActionFailed, Avilla, Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
@@ -20,9 +20,9 @@ from .model import SKAutoSignRecord, SKAutoSignResultRecord
 
 alc = Alconna(
     "森空岛签到",
-    Option("绑定", Args["token", str], compact=True),
+    Option("绑定", Args["token", str, Field(unmatch_tips=lambda x: f"请输入你的凭据，而不是{x}")], compact=True),
     Option("解除", compact=True),
-    Option("查询", Args["uid?", str], compact=True),
+    Option("查询", Args["uid?", str, Field(unmatch_tips=lambda x: f"请输入角色uid，而不是{x}")], compact=True),
     Option("方法"),
     meta=CommandMeta(
         "森空岛方舟自动签到",
@@ -98,7 +98,10 @@ async def notice(ctx: Context, db: DatabaseService):
 async def reg(ctx: Context, token: Match[str], db: DatabaseService):
     sender = ctx.client.last_value
     if "content" in token.result:
-        token.result = re.match('.*content(")?:(")?(?P<token>[^{}"]+).*', token.result)["token"]
+        mat = re.match('.*content(")?:(")?(?P<token>[^{}"]+).*', token.result)
+        if not mat:
+            return await ctx.scene.send_message("输入格式有误！")
+        token.result = mat["token"]
     try:
         await bind(token.result)
     except RuntimeError as e:

@@ -3,7 +3,7 @@ import contextlib
 import random
 from secrets import token_hex
 
-from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
+from arclet.alconna import Alconna, Arg, CommandMeta, Field, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from avilla.core import (
     ActionFailed,
@@ -43,10 +43,19 @@ bot = RaianBotService.current()
 
 weibo_fetch = Alconna(
     "微博",
-    Args["user;?#微博用户名称", str, Field(completion=lambda: "比如说, 育碧")]["select#选择第几个用户", int, -1],
+    Arg(
+        "user;?#微博用户名称", 
+        str, 
+        Field(
+            completion=lambda: "比如说, 育碧", 
+            unmatch_tips=lambda x: f"请输入微博用户名称，而不是{x}\n例如: /微博 育碧"
+        )
+    ),
+    Arg("select#选择第几个用户", int, Field(default=-1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
     Option(
         "动态",
-        Args["index#从最前动态排起的第几个动态", int, -1]["page#第几页动态", int, 1],
+        Arg("index#从最前动态排起的第几个动态", int, Field(default=-1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")) + 
+        Arg("page#第几页动态", int, Field(default=1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
         help_text="从微博获取指定用户的动态",
     ),
     Option("关注|增加关注", dest="follow", help_text="增加一位微博动态关注对象"),
@@ -115,13 +124,16 @@ async def get_check(user: str, index: int = 0):
 @exclusive
 async def wget(ctx: Context, user: Match[str], select: Match[int]):
     if not user.available or not user.result:
-        return await ctx.scene.send_message("不对劲。。。")
+        return await ctx.scene.send_message("请指定微博用户名\n例如: /微博 育碧")
     _index = select.result
     count = -1
     profiles = []
-    with contextlib.suppress(asyncio.TimeoutError):
+    try:
         profiles = await api.get_profiles(user.result)
         count = len(profiles)
+    except Exception as e:
+        logger.error(f"WEIBO GET: {e} {type(e)}")
+        return await ctx.scene.send_message(f"获取用户信息发生错误: {e!r}")
     if count <= 0:
         return await ctx.scene.send_message("获取失败啦")
     if count == 1 or 0 <= _index < count:
@@ -189,9 +201,12 @@ async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = Fals
 async def wfetch(
     ctx: Context, user: Match[str], select: Match[int], index: Match[int], page: Match[int], pw: PlaywrightService
 ):
-    prof = await api.get_profile_by_name(user.result, index=select.result, save=False, cache=True)
-    if not (dynamic := await api.get_dynamic(prof, index=index.result, page=page.result)):
-        return await ctx.scene.send_message("获取失败啦")
+    try:
+        prof = await api.get_profile_by_name(user.result, index=select.result, save=False, cache=True)
+        dynamic = await api.get_dynamic(prof, index=index.result, page=page.result)
+    except Exception as e:
+        logger.error(f"WEIBO FETCH: {e} {type(e)}")
+        return await ctx.scene.send_message(f"获取动态发生错误: {e!r}")
 
     nodes = await _handle_dynamic(dynamic, pw)
     try:
@@ -217,7 +232,12 @@ async def wfetch(
 async def wfollow(ctx: Context, user: Match[str], select: Match[int], db: DatabaseService):
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         return await ctx.scene.send_message("该指令对私聊无效果")
-    follower = await api.get_profile_by_name(user.result, index=select.result, save=True)
+    try:
+        follower = await api.get_profile_by_name(user.result, index=select.result, save=True)
+    except Exception as e:
+        logger.error(f"WEIBO FOLLOW: {e} {type(e)}")
+        return await ctx.scene.send_message(f"获取用户信息发生错误: {e!r}")
+
     async with db.get_session() as session:
         rec = (
             await session.scalars(
@@ -242,7 +262,11 @@ async def wfollow(ctx: Context, user: Match[str], select: Match[int], db: Databa
 async def wunfollow(ctx: Context, user: Match[str], select: Match[int], db: DatabaseService):
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         return await ctx.scene.send_message("该指令对私聊无效果")
-    follower = await api.get_profile_by_name(user.result, index=select.result, save=True)
+    try:
+        follower = await api.get_profile_by_name(user.result, index=select.result, save=True)
+    except Exception as e:
+        logger.error(f"WEIBO FOLLOW: {e} {type(e)}")
+        return await ctx.scene.send_message(f"获取用户信息发生错误: {e!r}")
 
     async with db.get_session() as session:
         rec = (
@@ -275,7 +299,8 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
     notice = None
     nodes = []
     for follower in followers:
-        if wp := await api.get_profile(follower.wid, save=False):
+        try:
+            wp = await api.get_profile(follower.wid, save=False)
             nodes.append(
                 Node(
                     name=conf.name,
@@ -293,9 +318,11 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
                     ),
                 )
             )
-        else:
-            notice = "获取信息发生错误，建议稍后再试"
-    await ctx.scene.send_message(Forward(*nodes))
+        except Exception as e:
+            logger.error(f"WEIBO LIST: {e} {type(e)}")
+            notice = f"获取用户信息发生错误: {e!r}"
+    if nodes:
+        await ctx.scene.send_message(Forward(*nodes))
     if notice:
         await ctx.scene.send_message(notice)
 
@@ -315,8 +342,6 @@ async def update(avilla: Avilla):
             followers.add(follower.wid)
         for uid in followers:
             wp = await api.get_profile(int(uid))
-            if not wp:
-                continue
             wp = wp.copy()
             try:
                 if res := await api.update(int(uid)):

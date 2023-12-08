@@ -14,8 +14,8 @@ from .config import MusicConfig
 
 music = Alconna(
     "点歌",
-    Args["name", str, Field(completion=lambda: "比如说, ‘以父之名’")],
-    Args["singer?", str, Field(completion=lambda: "比如说, ‘周杰伦’")],
+    Args["name", str, Field(completion=lambda: "比如说, 以父之名")],
+    Args["singer?", str, Field(completion=lambda: "比如说, 'Talyer Swift'")],
     meta=CommandMeta(
         "在网易云点歌",
         usage="可以指定歌手, 与歌名用空格分开",
