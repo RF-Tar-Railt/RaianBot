@@ -3,6 +3,7 @@ Copy from NoneBot Plugin COC-Dicer
 """
 from .cards import Cards as Cards
 from .deck import draw as draw
+from .deck import deck_list as deck_list
 from .investigator import Investigator as Investigator
 from .pc import coc6 as coc6
 from .pc import coc6d as coc6d

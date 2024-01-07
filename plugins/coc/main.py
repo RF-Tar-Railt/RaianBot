@@ -2,8 +2,8 @@ import re
 from contextlib import suppress
 
 import diro
-from arclet.alconna import Alconna, Args, CommandMeta, Field, namespace
-from arclet.alconna.graia import Match, alcommand
+from arclet.alconna import Alconna, Args, CommandMeta, Field, namespace, Option
+from arclet.alconna.graia import Match, alcommand, assign
 from arclet.alconna.tools import MarkdownTextFormatter
 from avilla.core import Context
 from graia.broadcast.exceptions import PropagationCancelled
@@ -13,7 +13,7 @@ from sqlalchemy import select
 
 from app.database import DatabaseService
 from app.shortcut import accessable, exclusive, record
-from library.dice import coc6, coc6d, coc7, coc7d, dnd, draw, expr, long_insane, rd0, st, temp_insane
+from library.dice import coc6, coc6d, coc7, coc7d, dnd, deck_list, draw, expr, long_insane, rd0, st, temp_insane
 from library.dice.constant import help_sc
 
 from .model import CocRule
@@ -39,6 +39,7 @@ with namespace("coc") as np:
     draw_c = Alconna(
         "draw",
         Args["key#牌堆名称", str, "调查员信息"]["cnt#抽牌数量", int, 1],
+        Option("ls|list", help_text="查看牌堆列表"),
         meta=CommandMeta(
             "抽牌",
             usage="牌堆包括塔罗牌，调查员等",
@@ -80,8 +81,8 @@ with namespace("coc") as np:
             "sf#惩罚值",
             s_or_f,
             Field(
-                unmatch_tips=lambda x: "表达式格式错误，应为 '数字/数字' 或 '骰子表达式/骰子表达式'\n比如 '1d10/1d100'",
-                missing_tips=lambda: "需要判断表达式。\n可以尝试输入 '/sc 1d10/1d100'"
+                unmatch_tips=lambda x: "表达式格式错误，应为 '数字/数字' 或 '骰子表达式/骰子表达式'，比如 '1d10/1d100'",
+                missing_tips=lambda: "需要判断表达式。可以尝试输入 '/sc 1d10/1d100'"
             )
         ],
         Args["san", int, 80],
@@ -145,6 +146,16 @@ async def name_handle(ctx: Context, key: Match[str], cnt: Match[int]):
 
 
 @alcommand(draw_c, post=True, send_error=True)
+@assign("list")
+@record("coc")
+@exclusive
+@accessable
+async def draw_list_handle(ctx: Context):
+    return await ctx.scene.send_message("牌堆列表：\n * " + "\n * ".join(deck_list()))
+
+
+@alcommand(draw_c, post=True, send_error=True)
+@assign("$main")
 @record("coc")
 @exclusive
 @accessable

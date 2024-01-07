@@ -13,7 +13,10 @@ from plugins.coc.model import CocRule
 from plugins.draw.model import DrawRecord
 from plugins.gacha.model import ArkgachaRecord
 from plugins.sign.model import SignRecord
+from plugins.sk_autosign.model import SKAutoSignRecord
 from plugins.weibo.model import WeiboFollower
+
+from sqlalchemy import select
 
 config_dir_root = Path(input("输入当前配置根目录: >>>"))
 if not config_dir_root.exists():
@@ -57,14 +60,19 @@ async def main():
                 users = ujson.load(f)["data"]
 
             for group_id, data in groups.items():
-                group = Group(
-                    id=group_id,
-                    platform="qq",
-                    accounts=[f"land(qq).account({dr.name})"],
-                    in_blacklist=data["in_blacklist"],
-                    disabled=data["disabled"],
-                )
-                await session.merge(group)
+                group = (await session.scalars(select(Group).where(Group.id == group_id))).one_or_none()
+                if not group:
+                    group = Group(
+                        id=group_id,
+                        platform="qq",
+                        accounts=[f"land(qq).account({dr.name})"],
+                        in_blacklist=data["in_blacklist"],
+                        disabled=data["disabled"],
+                    )
+                    await session.merge(group)
+                else:
+                    group.accounts.append(f"land(qq).account({dr.name})")
+                    await session.merge(group)
                 logger.debug(f"migrating group {group_id} ...")
                 if "weibo_followers" in data["additional"]:
                     for wid in data["additional"]["weibo_followers"][0]:
@@ -76,8 +84,13 @@ async def main():
                 await session.commit()
 
             for user_id, data in users.items():
-                user = User(id=user_id, trust=data["trust"])
-                await session.merge(user)
+                user = (await session.scalars(select(User).where(User.id == user_id))).one_or_none()
+                if not user:
+                    user = User(id=user_id, trust=data["trust"])
+                    await session.merge(user)
+                else:
+                    user.trust = data["trust"]
+                    await session.merge(user)
                 logger.debug(f"migrating user {user_id} ...")
                 now = datetime.now()
                 now = now.replace(day=now.day - 1, month=10)
@@ -99,6 +112,22 @@ async def main():
                     await session.merge(gacha)
                 await session.commit()
 
+        plugins = cache_dir_root / "plugins"
+
+        if (plugins / "skautosign.json").exists():
+            with (plugins / "skautosign.json").open(encoding="utf-8") as f:
+                table = ujson.load(f)
+                for user_id, data in table.items():
+                    if "origin" not in data:
+                        continue
+                    user = (await session.scalars(select(User).where(User.id == user_id))).one_or_none()
+                    if not user:
+                        user = User(id=user_id, trust=0)
+                        await session.merge(user)
+                    logger.debug(f"migrating sk_auto_sign data of user {user_id} ...")
+                    record = SKAutoSignRecord(id=user.id, token=data["origin"])
+                    await session.merge(record)
+                    await session.commit()
     await db.stop()
 
 

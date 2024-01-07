@@ -36,7 +36,7 @@ cmd.shortcut(
     },
 )
 
-if config.heweather and bot.config.platform.heweather_api_key and bot.config.platform.heweather_api_type:
+if config.heweather and bot.config.platform.heweather_api_key and bot.config.platform.heweather_api_type is not None:
     heweather = HeWeather(
         bot.config.platform.heweather_api_key, bot.config.platform.heweather_api_type, bot.config.proxy
     )

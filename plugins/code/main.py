@@ -99,8 +99,8 @@ async def execc(ctx: Context, result: Arparma, bot: RaianBotService, pw: Playwri
                     return await ctx.scene.send_message(picture(url, ctx))
                 except ActionFailed:
                     return await ctx.scene.send_message(f"{output}: {code_res}")
-        _out = _stdout.getvalue()
-        img = await text2img(f"output: {_out}")
+        _out = _stdout.getvalue().replace("<", "&lt;").replace(">", "&gt;")
+        img = await text2img(f"output:\n{_out}")
         try:
             return await ctx.scene.send_message(Picture(RawResource(img)))
         except Exception:

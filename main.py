@@ -81,8 +81,11 @@ for protocol_type, configs in protocols.items():
 
 @avilla.listen(AlconnaOutputMessage)
 async def send_handler(output: str, otype: str, ctx: Context):
+    bcc.listeners[1].oplog.clear()
     # length = (output.count("\n") + 5) * 16
     if otype in ("shortcut", "error"):
+        if ctx.scene.follows("::group"):
+            output = f"\n{output}"
         return await ctx.scene.send_message(output)
     if otype == "completion":
         output = (
@@ -92,6 +95,8 @@ async def send_handler(output: str, otype: str, ctx: Context):
             .replace("&#123;", "{")
             .replace("&#125;", "}")
         )
+        if ctx.scene.follows("::group"):
+            output = f"\n{output}"
         return await ctx.scene.send_message(output)
     if not output.startswith("#"):
         output = f"# {output}"
@@ -111,13 +116,14 @@ async def send_handler(output: str, otype: str, ctx: Context):
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:
             output = (
-                output.replace("&lt;", "(")
-                .replace("&gt;", ")")
-                .replace(">", ")")
+                output.replace("&lt;", "<")
+                .replace("&gt;", ">")
                 .replace("\n\n", "\n")
                 .replace("##", "#")
                 .replace("**", "")
             )
+            if ctx.scene.follows("::group"):
+                output = f"\n{output}"
             return await ctx.scene.send_message(output)
 
 
