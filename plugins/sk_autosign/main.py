@@ -66,7 +66,7 @@ bot = RaianBotService.current()
 @exclusive
 @accessable
 async def notice(ctx: Context, db: DatabaseService):
-    sender = ctx.client.last_value
+    sender = ctx.client.user
     async with db.get_session() as session:
         _record = (await session.scalars(select(SKAutoSignRecord).where(SKAutoSignRecord.id == sender))).one_or_none()
         if not _record:
@@ -96,7 +96,7 @@ async def notice(ctx: Context, db: DatabaseService):
 @exclusive
 @accessable
 async def reg(ctx: Context, token: Match[str], db: DatabaseService):
-    sender = ctx.client.last_value
+    sender = ctx.client.user
     if "content" in token.result:
         mat = re.match('.*content(")?:(")?(?P<token>[^{}"]+).*', token.result)
         if not mat:
@@ -119,7 +119,7 @@ async def reg(ctx: Context, token: Match[str], db: DatabaseService):
 @exclusive
 @accessable
 async def rm(ctx: Context, db: DatabaseService):
-    sender = ctx.client.last_value
+    sender = ctx.client.user
     async with db.get_session() as session:
         _record = (await session.scalars(select(SKAutoSignRecord).where(SKAutoSignRecord.id == sender))).one_or_none()
         if not _record:
@@ -139,7 +139,7 @@ async def rm(ctx: Context, db: DatabaseService):
 @exclusive
 @accessable
 async def check(ctx: Context, uid: Match[str], db: DatabaseService):
-    sender = ctx.client.last_value
+    sender = ctx.client.user
     async with db.get_session() as session:
         _record = (await session.scalars(select(SKAutoSignRecord).where(SKAutoSignRecord.id == sender))).one_or_none()
         if not _record:

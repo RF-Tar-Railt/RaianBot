@@ -25,6 +25,8 @@ dependencies = [
     "Jinja2>=3.1.2",
     "psutil>=5.9.6",
     "humanize>=4.9.0",
+    "qrcode>=7.4.2",
+    "arclet-alconna>=1.7.42",
 ]
 requires-python = ">=3.9"
 readme = "README.md"

@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 import ujson
-from arclet.alconna.graia.dispatcher import result_cache
+from arclet.alconna.graia.dispatcher import result_cache, output_cache
 from avilla.core import Context, Message, MessageChain, MessageReceived, Notice, Picture, Text
 from avilla.elizabeth.account import ElizabethAccount
 from graia.broadcast.exceptions import PropagationCancelled
@@ -106,9 +106,12 @@ async def smatch(
     aio: AiohttpClientService,
 ):
     """依据语料进行匹配回复"""
-    mid = f"{msg.id}@{ctx.account}"
+    mid = f"{msg.id}@{ctx.account.route}"
     for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
+            raise PropagationCancelled
+    for cache in output_cache.values():
+        if mid in cache:
             raise PropagationCancelled
     content = str(message.include(Text)).lstrip()
     if not content.startswith(conf.name):
@@ -173,9 +176,12 @@ async def aitalk(
     aio: AiohttpClientService,
 ):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
-    mid = f"{msg.id}@{ctx.account}"
+    mid = f"{msg.id}@{ctx.account.route}"
     for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
+            raise PropagationCancelled
+    for cache in output_cache.values():
+        if mid in cache:
             raise PropagationCancelled
     content = str(message.include(Text)).lstrip()
     if not content:

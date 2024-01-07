@@ -22,10 +22,10 @@ async def _init_g(ctx: Context, db: DatabaseService):
         return
     account = f"{'.'.join(f'{k}({v})' for k, v in ctx.account.route.items())}"
     async with db.get_session() as session:
-        group = (await session.scalars(select(Group).where(Group.id == ctx.scene.last_value))).one_or_none()
+        group = (await session.scalars(select(Group).where(Group.id == ctx.scene.channel))).one_or_none()
         if not group:
             group = Group(
-                id=ctx.scene.last_value,
+                id=ctx.scene.channel,
                 platform="qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi",
                 accounts=[account],
             )
@@ -44,7 +44,7 @@ async def _remove(ctx: Context, db: DatabaseService):
         return
     account = f"{'.'.join(f'{k}({v})' for k, v in ctx.account.route.items())}"
     async with db.get_session() as session:
-        group = (await session.scalars(select(Group).where(Group.id == ctx.scene.last_value))).one_or_none()
+        group = (await session.scalars(select(Group).where(Group.id == ctx.scene.channel))).one_or_none()
         if group:
             if account in group.accounts:
                 group.accounts.remove(account)

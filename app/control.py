@@ -31,11 +31,11 @@ def require_admin(only: bool = False, __record: Any = None):
             private = "friend" in ctx.scene.pattern
         id_ = f"{id(event)}"
         cache = serv.cache.setdefault("$admin", {})
-        if ctx.client.last_value in [bot.master_id, bot.account]:
+        if ctx.client.user in [bot.master_id, bot.account]:
             serv.cache.pop("$admin", None)
             return True
         pri = await ctx.client.pull(Privilege)
-        if not only and (pri.available or ctx.client.last_value in bot.admins):
+        if not only and (pri.available or ctx.client.user in bot.admins):
             serv.cache.pop("$admin", None)
             return True
         text = "权限不足！" if private else [Notice(ctx.client), Text("\n权限不足！")]
@@ -55,7 +55,7 @@ def require_function(name: str):
         if name not in bot.functions:
             return True
         async with db.get_session() as session:
-            group = (await session.scalars(select(Group).where(Group.id == ctx.scene.last_value))).one_or_none()
+            group = (await session.scalars(select(Group).where(Group.id == ctx.scene.channel))).one_or_none()
             if group:
                 if name in group.disabled:
                     raise ExecutionStop
@@ -94,7 +94,7 @@ def check_exclusive():
                 group = (
                     await session.scalars(
                         select(Group)
-                        .where(Group.id == ctx.scene.last_key)
+                        .where(Group.id == ctx.scene.channel)
                         .where(Group.platform == ("qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi"))
                     )
                 ).one_or_none()

@@ -61,7 +61,7 @@ alc.shortcut("方舟卡池更新", {"command": "抽卡查询 更新", "prefix": 
 @accessable
 async def query(ctx: Context, count: Match[int]):
     try:
-        querier.database.read_token_from_db(f"{ctx.client.last_key}")
+        querier.database.read_token_from_db(f"{ctx.client.user}")
     except (AssertionError, RuntimeError):
         img = await md2img(
             """\
@@ -87,7 +87,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
             except ActionFailed:
                 return await ctx.scene.send_message(picture(url, ctx))
     try:
-        warn, file = await querier.user_analysis(f"{ctx.client.last_key}", count.result)
+        warn, file = await querier.user_analysis(f"{ctx.client.user}", count.result)
         if warn:
             await ctx.scene.send_message(warn)
         try:
@@ -130,7 +130,7 @@ async def bind(ctx: Context, token: Match[str]):
             return await ctx.scene.send_message("凭据输入格式有误！")
         token.result = mat["token"]
     try:
-        res = querier.user_token_save(token.result, f"{ctx.client.last_value}")
+        res = querier.user_token_save(token.result, f"{ctx.client.user}")
     except RuntimeError as e:
         return await ctx.scene.send_message(str(e))
     return await ctx.scene.send_message(res)

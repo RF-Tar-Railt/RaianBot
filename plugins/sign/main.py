@@ -31,9 +31,9 @@ async def sign_up(ctx: Context, msg: Message, db: DatabaseService, config: SignC
     """在机器人处登记信息"""
     today = datetime.now()
     async with db.get_session() as session:
-        user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
+        user = (await session.scalars(select(User).where(User.id == ctx.client.user))).one_or_none()
         if not user:
-            user = User(id=ctx.client.last_value, trust=1)
+            user = User(id=ctx.client.user, trust=1)
             session.add(user)
             sign = SignRecord(id=user.id, date=today, count=1)
             session.add(sign)

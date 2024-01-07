@@ -46,7 +46,7 @@ async def draw(ctx: Context, msg: Message, db: DatabaseService):
     today = datetime.now()
     async with db.get_session() as session:
         draw_record = (
-            await session.scalars(select(DrawRecord).where(DrawRecord.id == ctx.client.last_value))
+            await session.scalars(select(DrawRecord).where(DrawRecord.id == ctx.client.user))
         ).one_or_none()
         if draw_record:
             if draw_record.date.day == today.day and draw_record.date.month == today.month:
@@ -59,7 +59,7 @@ async def draw(ctx: Context, msg: Message, db: DatabaseService):
             await session.commit()
             await session.refresh(draw_record)
         else:
-            user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
+            user = (await session.scalars(select(User).where(User.id == ctx.client.user))).one_or_none()
             if not user:
                 if is_qqapi_group(ctx):
                     return await ctx.scene.send_message("您还未找我签到~")
@@ -89,7 +89,7 @@ async def draw(ctx: Context, msg: Message, db: DatabaseService):
 @accessable
 async def undraw(ctx: Context, msg: Message, db: DatabaseService):
     async with db.get_session() as session:
-        user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
+        user = (await session.scalars(select(User).where(User.id == ctx.client.user))).one_or_none()
         if not user:
             if is_qqapi_group(ctx):
                 return await ctx.scene.send_message("您还未找我签到~")

@@ -175,7 +175,7 @@ async def ra_handle(
     db: DatabaseService,
 ):
     async with db.get_session() as session:
-        coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.last_value))).one_or_none()
+        coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.channel))).one_or_none()
         rule = coc_rule.rule if coc_rule else 0
     if attr.result.isdigit():
         name = "快速"
@@ -207,7 +207,7 @@ async def rd_handle(
 ):
     """coc骰娘功能"""
     async with db.get_session() as session:
-        coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.last_value))).one_or_none()
+        coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.channel))).one_or_none()
         rule = coc_rule.rule if coc_rule else 0
     num = exp.result
     with suppress(ValueError):
@@ -228,13 +228,13 @@ async def setcoc_handle(
         return await ctx.scene.send_message("该指令对私聊无效果")
     if not rule.available:
         async with db.get_session() as session:
-            coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.last_value))).one_or_none()
+            coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.channel))).one_or_none()
             rule.result = coc_rule.rule if coc_rule else 0
             return await ctx.scene.send_message(f"当前房规为 {rule}")
     if rule.result > 6 or rule.result < 0:
         return await ctx.scene.send_message("规则错误，规则只能为0-6")
     async with db.get_session() as session:
-        coc_rule = CocRule(id=ctx.scene.last_value, rule=rule.result)
+        coc_rule = CocRule(id=ctx.scene.channel, rule=rule.result)
         await session.merge(coc_rule)
         await session.commit()
         return await ctx.scene.send_message("设置成功")

@@ -16,7 +16,7 @@ GITHUB_RAW_LINK = "https://raw.githubusercontent.com/ClosureTalk/closuretalk.git
 class ArknightsClosureStore:
     characters: set[ClosureCharacter]
     session: dict[str, ClosureChatArea]
-    avatars: dict[str, dict[int, str]]
+    avatars: dict[str, dict[str, str]]
 
     def __init__(self, resource_path: str | None = None):
         if resource_path:
@@ -48,7 +48,7 @@ class ArknightsClosureStore:
         self.avatars.pop(field, None)
         return self.session.pop(field, None)
 
-    def add_char(self, field: str, uid: int, name: str):
+    def add_char(self, field: str, uid: str, name: str):
         if field not in self.session:
             raise SessionNotExist("[ClosureTalk] 会话未存在")
         split = name.split("#")
@@ -68,7 +68,7 @@ class ArknightsClosureStore:
             )
             return character
 
-    def add_content(self, content: str, field: str, uid: int):
+    def add_content(self, content: str, field: str, uid: str):
         if field not in self.session:
             raise SessionNotExist("[ClosureTalk] 会话未存在")
         if uid not in self.avatars[field]:
@@ -102,7 +102,7 @@ class ArknightsClosureStore:
             raise SessionNotExist("[ClosureTalk] 会话未存在")
         return self.session[field].to_html()
 
-    def download_resource(self):
+    def download_resource(self, proxy: str | None = None):
         # https://github.com/ClosureTalk/closuretalk.github.io/raw/master/resources/ak/char.json
         char_path = self.base_path / "characters"
         char_path.mkdir(exist_ok=True, parents=True)
@@ -116,8 +116,8 @@ class ArknightsClosureStore:
                     resp = httpx.get(
                         GITHUB_RAW_LINK.format(path=f"resources/ak/characters/{quote(image)}.webp"),
                         proxies={
-                            "http://": "http://127.0.0.1:7890",
-                            "https://": "http://127.0.0.1:7890",
+                            "http://": proxy,
+                            "https://": proxy,
                         },
                         verify=False,
                     )

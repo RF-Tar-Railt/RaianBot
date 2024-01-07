@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:aa4878a5bb25274cc785fbcabfbdbfa846c27e7eb75ab9cf3ea15b2e2b4ead09"
+content_hash = "sha256:34fcc2952893e003a205f527f265bda96631b2e77129cadef3ee87a74419abfb"
 
 [[package]]
 name = "aiohttp"
@@ -124,7 +124,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.38"
+version = "1.7.42"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -133,32 +133,32 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.38-py3-none-any.whl", hash = "sha256:e2248605bb7425c69a9cbe1e5f797d50945f30f054aaa9af73a237d8307d3432"},
-    {file = "arclet_alconna-1.7.38.tar.gz", hash = "sha256:90af6498993e7bc21223259758a021d811329b341a9add7868b9497705af050b"},
+    {file = "arclet_alconna-1.7.42-py3-none-any.whl", hash = "sha256:fa78944121d4afa4e2c0247a98967ddb1e76cf63b94c8c3f4f393c52f6d23e75"},
+    {file = "arclet_alconna-1.7.42.tar.gz", hash = "sha256:a5a1cca37d0c3d58607ee22485e636fa0b01d40eb43194e542b2c3d6a5d2e70b"},
 ]
 
 [[package]]
 name = "arclet-alconna-avilla"
-version = "0.17.1"
+version = "0.17.2"
 requires_python = ">=3.8"
 summary = "Support Alconna to GraiaProject/Avilla"
 dependencies = [
-    "arclet-alconna-graia<0.18.0,>=0.17.1",
-    "avilla-core>=1.0.0a16",
+    "arclet-alconna-graia<0.18.0,>=0.17.2",
+    "avilla-core>=1.0.0a20",
 ]
 files = [
-    {file = "arclet_alconna_avilla-0.17.1-py3-none-any.whl", hash = "sha256:e44d110517efdaa398f27311dc1d402cc81b41df5c19f01078ac58264a25b3e8"},
-    {file = "arclet_alconna_avilla-0.17.1.tar.gz", hash = "sha256:ab7c77cd677f1fad9bda2b96dd2bf92cdb268f793dd2d691efc10a753d5b62bc"},
+    {file = "arclet_alconna_avilla-0.17.2-py3-none-any.whl", hash = "sha256:f8d3a9b56750d8ba531ab5fdebf9a25e6dbc61fa047516b77ddca264acf2d8c0"},
+    {file = "arclet_alconna_avilla-0.17.2.tar.gz", hash = "sha256:78c18823145eb50343859088044bfc010bad645b3e3dc9b64430fcef32055c1e"},
 ]
 
 [[package]]
 name = "arclet-alconna-graia"
-version = "0.17.1"
+version = "0.17.2"
 requires_python = ">=3.8"
 summary = "Support Alconna to GraiaProject"
 dependencies = [
-    "arclet-alconna-tools<0.7.0,>=0.6.5",
-    "arclet-alconna<2.0.0,>=1.7.33",
+    "arclet-alconna-tools<0.7.0,>=0.6.10",
+    "arclet-alconna<2.0.0,>=1.7.42",
     "creart>=0.3.0",
     "graia-amnesia>=0.5.0",
     "graia-broadcast>=0.18.2",
@@ -168,22 +168,22 @@ dependencies = [
     "tarina>=0.3.3",
 ]
 files = [
-    {file = "arclet_alconna_graia-0.17.1-py3-none-any.whl", hash = "sha256:9b0f70114dcb481c749243b249d26b7899e9fb3396703577484f06fc044030ea"},
-    {file = "arclet_alconna_graia-0.17.1.tar.gz", hash = "sha256:79c0656b3a03870c3960b55716fa24594de9b3aa4ae5ebbd3911403b0bbc2efe"},
+    {file = "arclet_alconna_graia-0.17.2-py3-none-any.whl", hash = "sha256:3a4f159a3c882d86269fdc54ac9388125a5750a5d2baa374d47d4a75fc9ff32d"},
+    {file = "arclet_alconna_graia-0.17.2.tar.gz", hash = "sha256:d359f15bdfe5e96839707346158adf04cf28f214baf5c5a8c1374c26e2826d4f"},
 ]
 
 [[package]]
 name = "arclet-alconna-tools"
-version = "0.6.8"
+version = "0.6.10"
 requires_python = ">=3.8"
 summary = "Builtin Tools for Alconna"
 dependencies = [
-    "arclet-alconna>=1.7.33",
+    "arclet-alconna>=1.7.39",
     "nepattern>=0.5.15",
 ]
 files = [
-    {file = "arclet-alconna-tools-0.6.8.tar.gz", hash = "sha256:a36ddc9c311cae3e1d9df0d6b11eb8d69c57304bbca744dc2c9532e53093cc6f"},
-    {file = "arclet_alconna_tools-0.6.8-py3-none-any.whl", hash = "sha256:eff5254e19b3fb24222164f419302f5f8849b8c14ddf8d96199747adc1916a13"},
+    {file = "arclet-alconna-tools-0.6.10.tar.gz", hash = "sha256:655e0b8ea76e6454dede4129513c3f40c38aeb60054139c2db2f2fa6f7c7c995"},
+    {file = "arclet_alconna_tools-0.6.10-py3-none-any.whl", hash = "sha256:21d7676d2f110f78d6570ad9f7e7f2ffd10bd2ec9bc502deb9a3cb4ce3fee8c0"},
 ]
 
 [[package]]
@@ -1586,6 +1586,15 @@ files = [
 ]
 
 [[package]]
+name = "pypng"
+version = "0.20220715.0"
+summary = "Pure Python library for saving and loading PNG images"
+files = [
+    {file = "pypng-0.20220715.0-py3-none-any.whl", hash = "sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c"},
+    {file = "pypng-0.20220715.0.tar.gz", hash = "sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1"},
+]
+
+[[package]]
 name = "pyquery"
 version = "2.0.0"
 summary = "A jquery-like library for python"
@@ -1648,6 +1657,21 @@ files = [
     {file = "PyYAML-6.0.1-cp39-cp39-win32.whl", hash = "sha256:faca3bdcf85b2fc05d06ff3fbc1f83e1391b3e724afa3feba7d13eeab355484c"},
     {file = "PyYAML-6.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:510c9deebc5c0225e8c96813043e62b680ba2f9c50a08d3724c7f28a747d1486"},
     {file = "PyYAML-6.0.1.tar.gz", hash = "sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43"},
+]
+
+[[package]]
+name = "qrcode"
+version = "7.4.2"
+requires_python = ">=3.7"
+summary = "QR Code image generator"
+dependencies = [
+    "colorama; platform_system == \"Windows\"",
+    "pypng",
+    "typing-extensions",
+]
+files = [
+    {file = "qrcode-7.4.2-py3-none-any.whl", hash = "sha256:581dca7a029bcb2deef5d01068e39093e80ef00b4a61098a2182eac59d01643a"},
+    {file = "qrcode-7.4.2.tar.gz", hash = "sha256:9dd969454827e127dbd93696b20747239e6d540e082937c90f14ac95b30f5845"},
 ]
 
 [[package]]

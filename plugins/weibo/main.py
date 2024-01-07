@@ -238,13 +238,13 @@ async def wfollow(ctx: Context, user: Match[str], select: Match[int], db: Databa
         rec = (
             await session.scalars(
                 Select(WeiboFollower)
-                .where(WeiboFollower.id == ctx.scene.last_value)
+                .where(WeiboFollower.id == ctx.scene.channel)
                 .where(WeiboFollower.wid == int(follower.id))
             )
         ).one_or_none()
         if rec:
             return await ctx.scene.send_message(f"该群已关注 {follower.name}！请不要重复关注")
-        session.add(WeiboFollower(id=ctx.scene.last_value, wid=int(follower.id)))
+        session.add(WeiboFollower(id=ctx.scene.channel, wid=int(follower.id)))
         await session.commit()
         return await ctx.scene.send_message(f"关注 {follower.name} 成功！")
 
@@ -268,7 +268,7 @@ async def wunfollow(ctx: Context, user: Match[str], select: Match[int], db: Data
         rec = (
             await session.scalars(
                 Select(WeiboFollower)
-                .where(WeiboFollower.id == ctx.scene.last_value)
+                .where(WeiboFollower.id == ctx.scene.channel)
                 .where(WeiboFollower.wid == int(follower.id))
             )
         ).one_or_none()
@@ -289,7 +289,7 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         return await ctx.scene.send_message("该指令对私聊无效果")
     async with db.get_session() as session:
-        followers = (await session.scalars(Select(WeiboFollower).where(WeiboFollower.id == ctx.scene.last_key))).all()
+        followers = (await session.scalars(Select(WeiboFollower).where(WeiboFollower.id == ctx.scene.channel))).all()
         if not followers:
             return await ctx.scene.send_message("当前群组不存在微博关注对象")
     notice = None

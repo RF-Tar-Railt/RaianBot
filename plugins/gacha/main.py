@@ -91,7 +91,7 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
     count_ = min(max(count.result, 1), 300)
     async with db.get_session() as session:
         proba = (
-            await session.scalars(select(ArkgachaRecord).where(ArkgachaRecord.id == ctx.client.last_value))
+            await session.scalars(select(ArkgachaRecord).where(ArkgachaRecord.id == ctx.client.user))
         ).one_or_none()
 
         if proba:
@@ -102,7 +102,7 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
             proba.statis = guser.six_statis
             await session.commit()
         else:
-            user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
+            user = (await session.scalars(select(User).where(User.id == ctx.client.user))).one_or_none()
             if user:
                 guser = GachaUser(2, 0)
                 result = gacha.gacha(guser, count_)
@@ -165,7 +165,7 @@ async def simulate(ctx: Context, db: DatabaseService):
 
     async with db.get_session() as session:
         proba = (
-            await session.scalars(select(ArkgachaRecord).where(ArkgachaRecord.id == ctx.client.last_value))
+            await session.scalars(select(ArkgachaRecord).where(ArkgachaRecord.id == ctx.client.user))
         ).one_or_none()
 
         if proba:
@@ -176,7 +176,7 @@ async def simulate(ctx: Context, db: DatabaseService):
             proba.statis = guser.six_statis
             await session.commit()
         else:
-            user = (await session.scalars(select(User).where(User.id == ctx.client.last_value))).one_or_none()
+            user = (await session.scalars(select(User).where(User.id == ctx.client.user))).one_or_none()
             if user:
                 guser = GachaUser(2, 0)
                 result = gacha.gacha(guser, 10)
