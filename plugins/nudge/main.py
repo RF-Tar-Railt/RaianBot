@@ -7,9 +7,9 @@ from avilla.core import Context, RawResource
 from avilla.core.elements import Notice, Picture
 from avilla.qqapi.exception import ActionFailed
 from avilla.standard.core.activity import ActivityTrigged
+from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.saya.builtins.broadcast.shortcut import listen
 
-from app.client import AiohttpClientService
 from app.core import RaianBotService
 from app.shortcut import accessable, exclusive, picture, record
 from library.petpet import generate

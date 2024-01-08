@@ -7,10 +7,10 @@ import ujson
 from arclet.alconna.graia.dispatcher import output_cache, result_cache
 from avilla.core import Context, Message, MessageChain, MessageReceived, Notice, Picture, Text
 from avilla.elizabeth.account import ElizabethAccount
+from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 
-from app.client import AiohttpClientService
 from app.config import BotConfig
 from app.core import RaianBotService
 from app.shortcut import accessable, exclusive, is_qqapi_group, record

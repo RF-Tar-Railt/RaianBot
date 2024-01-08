@@ -9,6 +9,7 @@ from avilla.core import Avilla, Context, Picture, RawResource
 from avilla.core.exceptions import ActionFailed
 from creart import it
 from fastapi import FastAPI
+from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.amnesia.builtins.asgi import UvicornASGIService
 from graia.broadcast import Broadcast
 from graia.saya import Saya
@@ -19,7 +20,6 @@ from graiax.playwright import PlaywrightService
 from launart import Launart
 from loguru import logger
 
-from app.client import AiohttpClientService
 from app.config import load_config
 from app.core import RaianBotDispatcher, RaianBotService
 from app.image import md2img

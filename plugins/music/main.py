@@ -5,8 +5,8 @@ from arclet.alconna.graia import Match, alcommand
 from avilla.core import Context, MessageChain, MessageReceived
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.standard.qq.elements import MusicShare, MusicShareKind
+from graia.amnesia.builtins.aiohttp import AiohttpClientService
 
-from app.client import AiohttpClientService
 from app.interrupt import FunctionWaiter
 from app.shortcut import accessable, allow, exclusive
 

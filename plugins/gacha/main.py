@@ -6,10 +6,10 @@ from arknights_toolkit.gacha import ArknightsGacha, GachaUser
 from avilla.core import Context, MessageChain, Picture, RawResource, Text
 from avilla.core.exceptions import ActionFailed
 from fastapi.responses import JSONResponse, Response
+from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graiax.fastapi import route
 from sqlalchemy.sql import select
 
-from app.client import AiohttpClientService
 from app.core import RaianBotService
 from app.database import DatabaseService, User
 from app.shortcut import accessable, exclusive, picture, record

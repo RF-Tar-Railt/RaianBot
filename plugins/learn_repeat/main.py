@@ -76,7 +76,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
     _data = {rec.key: rec for rec in records}
     keys = [rec.key for rec in records]
     if isinstance(ctx.account, QQAPIAccount):
-        return await ctx.scene.send_message("\n".join(keys))
+        return await ctx.scene.send_message(" * " + "\n * ".join(keys))
     for i in range(1 + (len(keys) - 1) // 50):
         selected = keys[i * 50 : (i + 1) * 50]
         forwards = []
