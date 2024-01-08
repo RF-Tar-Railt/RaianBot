@@ -17,8 +17,10 @@ def find_deck(name: str) -> int:
         return 1
     return 2 if (name[0].isdigit() and len(name) < 3) or name == "100" else 0
 
+
 def deck_list() -> list[str]:
     return list(p_deck.keys())
+
 
 def draw(key: str, cnt: int = 1) -> str:
     if not key:

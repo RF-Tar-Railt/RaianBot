@@ -1,14 +1,14 @@
 import re
 from datetime import datetime
 from typing import Union
-from arclet.alconna import Alconna, Args, Option, AllParam, Arparma, CommandMeta
-from arclet.alconna.graia import alcommand, assign, Match
-from avilla.core import Context, MessageChain, MessageReceived, Notice, Selector
-from graia.broadcast.exceptions import PropagationCancelled
-from avilla.standard.qq.elements import Forward, Node
-from avilla.standard.core.profile import Nick
-from avilla.qqapi.account import QQAPIAccount
 
+from arclet.alconna import Alconna, AllParam, Args, Arparma, CommandMeta, Option
+from arclet.alconna.graia import Match, alcommand, assign
+from avilla.core import Context, MessageChain, MessageReceived, Notice, Selector
+from avilla.qqapi.account import QQAPIAccount
+from avilla.standard.core.profile import Nick
+from avilla.standard.qq.elements import Forward, Node
+from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 from sqlalchemy import Select
 
@@ -29,10 +29,15 @@ repeat = Alconna(
     Option("删除", Args["target", [str, Notice]], help_text="删除一条学习记录, 若at用户则删除该用户的所有学习记录"),
     Option("查找", Args["target", str], help_text="查找是否有指定的学习记录"),
     Option("列出", Args["target?", Notice], help_text="列出该群所有的学习记录, 若at用户则列出该用户的所有学习记录"),
-    meta=CommandMeta("让机器人记录指定内容并尝试回复", usage="注意: 该命令不需要 “渊白” 开头", example="学习回复 增加 abcd xyz", extra={"supports": {"mirai", "qqapi"}}),
+    meta=CommandMeta(
+        "让机器人记录指定内容并尝试回复",
+        usage="注意: 该命令不需要 “渊白” 开头",
+        example="学习回复 增加 abcd xyz",
+        extra={"supports": {"mirai", "qqapi"}},
+    ),
 )
 
-image_path = bot.config.plugin_data_dir / 'learn_repeat'
+image_path = bot.config.plugin_data_dir / "learn_repeat"
 # base_path.mkdir(parents=True, exist_ok=True)
 # image_path = base_path / "image"
 image_path.mkdir(exist_ok=True)
@@ -73,7 +78,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
     if isinstance(ctx.account, QQAPIAccount):
         return await ctx.scene.send_message("\n".join(keys))
     for i in range(1 + (len(keys) - 1) // 50):
-        selected = keys[i * 50: (i + 1) * 50]
+        selected = keys[i * 50 : (i + 1) * 50]
         forwards = []
         now = datetime.now()
         for key in selected:
@@ -85,9 +90,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
             except Exception:
                 name = author.last_value
             content = deserialize_message(rec.content)
-            forwards.append(
-                Node(name=name, uid=author.last_value, time=now, content=f"{key}:\n" + content)
-            )
+            forwards.append(Node(name=name, uid=author.last_value, time=now, content=f"{key}:\n" + content))
         await ctx.scene.send_message(Forward(*forwards))
 
 
@@ -98,11 +101,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
 async def rfind(ctx: Context, target: Match[str], db: DatabaseService):
     async with db.get_session() as session:
         rec = (
-            await session.scalars(
-                Select(Learn)
-                .where(Learn.id == ctx.scene.channel)
-                .where(Learn.key == target.result)
-            )
+            await session.scalars(Select(Learn).where(Learn.id == ctx.scene.channel).where(Learn.key == target.result))
         ).one_or_none()
     if not rec:
         return await ctx.scene.send_message("查找失败！")
@@ -170,11 +169,7 @@ async def redit(ctx: Context, name: Match[str], result: Arparma, db: DatabaseSer
         return await ctx.scene.send_message("喂, 没有内容啊~")
     async with db.get_session() as session:
         rec = (
-            await session.scalars(
-                Select(Learn)
-                .where(Learn.id == ctx.scene.channel)
-                .where(Learn.key == name.result)
-            )
+            await session.scalars(Select(Learn).where(Learn.id == ctx.scene.channel).where(Learn.key == name.result))
         ).one_or_none()
         if not rec:
             return await ctx.scene.send_message("呜, 找不到这条记录")

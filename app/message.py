@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import Union
 from uuid import uuid4
 
-from graia.amnesia.message import MessageChain
 from avilla.core import Context, LocalFileResource
-from avilla.core.elements import Text, Picture, Audio, Video, Face, File, Notice, NoticeAll, Unknown
-from avilla.standard.qq.elements import MarketFace, FlashImage, Poke, Dice
+from avilla.core.elements import Audio, Face, File, Notice, NoticeAll, Picture, Text, Unknown, Video
+from avilla.standard.qq.elements import Dice, FlashImage, MarketFace, Poke
+from graia.amnesia.message import MessageChain
 
 
 def display(msg: MessageChain):
@@ -48,24 +48,24 @@ async def serialize_message(msg: MessageChain, ctx: Context, image_path: Path):
     for elem in msg:
         elem: Union[Text, Picture, Face]
         if isinstance(elem, Picture):
-            name = uuid4().hex
-            with (image_path / name).open('wb+') as img:
+            name = f"{uuid4().hex}.jpg"
+            with (image_path / name).open("wb+") as img:
                 img.write(await ctx.fetch(elem.resource))
-            res.append({'type': 'Image', 'path': f"{(image_path / name).absolute()}"})
+            res.append({"type": "Image", "path": f"{(image_path / name).absolute()}"})
         elif isinstance(elem, Text):
-            res.append({'type': 'Text', 'text': elem.text})
+            res.append({"type": "Text", "text": elem.text})
         elif isinstance(elem, Face):
-            res.append({'type': 'Face', 'id': elem.id, 'name': elem.name})
+            res.append({"type": "Face", "id": elem.id, "name": elem.name})
     return res
 
 
 def deserialize_message(content: list[dict]):
     res = []
     for elem in content:
-        if elem['type'] == 'Text':
-            res.append(Text(elem['text']))
-        elif elem['type'] == 'Image':
-            res.append(Picture(LocalFileResource(elem['path'])))
-        elif elem['type'] == 'Face':
-            res.append(Face(elem['id'], elem['name']))
+        if elem["type"] == "Text":
+            res.append(Text(elem["text"]))
+        elif elem["type"] == "Image":
+            res.append(Picture(LocalFileResource(elem["path"])))
+        elif elem["type"] == "Face":
+            res.append(Face(elem["id"], elem["name"]))
     return MessageChain(res)

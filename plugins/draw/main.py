@@ -45,9 +45,7 @@ async def draw(ctx: Context, msg: Message, db: DatabaseService):
     """每日运势抽签"""
     today = datetime.now()
     async with db.get_session() as session:
-        draw_record = (
-            await session.scalars(select(DrawRecord).where(DrawRecord.id == ctx.client.user))
-        ).one_or_none()
+        draw_record = (await session.scalars(select(DrawRecord).where(DrawRecord.id == ctx.client.user))).one_or_none()
         if draw_record:
             if draw_record.date.day == today.day and draw_record.date.month == today.month:
                 if is_qqapi_group(ctx):

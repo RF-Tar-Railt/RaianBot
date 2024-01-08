@@ -11,6 +11,7 @@ from app.database.manager import DatabaseManager
 from app.logger import setup_logger
 from plugins.coc.model import CocRule
 from plugins.draw.model import DrawRecord
+from plugins.learn_repeat.model import Learn
 from plugins.gacha.model import ArkgachaRecord
 from plugins.sign.model import SignRecord
 from plugins.sk_autosign.model import SKAutoSignRecord
@@ -128,6 +129,30 @@ async def main():
                     record = SKAutoSignRecord(id=user.id, token=data["origin"])
                     await session.merge(record)
                     await session.commit()
+
+        if (plugins / "learn_repeat").exists():
+            for dr in (plugins / "learn_repeat").iterdir():
+                if not (dr.name.isdigit() and dr.is_dir()):
+                    continue
+                logger.info(f"migrating learn_repeat data of {dr.name} ...")
+                for file in dr.iterdir():
+                    group_id = file.stem[7:]
+                    with file.open(encoding="utf-8") as f:
+                        table = ujson.load(f)
+                        for key, data in table.items():
+                            author = f"group({group_id}).member({data['id']})"
+                            content = ujson.loads(data["content"])
+                            for elem in content:
+                                if elem["type"] == "Image":
+                                    path = Path(elem["path"])
+                                    elem["path"] = str(path.parent.parent / path.name)
+                                elif elem["type"] == "Plain":
+                                    elem["type"] = "Text"
+                                elif elem["type"] == "Face":
+                                    elem["id"] = str(elem.pop("face_id", 24))
+                            record = Learn(id=group_id, key=key, author=author, content=content)
+                            await session.merge(record)
+                            await session.commit()
     await db.stop()
 
 

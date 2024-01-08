@@ -17,7 +17,7 @@ from app.interrupt import FunctionWaiter
 from app.message import display
 from app.shortcut import accessable, allow, exclusive, record
 from library.ak_closure_talk import ArknightsClosureStore
-from library.ak_closure_talk.exceptions import *
+from library.ak_closure_talk.exceptions import CharacterNotExist, RecordMaxExceed, SessionAlreadyExist, SessionNotExist
 
 bot = RaianBotService.current()
 store = ArknightsClosureStore()
@@ -184,7 +184,7 @@ async def _record_self(event: MessageSent, db: DatabaseService, config: BotConfi
         return
     async with db.get_session() as session:
         group = (
-            await session.scalars(select(Group).where(Group.id == gid).where(Group.in_blacklist == False))
+            await session.scalars(select(Group).where(Group.id == gid).where(Group.in_blacklist is False))
         ).one_or_none()
         if not group:
             return

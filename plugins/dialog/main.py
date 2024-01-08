@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 import ujson
-from arclet.alconna.graia.dispatcher import result_cache, output_cache
+from arclet.alconna.graia.dispatcher import output_cache, result_cache
 from avilla.core import Context, Message, MessageChain, MessageReceived, Notice, Picture, Text
 from avilla.elizabeth.account import ElizabethAccount
 from graia.broadcast.exceptions import PropagationCancelled

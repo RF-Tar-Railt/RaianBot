@@ -1,6 +1,7 @@
 from secrets import token_hex
 from typing import Union
-from arclet.alconna import Alconna, Args, CommandMeta, Arparma
+
+from arclet.alconna import Alconna, Args, Arparma, CommandMeta
 from arclet.alconna.graia import alcommand
 from avilla.core import Context, RawResource
 from avilla.core.elements import Notice, Picture
@@ -10,13 +11,13 @@ from graia.saya.builtins.broadcast.shortcut import listen
 
 from app.client import AiohttpClientService
 from app.core import RaianBotService
-from app.shortcut import record, exclusive, accessable, picture
+from app.shortcut import accessable, exclusive, picture, record
 from library.petpet import generate
 
 rua = Alconna(
     "摸",
     Args["target", [Notice, int]],
-    meta=CommandMeta("rua别人", compact=True, example="$摸@123456", extra={"supports": {"mirai", "qqapi"}})
+    meta=CommandMeta("rua别人", compact=True, example="$摸@123456", extra={"supports": {"mirai", "qqapi"}}),
 )
 
 
@@ -24,7 +25,7 @@ rua = Alconna(
 @record("rua")
 @exclusive
 @accessable
-async def draw(
+async def rua(
     ctx: Context,
     arp: Arparma,
     bot: RaianBotService,
@@ -49,14 +50,12 @@ async def draw(
 @listen(ActivityTrigged)
 @record("rua")
 @accessable
-async def draw(event: ActivityTrigged, aio: AiohttpClientService, bot: RaianBotService):
+async def nudge(event: ActivityTrigged, aio: AiohttpClientService, bot: RaianBotService):
     if event.id != "nudge":
         return
     if event.context.endpoint.last_value != event.context.account.route["account"]:
         return
-    async with aio.session.get(
-            f"https://q1.qlogo.cn/g?b=qq&nk={event.trigger.last_value}&s=640"
-    ) as resp:
+    async with aio.session.get(f"https://q1.qlogo.cn/g?b=qq&nk={event.trigger.last_value}&s=640") as resp:
         data = await resp.read()
     img = generate(data)
     try:
