@@ -58,6 +58,6 @@ async def debug(ctx: Context, db: DatabaseService, conf: BotConfig, bot: RaianBo
         f"自启动后共收到消息：  {bot.cache.get('recv', 0)} 条\n"
         f"自启动后共发出消息：  {bot.cache.get('sent', 0)} 条"
     )
-    if disabled := {*bot.config.plugin.disabled, *conf.disabled}:
+    if disabled := bot.config.plugin.disabled:
         text += "\n已禁用模块:\n  - " + "\n  - ".join(disabled).replace(".", "::") + "\n"
     return await ctx.scene.send_message(text)

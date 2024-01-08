@@ -48,13 +48,13 @@ class ArknightsClosureStore:
         self.avatars.pop(field, None)
         return self.session.pop(field, None)
 
-    def add_char(self, field: str, uid: str, name: str):
+    def add_char(self, field: str, uid: str, name: str, url: str | None = None):
         if field not in self.session:
             raise SessionNotExist("[ClosureTalk] 会话未存在")
         split = name.split("#")
         split = [split[0], split[1] if len(split) >= 2 else "1"]
         if not (characters := self.filter_character(split[0])):
-            self.avatars[field][uid] = f"https://q2.qlogo.cn/headimg_dl?dst_uin={uid}&spec=640"
+            self.avatars[field][uid] = url or f"https://q2.qlogo.cn/headimg_dl?dst_uin={uid}&spec=640"
         else:
             character = characters[0]
             index = 0

@@ -106,6 +106,10 @@ class RaianBotService(Service):
     def functions(self):
         return self.cache.get("function::record", {})
 
+    @property
+    def disabled(self):
+        return self.cache.get("function::disables", set())
+
     def func_description(self, name: str):
         return func.__doc__ if (func := self.cache.get("function::record", {}).get(name)) else "Unknown"
 

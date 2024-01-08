@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:e73153dc05c5dc4bc78fd84a547e0599ba9aa04c8e51385fc15bdbec64952462"
+content_hash = "sha256:a6a34bdfcfb5f26d5527564a1a98cf0ba54b01cb794125a465a8f6c9450618b2"
 
 [[package]]
 name = "aiohttp"
@@ -227,19 +227,19 @@ files = [
 
 [[package]]
 name = "avilla-core"
-version = "1.0.0a20"
+version = "1.0.0a21"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "creart>=0.3.0",
-    "graia-amnesia>=0.8.1",
+    "graia-amnesia>=0.9.0",
     "graia-broadcast>=0.23.1",
     "launart>=0.8.2",
     "loguru>=0.6.0",
 ]
 files = [
-    {file = "avilla_core-1.0.0a20-py3-none-any.whl", hash = "sha256:706493e8409ac0e2d5df49eb5acbf3edb77dde688fc3882a2e8513e026a7bef1"},
-    {file = "avilla_core-1.0.0a20.tar.gz", hash = "sha256:6edb76228c4e954648595a77da438c558be965e2d045f268785beeeccc4c6579"},
+    {file = "avilla_core-1.0.0a21-py3-none-any.whl", hash = "sha256:bda5167905376dca9ddd4bfaccafa2fdf1e2419a6c738b0ab7827251abbdf26f"},
+    {file = "avilla_core-1.0.0a21.tar.gz", hash = "sha256:281acb73e0e5d223ed2f7ff746a467902a51bf2e4f70d763a986b34a68d95a39"},
 ]
 
 [[package]]
@@ -259,15 +259,15 @@ files = [
 
 [[package]]
 name = "avilla-qqapi"
-version = "1.0.0a25"
+version = "1.0.0a26"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "aiohttp>=3.8.1",
 ]
 files = [
-    {file = "avilla_qqapi-1.0.0a25-py3-none-any.whl", hash = "sha256:87152cf5fcfca897fad01e490a52a86a56ebef5fefa54827ab668e8b968665fc"},
-    {file = "avilla_qqapi-1.0.0a25.tar.gz", hash = "sha256:a4de7c05a1dcbdb59824a979e356c31651b70304ed3c73d0e083028193ee055c"},
+    {file = "avilla_qqapi-1.0.0a26-py3-none-any.whl", hash = "sha256:e7d5a251565daac195564141a296edde97a01bbb06e2c53cf451813fdef1003f"},
+    {file = "avilla_qqapi-1.0.0a26.tar.gz", hash = "sha256:131910da2cd19c5edfed5a494bd85564785dd0d96d77a0b86d9208921fd04cfa"},
 ]
 
 [[package]]

@@ -5,24 +5,26 @@ from arclet.alconna import Alconna, Args, Arparma, CommandMeta
 from arclet.alconna.graia import alcommand
 from avilla.core import Context, RawResource
 from avilla.core.elements import Notice, Picture
+from avilla.elizabeth.account import ElizabethAccount
 from avilla.qqapi.exception import ActionFailed
 from avilla.standard.core.activity import ActivityTrigged
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.saya.builtins.broadcast.shortcut import listen
 
 from app.core import RaianBotService
-from app.shortcut import accessable, exclusive, picture, record
+from app.shortcut import accessable, allow, exclusive, picture, record
 from library.petpet import generate
 
 rua = Alconna(
     "摸",
     Args["target", [Notice, int]],
-    meta=CommandMeta("rua别人", compact=True, example="$摸@123456", extra={"supports": {"mirai", "qqapi"}}),
+    meta=CommandMeta("rua别人", compact=True, example="$摸@123456", extra={"supports": {"mirai"}}),
 )
 
 
 @alcommand(rua, post=True, send_error=True)
 @record("rua")
+@allow(ElizabethAccount)
 @exclusive
 @accessable
 async def rua(

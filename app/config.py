@@ -188,9 +188,6 @@ class BotConfig(BaseConfig, Generic[TA]):
     admins: list[str] = Field(default_factory=list)
     """bot 的管理者(除开控制者)的账号"""
 
-    disabled: list[str] = Field(default_factory=list)
-    """bot 初始禁用的模块名称"""
-
     def export(self):
         raise NotImplementedError
 

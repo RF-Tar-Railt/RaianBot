@@ -114,12 +114,11 @@ async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, confi
                 return await ctx.scene.send_message(picture(url, ctx))
             except ActionFailed:
                 output = (
-                    text.replace("&lt;", "(")
-                    .replace("&gt;", ")")
+                    text.replace("&lt;", "<")
+                    .replace("&gt;", ">")
                     .replace("\n\n", "\n")
                     .replace("##", "#")
                     .replace("**", "")
-                    .replace(">", ")")
                 )
                 return await ctx.scene.send_message(output)
     except (IndexError, TypeError):

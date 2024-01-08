@@ -76,8 +76,8 @@ def require_account(atype: type[BaseAccount] | tuple[type[BaseAccount], ...]):
 
 
 def check_disabled(path: str):
-    def __wrapper__(serv: RaianBotService, bot: BotConfig):
-        if path in bot.disabled or path in serv.config.plugin.disabled:
+    def __wrapper__(serv: RaianBotService):
+        if path in serv.config.plugin.disabled:
             raise ExecutionStop
         return True
 

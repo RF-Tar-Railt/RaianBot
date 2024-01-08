@@ -7,15 +7,17 @@ from avilla.standard.core.message import MessageReceived
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 from sqlalchemy import select
 
+from app.core import RaianBotService
 from app.database import DatabaseService, Group
 
+from . import control  # noqa: F401
 from . import debug  # noqa: F401
 from . import exception  # noqa: F401
 
 
 @listen(MessageReceived, SceneCreated)
 @priority(7)
-async def _init_g(ctx: Context, db: DatabaseService):
+async def _init_g(ctx: Context, db: DatabaseService, bot: RaianBotService):
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         return
     if ctx.scene.follows("::guild"):
@@ -28,6 +30,7 @@ async def _init_g(ctx: Context, db: DatabaseService):
                 id=ctx.scene.channel,
                 platform="qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi",
                 accounts=[account],
+                disabled=list(bot.disabled),
             )
             session.add(group)
             await session.commit()
