@@ -24,17 +24,18 @@ if not config_dir_root.exists():
     logger.warning("未知的目录")
     exit(1)
 
-cache_dir_root = Path(input("输入当前缓存数据目录: >>>"))
+cache_dir_root = Path(input("输入旧的缓存数据目录: >>>"))
 if not cache_dir_root.exists():
     logger.warning("未知的目录")
     exit(1)
 
 config = load_config(root_dir=str(config_dir_root))
 setup_logger(config.log_level)
-
+new_plugins = config.plugin_data_dir
+new_plugins.mkdir(exist_ok=True, parents=True)
 
 if config.database.type == "sqlite":
-    config.database.name = f"/{config.data_dir}/{config.database.name}"
+    config.database.name = f"{config.data_dir}/{config.database.name}"
     if not config.database.name.endswith(".db"):
         config.database.name = f"{config.database.name}.db"
 db = DatabaseManager(config.database.url, {"echo": None, "pool_pre_ping": True})
@@ -75,7 +76,7 @@ async def main():
                     group.accounts = [*group.accounts, f"land(qq).account({dr.name})"]
                     group.accounts = list(set(group.accounts))
                     await session.merge(group)
-                logger.debug(f"migrating group {group_id} ...")
+                logger.info(f"migrating group {group_id} ...")
                 if "weibo_followers" in data["additional"]:
                     for wid in data["additional"]["weibo_followers"][0]:
                         follower = WeiboFollower(id=group.id, wid=wid)
@@ -93,7 +94,7 @@ async def main():
                 else:
                     user.trust = data["trust"]
                     await session.merge(user)
-                logger.debug(f"migrating user {user_id} ...")
+                logger.info(f"migrating user {user_id} ...")
                 now = datetime.now()
                 now = now.replace(day=now.day - 1, month=10)
                 sign_record = SignRecord(id=user.id, date=now, count=int(user.trust // 1.2))
@@ -126,14 +127,14 @@ async def main():
                     if not user:
                         user = User(id=user_id, trust=0)
                         await session.merge(user)
-                    logger.debug(f"migrating sk_auto_sign data of user {user_id} ...")
+                    logger.info(f"migrating sk_auto_sign data of user {user_id} ...")
                     record = SKAutoSignRecord(id=user.id, token=data["origin"])
                     await session.merge(record)
                     await session.commit()
 
         if (plugins / "learn_repeat").exists():
             for dr in (plugins / "learn_repeat").iterdir():
-                if not (dr.name.isdigit() and dr.is_dir()):
+                if dr.name == "image":
                     continue
                 logger.info(f"migrating learn_repeat data of {dr.name} ...")
                 for file in dr.iterdir():
@@ -146,7 +147,7 @@ async def main():
                             for elem in content:
                                 if elem["type"] == "Image":
                                     path = Path(elem["path"])
-                                    elem["path"] = str(path.parent.parent / path.name)
+                                    elem["path"] = str(new_plugins / "learn_repeat" / path.name)
                                 elif elem["type"] == "Plain":
                                     elem["type"] = "Text"
                                 elif elem["type"] == "Face":
@@ -154,6 +155,25 @@ async def main():
                             record = Learn(id=group_id, key=key, author=author, content=content)
                             await session.merge(record)
                             await session.commit()
+            (new_plugins / "learn_repeat").mkdir(exist_ok=True, parents=True)
+            for img in (plugins / "learn_repeat" / "image").iterdir():
+                img.rename(new_plugins / "learn_repeat" / img.name)
+
+        if (arkdb := (plugins / "arkrecord.db")).exists():
+            arkdb.rename(new_plugins / "arkrecord.db")
+
+        if (gachapool := (plugins / "gachapool.json")).exists():
+            gachapool.rename(new_plugins / "gachapool.json")
+
+        if (recordpool := (plugins / "recordpool.json")).exists():
+            recordpool.rename(new_plugins / "recordpool.json")
+
+        if (weibo := (plugins / "weibo_data.json")).exists():
+            with weibo.open(encoding="utf-8") as f:
+                table = ujson.load(f)
+                with (new_plugins / "weibo_data.json").open("w+", encoding="utf-8") as nf:
+                    ujson.dump(table["weibo_follower"], nf, ensure_ascii=False, indent=4)
+
     await db.stop()
 
 
