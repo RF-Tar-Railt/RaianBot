@@ -104,7 +104,7 @@ async def smatch(
     if content == conf.name:
         rand_str = random.choice(dialog_templates["default"])
     else:
-        content = content[len(conf.name):]
+        content = content[len(conf.name) :]
         names = [command_manager._command_part(name)[1] for name in command_manager.all_command_raw_help()]
         if content.split()[0] in names:
             raise PropagationCancelled
@@ -175,7 +175,7 @@ async def aitalk(
     if not content:
         return
     names = [command_manager._command_part(name)[1] for name in command_manager.all_command_raw_help()]
-    if content[len(conf.name):].split()[0] in names:
+    if content[len(conf.name) :].split()[0] in names:
         raise PropagationCancelled
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         reply = await random_ai(ctx, content[:120], aio, conf, gpt=0.55, tx=0.4)
@@ -187,7 +187,10 @@ async def aitalk(
         if reply:
             await ctx.scene.send_message(reply)
         return
-    if isinstance(event.message.content[0], Notice) and event.message.content.get_first(Notice).target.last_value == ctx.account.route.last_value:
+    if (
+        isinstance(event.message.content[0], Notice)
+        and event.message.content.get_first(Notice).target.last_value == ctx.account.route.last_value
+    ):
         reply = await random_ai(ctx, content[:120], aio, conf, gpt=0.55, tx=0.45)
         if reply:
             await ctx.scene.send_message(reply, reply=event.message)
