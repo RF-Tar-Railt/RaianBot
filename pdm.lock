@@ -244,40 +244,40 @@ files = [
 
 [[package]]
 name = "avilla-elizabeth"
-version = "1.0.0a19"
+version = "1.0.0a22"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "aiohttp>=3.8.1",
-    "avilla-core>=1.0.0a19",
-    "avilla-standard-qq>=1.0.0a19",
+    "avilla-core>=1.0.0a21",
+    "avilla-standard-qq>=1.0.0a21",
 ]
 files = [
-    {file = "avilla_elizabeth-1.0.0a19-py3-none-any.whl", hash = "sha256:3008ca84e11c26cc16c2bffd24d3767a103fbaeb0acf3a4ff4d808e635a4e21c"},
-    {file = "avilla_elizabeth-1.0.0a19.tar.gz", hash = "sha256:22b9cec7dc09d1afb7b966ef1a56f8cbb649c2b66ff0e81de8dd0efd164a3a61"},
+    {file = "avilla_elizabeth-1.0.0a22-py3-none-any.whl", hash = "sha256:09035cf48f3cfcd10164fab94c24e87dd21846857cc1a1e30ce9e0bf1361dd39"},
+    {file = "avilla_elizabeth-1.0.0a22.tar.gz", hash = "sha256:8184e9864e0e8303b6bcbe4bc88c6bd55ff34f0bae9548a5a8956863ab5efdd8"},
 ]
 
 [[package]]
 name = "avilla-qqapi"
-version = "1.0.0a26"
+version = "1.0.0a27"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "aiohttp>=3.8.1",
 ]
 files = [
-    {file = "avilla_qqapi-1.0.0a26-py3-none-any.whl", hash = "sha256:e7d5a251565daac195564141a296edde97a01bbb06e2c53cf451813fdef1003f"},
-    {file = "avilla_qqapi-1.0.0a26.tar.gz", hash = "sha256:131910da2cd19c5edfed5a494bd85564785dd0d96d77a0b86d9208921fd04cfa"},
+    {file = "avilla_qqapi-1.0.0a27-py3-none-any.whl", hash = "sha256:2e7856b855623003a40f56c127079e5ba6a9820270b34d44e75de034fc760d30"},
+    {file = "avilla_qqapi-1.0.0a27.tar.gz", hash = "sha256:1ec41ed4f8e8dc13e5597c2eb5bbb56960902f29199c34c1364e16b01a4ff1a5"},
 ]
 
 [[package]]
 name = "avilla-standard-qq"
-version = "1.0.0a19"
+version = "1.0.0a21"
 requires_python = ">=3.9"
 summary = ""
 files = [
-    {file = "avilla_standard_qq-1.0.0a19-py3-none-any.whl", hash = "sha256:0400bd00adf3820c25dd20e4af7a4faee91d8cd2fc4636bd68531add3735e9ae"},
-    {file = "avilla_standard_qq-1.0.0a19.tar.gz", hash = "sha256:885bb9dd75618270d91c82861c165ca3d377a7354b4a22a02127bcfe014574e9"},
+    {file = "avilla_standard_qq-1.0.0a21-py3-none-any.whl", hash = "sha256:15c54cf774f6ef774d53d14fbd3d35f6994cb5c95cbfc543dd8bc9f9609983cc"},
+    {file = "avilla_standard_qq-1.0.0a21.tar.gz", hash = "sha256:2051429f3dd71a44a464b5e6f06e2bf8087597af77b088bd570dea38dc12fc13"},
 ]
 
 [[package]]

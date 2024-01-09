@@ -4,8 +4,9 @@ from datetime import datetime
 from pathlib import Path
 
 import ujson
+from arclet.alconna import command_manager
 from arclet.alconna.graia.dispatcher import output_cache, result_cache
-from avilla.core import Context, Message, MessageChain, MessageReceived, Notice, Picture, Text
+from avilla.core import Context, MessageReceived, Notice, Picture, Text
 from avilla.elizabeth.account import ElizabethAccount
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast.exceptions import PropagationCancelled
@@ -36,21 +37,6 @@ if config.tencent:
 
 
 async def image(string: str):
-    # if rand_str.startswith("^"):
-    #     mode, file = rand_str.lstrip("^").split("$", 1)
-    #     if not mode.endswith("cover"):
-    #         return Image(data_bytes=Path(f"assets/image/{file}").read_bytes())
-    #     cover = Img.open(f"assets/image/{file}")
-    #     size = cover.size
-    #     async with Ariadne.current().service.client_session.get(
-    #         f"https://q1.qlogo.cn/g?b=qq&nk={target.id}&s=640"
-    #     ) as resp:
-    #         base = Img.open(BytesIO(await resp.content.read())).resize(size, Img.Resampling.LANCZOS)
-    #     cover.thumbnail(size)
-    #     base.paste(cover, (0, 0), cover)
-    #     data = BytesIO()
-    #     base.save(data, format="JPEG", quality=90, qtables="web_high")
-    #     return Image(data_bytes=data.getvalue())
     name = string.split("/")[1]
     path = Path(f"assets/image/{name}")
     return Picture(path) if path.exists() else name
@@ -100,26 +86,28 @@ async def random_ai(ctx: Context, msg: str, aio: AiohttpClientService, conf: Bot
 @accessable
 async def smatch(
     ctx: Context,
-    msg: Message,
     conf: BotConfig,
-    message: MessageChain,
+    event: MessageReceived,
     aio: AiohttpClientService,
 ):
     """依据语料进行匹配回复"""
-    mid = f"{msg.id}@{ctx.account.route}"
+    mid = f"{event.message.id}@{ctx.account.route}"
     for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
             raise PropagationCancelled
     for cache in output_cache.values():
         if mid in cache:
             raise PropagationCancelled
-    content = str(message.include(Text)).lstrip()
+    content = str(event.message.content.include(Text)).lstrip()
     if not content.startswith(conf.name):
         raise PropagationCancelled
     if content == conf.name:
         rand_str = random.choice(dialog_templates["default"])
     else:
-        content = content[len(conf.name) :]
+        content = content[len(conf.name):]
+        names = [command_manager._command_part(name)[1] for name in command_manager.all_command_raw_help()]
+        if content.split()[0] in names:
+            raise PropagationCancelled
         for key, value in dialog_templates["content"].items():
             if re.match(f".*?{key}$", content):
                 rand_str = random.sample(value, 1)[0]
@@ -140,11 +128,11 @@ async def smatch(
 async def ematch(
     ctx: Context,
     conf: BotConfig,
-    message: MessageChain,
+    event: MessageReceived,
     aio: AiohttpClientService,
 ):
     """依据语料进行匹配回复"""
-    content = str(message.include(Text)).lstrip()
+    content = str(event.message.content.include(Text)).lstrip()
     if not content.endswith(conf.name):
         raise PropagationCancelled
     if content == conf.name:
@@ -158,6 +146,7 @@ async def ematch(
                     rand_str = await image(rand_str)
                 break
         else:
+            print(2)
             rand_str = await random_ai(ctx, content[:120], aio, conf, gpt=0.4, tx=0.55)
     await ctx.scene.send_message(rand_str)  # noqa
     raise PropagationCancelled
@@ -170,36 +159,38 @@ async def ematch(
 @accessable
 async def aitalk(
     ctx: Context,
-    msg: Message,
     conf: BotConfig,
-    message: MessageChain,
+    event: MessageReceived,
     aio: AiohttpClientService,
 ):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
-    mid = f"{msg.id}@{ctx.account.route}"
+    mid = f"{event.message.id}@{ctx.account.route}"
     for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
             raise PropagationCancelled
     for cache in output_cache.values():
         if mid in cache:
             raise PropagationCancelled
-    content = str(message.include(Text)).lstrip()
+    content = str(event.message.content.include(Text)).lstrip()
     if not content:
         return
+    names = [command_manager._command_part(name)[1] for name in command_manager.all_command_raw_help()]
+    if content[len(conf.name):].split()[0] in names:
+        raise PropagationCancelled
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         reply = await random_ai(ctx, content[:120], aio, conf, gpt=0.55, tx=0.4)
         if reply:
-            await ctx.scene.send_message(reply, reply=None if is_qqapi_group(ctx) else msg)
+            await ctx.scene.send_message(reply, reply=None if is_qqapi_group(ctx) else event.message)
         return
     if is_qqapi_group(ctx):
         reply = await random_ai(ctx, content[:120], aio, conf, gpt=0.45, tx=0.55)
         if reply:
             await ctx.scene.send_message(reply)
         return
-    if isinstance(message[0], Notice) and message.get_first(Notice).target.last_value == ctx.self.last_value:
+    if isinstance(event.message.content[0], Notice) and event.message.content.get_first(Notice).target.last_value == ctx.account.route.last_value:
         reply = await random_ai(ctx, content[:120], aio, conf, gpt=0.55, tx=0.45)
         if reply:
-            await ctx.scene.send_message(reply, reply=msg)
+            await ctx.scene.send_message(reply, reply=event.message)
         return
     if not isinstance(ctx.account, ElizabethAccount):
         return
@@ -209,4 +200,4 @@ async def aitalk(
     if random.randint(0, 2000) == datetime.now().microsecond // 5000:
         reply = await random_ai(ctx, content[:120], aio, conf, gpt=0.55, tx=0.45)
         if reply:
-            await ctx.scene.send_message(reply, reply=msg)
+            await ctx.scene.send_message(reply, reply=event.message)

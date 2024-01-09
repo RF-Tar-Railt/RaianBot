@@ -2,7 +2,8 @@ import random
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, command_manager
-from arclet.alconna.graia import Match, alcommand
+from arclet.alconna.graia import Match, alcommand, AlconnaGraiaService
+from arclet.alconna.avilla import AlconnaAvillaAdapter
 from avilla.core import ActionFailed, Context, MessageChain, Notice, Picture, RawResource, Text
 from avilla.core.tools.filter import Filter
 from avilla.elizabeth.account import ElizabethAccount
@@ -23,7 +24,7 @@ cmd_help = Alconna(
         str,
         Field(
             -1,
-            completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands('raianbot')))}",
+            completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands()))}",
             unmatch_tips=lambda x: f"预期输入为某个命令的id或者名称，而不是 {x}\n例如：/帮助 0",
         ),
     ],
@@ -36,8 +37,11 @@ cmd_help.shortcut("菜单", {"prefix": True})
 @listen(MessageReceived)
 @dispatch(Filter.cx.scene.follows("::group"))
 @allow(QQAPIAccount)
-async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain):
+async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain, alc: AlconnaGraiaService):
     if str(message.exclude(Notice)).lstrip() != "":
+        return
+    alc: AlconnaGraiaService[AlconnaAvillaAdapter]
+    if not alc.get_adapter().is_tome(message, ctx.account.route):
         return
     plat: str = {ElizabethAccount: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore
     md = f"""\
@@ -47,10 +51,10 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
 | id  | 命令 | 介绍 | 备注 |
 | --- | --- | --- | --- |
 """
-    cmds = list(filter(lambda x: not x.meta.hide, command_manager.get_commands("raianbot")))
+    cmds = list(filter(lambda x: not x.meta.hide, command_manager.get_commands()))
     command_string = "\n".join(
         (
-            f"| {index} | {slot.name.replace('|', '&#124;').replace('[', '&#91;')} | "
+            f"| {index} | {bot.config.command.headers[0]}{slot.name.replace('|', '&#124;').replace('[', '&#91;')} | "
             f"{slot.meta.description} | {slot.meta.usage.splitlines()[0] if slot.meta.usage else None} |"
         )
         for index, slot in enumerate(cmds)
@@ -73,7 +77,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
         try:
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:
-            return await ctx.scene.send_message(command_manager.all_command_help(namespace="raianbot"))
+            return await ctx.scene.send_message(command_manager.all_command_help())
 
 
 @alcommand(
@@ -84,24 +88,24 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
 @exclusive
 @accessable
 async def send_text_help(ctx: Context):
-    return await ctx.scene.send_message(command_manager.all_command_help(namespace="raianbot"))
+    return await ctx.scene.send_message(command_manager.all_command_help())
 
 
 @alcommand(cmd_help, post=True, send_error=True)
 @exclusive
 @accessable
-async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, config: BotConfig):
+async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, config: BotConfig, alc: AlconnaGraiaService):
     if not query.available:
-        return await send_(ctx, bot, config, MessageChain([Text("")]))
+        return await send_(ctx, bot, config, MessageChain([Notice(ctx.self)]), alc)
     try:
         if query.result.isdigit():
-            cmds = list(command_manager.all_command_raw_help(namespace="raianbot").keys())
+            cmds = list(command_manager.all_command_raw_help().keys())
             text = command_manager.get_command(cmds[int(query.result)]).get_help()
         else:
             cmds = list(
                 filter(
                     lambda x: query.result in x,
-                    command_manager.all_command_raw_help("raianbot").keys(),
+                    command_manager.all_command_raw_help().keys(),
                 )
             )
             text = command_manager.get_command(cmds[0]).get_help()

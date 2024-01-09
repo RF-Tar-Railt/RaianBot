@@ -47,15 +47,13 @@ config = load_config(root_dir=arp.query[str]("root.dir"))
 setup_logger(config.log_level)
 setup_qrcode(config)
 
-with namespace("raianbot") as np:
+with namespace("Alconna") as np:
     np.prefixes = config.command.headers
     np.builtin_option_name["help"] = set(config.command.help)
     np.builtin_option_name["shortcut"] = set(config.command.shortcut)
     np.builtin_option_name["completion"] = set(config.command.completion)
     np.disable_builtin_options = config.command.disables
     np.formatter_type = MarkdownTextFormatter
-
-alconfig.default_namespace = np
 
 manager = Launart()
 loop = it(asyncio.AbstractEventLoop)
@@ -70,7 +68,7 @@ saya.install_behaviours(FastAPIBehaviour(fastapi))
 manager.add_component(
     PlaywrightService(
         config.browser.type,
-        headless=True,
+        headless=not arp.query[bool]("pw-head.value"),
         channel=config.browser.channel,
         auto_download_browser=(not config.browser.channel),
         # user_data_dir=Path(config.cache_dir) / "browser"

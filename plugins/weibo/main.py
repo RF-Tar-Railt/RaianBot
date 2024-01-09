@@ -59,7 +59,7 @@ weibo_fetch = Alconna(
     Option("列出", dest="list", help_text="列出该群的微博动态关注对象"),
     meta=CommandMeta(
         "获取指定用户的微博资料",
-        example="$微博 育碧\n$微博 育碧 动态 1\n@bot $微博 育碧 关注\n@bot $微博 育碧 取消关注",
+        example="$微博 育碧\n$微博 育碧 动态 1\n$微博 育碧 关注\n$微博 育碧 取消关注",
         extra={"supports": {"mirai", "qqapi"}},
     ),
 )
@@ -219,7 +219,7 @@ async def wfetch(
         await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in nodes[1])])
 
 
-@alcommand(weibo_fetch, comp_session={}, need_tome=True, post=True)
+@alcommand(weibo_fetch, comp_session={}, post=True)
 @allow(ElizabethAccount)
 @record("微博功能")
 @assign("follow")
@@ -249,7 +249,7 @@ async def wfollow(ctx: Context, user: Match[str], select: Match[int], db: Databa
         return await ctx.scene.send_message(f"关注 {follower.name} 成功！")
 
 
-@alcommand(weibo_fetch, comp_session={}, need_tome=True, post=True)
+@alcommand(weibo_fetch, comp_session={}, post=True)
 @record("微博功能")
 @allow(ElizabethAccount)
 @assign("unfollow")
@@ -279,7 +279,7 @@ async def wunfollow(ctx: Context, user: Match[str], select: Match[int], db: Data
         return await ctx.scene.send_message(f"解除关注 {follower.name} 成功！")
 
 
-@alcommand(weibo_fetch, comp_session={}, need_tome=True, post=True)
+@alcommand(weibo_fetch, comp_session={}, post=True)
 @allow(ElizabethAccount)
 @record("微博功能")
 @assign("list")

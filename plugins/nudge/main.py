@@ -18,7 +18,7 @@ from library.petpet import generate
 rua = Alconna(
     "摸",
     Args["target", [Notice, int]],
-    meta=CommandMeta("rua别人", compact=True, example="$摸@123456", extra={"supports": {"mirai"}}),
+    meta=CommandMeta("rua别人", example="$摸@123456", extra={"supports": {"mirai"}}),
 )
 
 

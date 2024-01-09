@@ -33,11 +33,11 @@ async def marry(ctx: Context, aio: AiohttpClientService, bot: RaianBotService):
     cover.thumbnail(cover.size)
     base.paste(cover, (0, 0), cover)
     data = BytesIO()
-    base.save(data, format="JPEG", quality=90, qtables="web_high")
+    base.save(data, format="PNG", quality=90, qtables="web_high")
     try:
         return await ctx.scene.send_message(Picture(RawResource(data.getvalue())))
     except Exception:
-        url = await bot.upload_to_cos(data.getvalue(), f"marry_{token_hex(16)}.jpg")
+        url = await bot.upload_to_cos(data.getvalue(), f"marry_{token_hex(16)}.png")
         try:
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed as e:

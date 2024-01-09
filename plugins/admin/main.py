@@ -18,6 +18,7 @@ from . import control  # noqa: F401
 from . import debug  # noqa: F401
 from . import exception  # noqa: F401
 from . import member  # noqa: F401
+from . import request  # noqa: F401
 from .model import BlacklistCache
 
 
@@ -53,10 +54,12 @@ async def _init_g(ctx: Context, db: DatabaseService, bot: RaianBotService):
 async def introduce(ctx: Context, bot: RaianBotService, conf: BotConfig, db: DatabaseService):
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         return
+    if not isinstance(ctx.account, ElizabethAccount):
+        return
     group_id = ctx.scene.channel
     await ctx[MessageSend.send](
         conf.master(),
-        MessageChain("收到加入群聊事件\n" f"群号：{group_id}\n" f"群名：{(await ctx.scene.nick()).name}\n"),
+        MessageChain("收到加入群聊事件\n" f"群号：{group_id}\n" f"群名：{(await ctx.scene.summary()).name}\n"),
     )
     await ctx.scene.send_message(
         f"我是 {conf.master_id} 的机器人 {conf.name}\n"
@@ -120,10 +123,11 @@ async def _remove(ctx: Context, db: DatabaseService, event: SceneDestroyed, conf
         if group:
             if account in group.accounts:
                 group.accounts = [i for i in group.accounts if i != account]
+                await session.commit()
+                await session.refresh(group)
             if not group.accounts:
                 await session.delete(group)
-            await session.commit()
-            await session.refresh(group)
+                await session.commit()
         if event.active:
             return
         if not isinstance(ctx.account, ElizabethAccount):

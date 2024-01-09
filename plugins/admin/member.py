@@ -15,7 +15,7 @@ from app.shortcut import allow, exclusive, record
 @allow(ElizabethAccount)
 async def member_leave_tell(ctx: Context):
     """用户离群提醒"""
-    await ctx.scene.send_message(f"可惜了！\n{(await ctx.endpoint.nick()).name}({ctx.endpoint.user})退群了！")
+    await ctx.scene.send_message(f"可惜了！\n{ctx.endpoint.user}退群了！")
 
 
 @listen(MemberCreated)
@@ -26,7 +26,7 @@ async def member_join_tell(
     ctx: Context,
 ):
     """用户入群提醒"""
-    welcome = f"欢迎新人加入{(await ctx.scene.nick()).name}！进群了就别想跑哦~"
+    welcome = f"欢迎新人加入{(await ctx.scene.summary()).name}！进群了就别想跑哦~"
     await ctx.scene.send_message(MessageChain([Notice(ctx.client), welcome]))
 
 
@@ -36,7 +36,7 @@ async def member_join_tell(
     Filter()
     .dispatch(MetadataModified)
     .assert_true(lambda e: e.route is MuteInfo)
-    .assert_true(lambda e: e.details[MuteInfo.inh(lambda x: x.muted)].current)
+    .assert_true(lambda e: list(e.details.values())[0].current)
 )
 @exclusive
 @allow(ElizabethAccount)
@@ -51,7 +51,7 @@ async def member_mute_tell(ctx: Context, event: MetadataModified):
     Filter()
     .dispatch(MetadataModified)
     .assert_true(lambda e: e.route is MuteInfo)
-    .assert_false(lambda e: e.details[MuteInfo.inh(lambda x: x.muted)].current)
+    .assert_false(lambda e: list(e.details.values())[0].current)
 )
 @exclusive
 @allow(ElizabethAccount)
