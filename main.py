@@ -1,8 +1,9 @@
 import asyncio
 from secrets import token_hex
 
-from arclet.alconna import namespace, Alconna, Option, CommandMeta, Args, OptionResult, store_true
+from arclet.alconna import Alconna, Args, CommandMeta, Option, OptionResult
 from arclet.alconna import config as alconfig
+from arclet.alconna import namespace, store_true
 from arclet.alconna.avilla import AlconnaAvillaAdapter
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaGraiaService, AlconnaOutputMessage
 from arclet.alconna.tools import MarkdownTextFormatter
@@ -28,7 +29,13 @@ from app.logger import loguru_exc_callback_async, setup_logger
 from app.shortcut import picture
 
 cli = Alconna(
-    Option("--root-dir|-D", Args["dir", str], dest="root", help_text="配置文件根目录", default=OptionResult(args={"dir": "config"})),
+    Option(
+        "--root-dir|-D",
+        Args["dir", str],
+        dest="root",
+        help_text="配置文件根目录",
+        default=OptionResult(args={"dir": "config"}),
+    ),
     Option("--pw-head", default=False, action=store_true, help_text="是否取消 Playwright 的 headless 模式"),
     meta=CommandMeta("Raianbot 的命令行工具", hide=True),
 )
