@@ -334,8 +334,8 @@ class RaianConfig(BaseConfig):
         return Path.cwd() / self.data_dir / self.plugin.root
 
 
-def load_config(root_dir: str = "config") -> RaianConfig:
-    if (path := Path.cwd() / root_dir).exists() and path.is_dir():
+def load_config(root_dir: Union[str, Path] = "config") -> RaianConfig:
+    if (path := Path.cwd().joinpath(root_dir)).exists() and path.is_dir():
         config_path = path / "config.yml"
         if config_path.exists() and config_path.is_file():
             with open(config_path, encoding="utf-8") as f:

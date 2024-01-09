@@ -23,7 +23,7 @@ cmd_help = Alconna(
         str,
         Field(
             -1,
-            completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands()))}",
+            completion=lambda: f"试试 {random.randint(0, len(command_manager.get_commands('raianbot')))}",
             unmatch_tips=lambda x: f"预期输入为某个命令的id或者名称，而不是 {x}\n例如：/帮助 0",
         ),
     ],
@@ -47,7 +47,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
 | id  | 命令 | 介绍 | 备注 |
 | --- | --- | --- | --- |
 """
-    cmds = list(filter(lambda x: not x.meta.hide, command_manager.get_commands()))
+    cmds = list(filter(lambda x: not x.meta.hide, command_manager.get_commands("raianbot")))
     command_string = "\n".join(
         (
             f"| {index} | {slot.name.replace('|', '&#124;').replace('[', '&#91;')} | "
@@ -73,7 +73,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
         try:
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:
-            return await ctx.scene.send_message(command_manager.all_command_help())
+            return await ctx.scene.send_message(command_manager.all_command_help(namespace="raianbot"))
 
 
 @alcommand(
@@ -84,7 +84,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
 @exclusive
 @accessable
 async def send_text_help(ctx: Context):
-    return await ctx.scene.send_message(command_manager.all_command_help())
+    return await ctx.scene.send_message(command_manager.all_command_help(namespace="raianbot"))
 
 
 @alcommand(cmd_help, post=True, send_error=True)
@@ -95,13 +95,13 @@ async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, confi
         return await send_(ctx, bot, config, MessageChain([Text("")]))
     try:
         if query.result.isdigit():
-            cmds = list(command_manager.all_command_raw_help().keys())
+            cmds = list(command_manager.all_command_raw_help(namespace="raianbot").keys())
             text = command_manager.get_command(cmds[int(query.result)]).get_help()
         else:
             cmds = list(
                 filter(
                     lambda x: query.result in x,
-                    command_manager.all_command_raw_help().keys(),
+                    command_manager.all_command_raw_help("raianbot").keys(),
                 )
             )
             text = command_manager.get_command(cmds[0]).get_help()

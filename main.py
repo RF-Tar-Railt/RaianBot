@@ -1,7 +1,8 @@
 import asyncio
 from secrets import token_hex
 
-from arclet.alconna import namespace
+from arclet.alconna import namespace, Alconna, Option, CommandMeta, Args, OptionResult, store_true
+from arclet.alconna import config as alconfig
 from arclet.alconna.avilla import AlconnaAvillaAdapter
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaGraiaService, AlconnaOutputMessage
 from arclet.alconna.tools import MarkdownTextFormatter
@@ -22,20 +23,32 @@ from loguru import logger
 
 from app.config import load_config
 from app.core import RaianBotDispatcher, RaianBotService
-from app.image import md2img
+from app.image import md2img, setup_qrcode
 from app.logger import loguru_exc_callback_async, setup_logger
 from app.shortcut import picture
 
-config = load_config(root_dir="config")
-setup_logger(config.log_level)
+cli = Alconna(
+    Option("--root-dir|-D", Args["dir", str], dest="root", help_text="配置文件根目录", default=OptionResult(args={"dir": "config"})),
+    Option("--pw-head", default=False, action=store_true, help_text="是否取消 Playwright 的 headless 模式"),
+    meta=CommandMeta("Raianbot 的命令行工具", hide=True),
+)
+arp = cli()
+if not arp.matched:
+    exit()
 
-with namespace("Alconna") as np:
+config = load_config(root_dir=arp.query[str]("root.dir"))
+setup_logger(config.log_level)
+setup_qrcode(config)
+
+with namespace("raianbot") as np:
     np.prefixes = config.command.headers
     np.builtin_option_name["help"] = set(config.command.help)
     np.builtin_option_name["shortcut"] = set(config.command.shortcut)
     np.builtin_option_name["completion"] = set(config.command.completion)
     np.disable_builtin_options = config.command.disables
     np.formatter_type = MarkdownTextFormatter
+
+alconfig.default_namespace = np
 
 manager = Launart()
 loop = it(asyncio.AbstractEventLoop)
