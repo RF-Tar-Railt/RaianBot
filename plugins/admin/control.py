@@ -67,7 +67,7 @@ function_control = Alconna(
 function_control.shortcut(
     "禁用敏感功能",
     prefix=True,
-    command="功能 禁用 member_join member_leave member_mute member_unmute ai",
+    command="功能 禁用 member_join member_leave ai",
 )
 
 blacklist_control = Alconna(
@@ -230,7 +230,6 @@ async def _f_main(ctx: Context):
 @assign("列出")
 @exclusive
 async def _f_list(ctx: Context, bot: RaianBotService, db: DatabaseService, conf: BotConfig):
-    # group = bot.data.get_group(sender.id)
     async with db.get_session() as session:
         group = (await session.scalars(select(Group).where(Group.id == ctx.scene.channel))).one_or_none()
         if not group:

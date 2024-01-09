@@ -7,7 +7,7 @@ from avilla.core import Avilla, Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.profile import NickCapability
-from graia.broadcast.builtin.event import ExceptionThrown
+from graia.broadcast.builtin.event import EventExceptionThrown, ExceptionThrown
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 
 from app.config import BotConfig
@@ -39,7 +39,7 @@ async def nickname_restore(ctx: Context, conf: BotConfig):
     await ctx.scene.send_message("已完成")
 
 
-@listen(ExceptionThrown)
+@listen(ExceptionThrown, EventExceptionThrown)
 @priority(13)
 async def report(event: ExceptionThrown, avilla: Avilla):
     with StringIO() as fp:
@@ -53,14 +53,15 @@ async def report(event: ExceptionThrown, avilla: Avilla):
     }
     masters = {conf.master_id for conf in bot.config.bots}
     if api:
-        masters = {f"{conf.master_id}@qq.com" for conf in bot.config.bots}
         with suppress(Exception):
-            await api.send_email(
-                "notice@dunnoaskrf.top",
-                [f"{master}@qq.com" for master in masters],
-                "Exception Occur",
-                27228,
-                data,
+            print(
+                await api.send_email(
+                    "notice@dunnoaskrf.top",
+                    [f"{master}@qq.com" for master in masters],
+                    "Exception Occur",
+                    27228,
+                    data,
+                )
             )
     template = """\
 ## 异常事件：

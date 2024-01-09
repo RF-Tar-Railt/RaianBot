@@ -59,6 +59,9 @@ def setup_qrcode(config: "RaianConfig"):
             break
 
 
+footer_css = Path("assets/css/footer.css").read_text()
+
+
 async def fill_font(route: Route, request: Request):
     url = URL(request.url)
     if (font_path / url.name).exists():
@@ -72,39 +75,29 @@ async def fill_font(route: Route, request: Request):
 
 def footer():
     qr = f"""
-                <div class="qrcode-area">
-                    <img class="qrcode" src="data:image/png;base64,{group_b64}" />
-                    <img class="qrcode" src="data:image/png;base64,{guild_b64}" />
-                </div>
-                <div class="qrcode-text">
-                    <p>扫描二维码将 RaianBot 添加至你的群聊/频道</p>
-                </div>
-    """
+            <div class="qrcode-area">
+                <img class="qrcode" src="data:image/png;base64,{group_b64}" />
+                <img class="qrcode" src="data:image/png;base64,{guild_b64}" />
+            </div>
+            <div class="qrcode-text">
+                <p>扫描二维码将 RaianBot 添加至你的群聊/频道</p>
+            </div>
+"""
     return f"""
-    <style>
-        .footer{{
-            box-sizing:border-box;
-            background:#eee;
-            padding:30px 40px;
-            margin-top:50px;
-            font-size:1rem;
-        }}
-        .footer p{{margin:5px auto;}}
-    </style>
-    <div style="position:absolute;left:0;width:100%;color:#6b6b6b;">
-        <div class="footer">
-            <section class="left">
-                <div class="footer-text">
-                    <p style="font-weight: bold">该图片由 RaianBot 生成</p>
-                    <p style="font-size: 14px">{datetime.now(CHINA_TZ).strftime("%Y/%m/%d %p %I:%M:%S")}</p>
-                </div>
-            </section>
-            <section class="right">{qr if guild_b64 and group_b64 else ""}
-            </section>
-        </div>
-        <section class="powered">Powered by Avilla</section>
-    </div>
-    """
+<div style="position:absolute;left:0;width:100%;color:#6b6b6b;">
+    <footer>
+        <section class="left">
+            <div class="footer-text">
+                <p style="font-weight: bold">该图片由 RaianBot 生成</p>
+                <p style="font-size: 14px">{datetime.now(CHINA_TZ).strftime("%Y/%m/%d %H:%M:%S")}</p>
+            </div>
+        </section>
+        <section class="right">{qr if guild_b64 and group_b64 else ""}
+        </section>
+    </footer>
+    <section class="powered">Powered by Avilla</section>
+</div>
+"""
 
 
 html_render = HTMLRenderer(
@@ -124,8 +117,9 @@ html_render = HTMLRenderer(
         # "@font-face{font-family:'harmo';font-weight:600;"
         # "src:url('http://static.graiax/fonts/HarmonyOS_Sans_SC_Bold.ttf') format('truetype');}"
         # "*{font-family:'harmo',sans-serif}",
-        # "body{background-color:#fafafac0;}",
+        "body{background-color:#fafafac0;}",
         "@media(prefers-color-scheme:light){.markdown-body{--color-canvas-default:#fafafac0;}}",
+        footer_css,
     ),
     page_modifiers=[
         lambda page: page.route(lambda url: bool(re.match("^http://static.graiax/fonts/(.+)$", url)), fill_font)

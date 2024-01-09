@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Union
 
 from arclet.alconna import Alconna, AllParam, Args, Arparma, CommandMeta, Option
-from arclet.alconna.graia import Match, alcommand, assign
+from arclet.alconna.avilla.adapter import AlconnaAvillaAdapter
+from arclet.alconna.graia import AlconnaGraiaService, Match, alcommand, assign
 from avilla.core import Context, MessageChain, MessageReceived, Notice, Selector
 from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.profile import Nick
@@ -181,14 +182,16 @@ async def redit(ctx: Context, name: Match[str], result: Arparma, db: DatabaseSer
 @listen(MessageReceived)
 @priority(17)
 @record("repeat")
-async def handle(ctx: Context, message: MessageChain, db: DatabaseService):
+async def handle(ctx: Context, message: MessageChain, db: DatabaseService, alc: AlconnaGraiaService):
     """依据记录回复对应内容"""
     async with db.get_session() as session:
         records = (await session.scalars(Select(Learn).where(Learn.id == ctx.scene.channel))).all()
         if not records:
             return
+        alc: AlconnaGraiaService[AlconnaAvillaAdapter]
+        msg = str(alc.get_adapter().remove_tome(message, ctx.account.route))
         for rec in records:
-            if re.fullmatch(rec.key, str(message.exclude(Notice)).lstrip()):
+            if re.fullmatch(rec.key, msg):
                 content = deserialize_message(rec.content)
                 await ctx.scene.send_message(content)
                 raise PropagationCancelled

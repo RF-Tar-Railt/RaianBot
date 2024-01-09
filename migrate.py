@@ -72,7 +72,8 @@ async def main():
                     )
                     await session.merge(group)
                 else:
-                    group.accounts.append(f"land(qq).account({dr.name})")
+                    group.accounts = [*group.accounts, f"land(qq).account({dr.name})"]
+                    group.accounts = list(set(group.accounts))
                     await session.merge(group)
                 logger.debug(f"migrating group {group_id} ...")
                 if "weibo_followers" in data["additional"]:
