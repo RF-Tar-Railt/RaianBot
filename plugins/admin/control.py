@@ -64,7 +64,11 @@ function_control = Alconna(
     ),
 )
 
-function_control.shortcut("禁用敏感功能", prefix=True, command="功能 禁用 member_join member_leave ai")
+function_control.shortcut(
+    "禁用敏感功能",
+    prefix=True,
+    command="功能 禁用 member_join member_leave member_mute member_unmute ai",
+)
 
 blacklist_control = Alconna(
     "黑名单",
@@ -243,7 +247,7 @@ async def _f_list(ctx: Context, bot: RaianBotService, db: DatabaseService, conf:
 """
     for i in bot.functions.keys():
         stat = "❌ 禁用" if i in group.disabled else "🚫 黑名单" if group.in_blacklist else "✔ 启用"
-        md += f"| {i} | {stat} | {bot.func_description(i)}{'(默认禁用)' if i in bot.disabled else ''} |\n"
+        md += f"| {i} | {stat} | {bot.func_description(i)}{' (默认禁用)' if i in bot.disabled else ''} |\n"
     img = await md2img(md)
     try:
         return await ctx.scene.send_message(Picture(RawResource(img)))
@@ -272,8 +276,9 @@ async def _f_active(ctx: Context, arp: Arparma, bot: RaianBotService, db: Databa
                 return await ctx.scene.send_message(f"功能 {name} 不存在")
             if name not in group.disabled:
                 return await ctx.scene.send_message(f"功能 {name} 未禁用")
-            group.disabled.remove(name)
-        await session.commit()
+            group.disabled = [i for i in group.disabled if i != name]
+            await session.commit()
+            await session.refresh(group)
         return await ctx.scene.send_message(f"功能 {', '.join(names)} 启用成功")
 
 
@@ -294,8 +299,9 @@ async def _f(ctx: Context, arp: Arparma, bot: RaianBotService, db: DatabaseServi
                 return await ctx.scene.send_message(f"功能 {name} 不存在")
             if name in group.disabled:
                 return await ctx.scene.send_message(f"功能 {name} 已经禁用")
-            group.disabled.append(name)
-        await session.commit()
+            group.disabled = [*group.disabled, name]
+            await session.commit()
+            await session.refresh(group)
         return await ctx.scene.send_message(f"功能 {', '.join(names)} 禁用成功")
 
 

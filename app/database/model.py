@@ -40,6 +40,7 @@ class Group(Base):
     """对应平台"""
 
     accounts: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=[])
+    """机器人账号"""
 
     in_blacklist: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     """是否在黑名单中"""

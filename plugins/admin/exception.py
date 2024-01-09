@@ -4,7 +4,6 @@ from io import StringIO
 
 from arclet.alconna.graia import startswith
 from avilla.core import Avilla, Context, Picture, RawResource
-from avilla.core.exceptions import AccountMuted
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.profile import NickCapability
@@ -43,11 +42,6 @@ async def nickname_restore(ctx: Context, conf: BotConfig):
 @listen(ExceptionThrown)
 @priority(13)
 async def report(event: ExceptionThrown, avilla: Avilla):
-    if isinstance(event.exception, AccountMuted) and isinstance(event.event, MessageReceived):
-        # for listener in app.broadcast.default_listener_generator(AccountMutedEvent):
-        #     await listener.callable(app, event.event.sender.group, interface)
-        # return
-        ...
     with StringIO() as fp:
         traceback.print_tb(event.exception.__traceback__, file=fp)
         tb = fp.getvalue()

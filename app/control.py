@@ -7,6 +7,7 @@ from typing import Any
 from avilla.core import Context
 from avilla.core.account import BaseAccount
 from avilla.core.elements import Notice, Text
+from avilla.core.event import AvillaEvent
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
@@ -85,7 +86,7 @@ def check_disabled(path: str):
 
 
 def check_exclusive():
-    async def __wrapper__(event: MessageReceived, serv: RaianBotService, ctx: Context):
+    async def __wrapper__(event: AvillaEvent, serv: RaianBotService, ctx: Context):
         if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
             return True
         if len(serv.config.bots) > 1:
@@ -105,13 +106,17 @@ def check_exclusive():
                 #     if notice.target.last_value == ctx.self.last_value:
                 #         return True
                 excl = serv.cache.setdefault("$exclusive", {})
-                if event.message.to_selector() not in excl:
+                if isinstance(event, MessageReceived):
+                    event_id = event.message.to_selector()
+                else:
+                    event_id = f"{event.__class__.__name__}#{event.context.scene.display}"
+                if event_id not in excl:
                     excl.clear()
                     rand = random.Random()
                     rand.seed(seed)
                     choice = rand.choice(group.accounts)
-                    excl[event.message.id] = choice
-                elif not ctx.account.route.follows(excl[event.message.to_selector()]):
+                    excl[event_id] = choice
+                elif not ctx.account.route.follows(excl[event_id]):
                     raise ExecutionStop
 
         return True

@@ -29,6 +29,7 @@ dependencies = [
     "arclet-alconna>=1.7.42",
     "graia-amnesia[aiohttp,asgi]>=0.9.0",
     "avilla-core>=1.0.0a21",
+    "tzdata>=2023.4",
 ]
 requires-python = ">=3.9"
 readme = "README.md"

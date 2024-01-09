@@ -1,12 +1,23 @@
 import re
 from base64 import b64encode
 from datetime import datetime
+from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
 from graiax.text2img.playwright import HTMLRenderer, MarkdownConverter, PageOption, ScreenshotOption, convert_text
 from graiax.text2img.playwright.renderer import BuiltinCSS
+from PIL import Image
 from playwright.async_api import Request, Route
+from qrcode import QRCode
+from qrcode.image.styledpil import StyledPilImage
 from yarl import URL
+
+from .datetime import CHINA_TZ
+
+if TYPE_CHECKING:
+    from .config import RaianConfig
+
 
 font_path = Path(__file__).parent.parent / "assets" / "fonts"
 image_path = Path(__file__).parent.parent / "assets" / "image"
@@ -20,12 +31,32 @@ font_mime_map = {
     "woff2": "font/woff2",
 }
 
+guild_b64: Union[str, None] = None
+group_b64: Union[str, None] = None
 
-with (image_path / "qqapi.png").open("rb") as f:
-    b64 = b64encode(f.read()).decode()
 
-# with (image_path / "qq-guild.png").open("rb") as f:
-#     b641 = b64encode(f.read()).decode()
+def setup_qrcode(config: "RaianConfig"):
+    global guild_b64, group_b64
+    for bot in config.bots:
+        if bot.type == "qqapi":
+            qrcode = QRCode(image_factory=StyledPilImage)
+            qrcode.add_data(f"https://qun.qq.com/qunpro/robot/share?robot_appid={bot.account}")
+            invite_guild: Image.Image = (
+                qrcode.make_image(fill_color="black", back_color="#fafafac0").get_image().resize((200, 200))
+            )
+            bio = BytesIO()
+            invite_guild.save(bio, format="PNG")
+            guild_b64 = b64encode(bio.getvalue()).decode()
+
+            qrcode.clear()
+            qrcode.add_data(f"https://qun.qq.com/qunpro/robot/qunshare?robot_appid={bot.account}")
+            invite_group: Image.Image = (
+                qrcode.make_image(fill_color="black", back_color="#fafafac0").get_image().resize((200, 200))
+            )
+            bio = BytesIO()
+            invite_group.save(bio, format="PNG")
+            group_b64 = b64encode(bio.getvalue()).decode()
+            break
 
 
 async def fill_font(route: Route, request: Request):
@@ -39,17 +70,42 @@ async def fill_font(route: Route, request: Request):
     await route.fallback()
 
 
-footer = lambda: (
-    "<style>.footer{box-sizing:border-box;position:absolute;left:0;width:100%;background:#eee;"
-    "padding:30px 40px;margin-top:50px;font-size:1rem;color:#6b6b6b;}"
-    ".footer p{margin:5px auto;}</style>"
-    '<div class="footer">'
-    f'<img align="right" src="data:image/png;base64,{b64}" />'
-    "<p>由 RaianBot 生成</p>"
-    "<br/>"
-    f'<p>{datetime.now().strftime("%Y/%m/%d %p %I:%M:%S")}</p>'
-    f"</div>"
-)
+def footer():
+    qr = f"""
+                <div class="qrcode-area">
+                    <img class="qrcode" src="data:image/png;base64,{group_b64}" />
+                    <img class="qrcode" src="data:image/png;base64,{guild_b64}" />
+                </div>
+                <div class="qrcode-text">
+                    <p>扫描二维码将 RaianBot 添加至你的群聊/频道</p>
+                </div>
+    """
+    return f"""
+    <style>
+        .footer{{
+            box-sizing:border-box;
+            background:#eee;
+            padding:30px 40px;
+            margin-top:50px;
+            font-size:1rem;
+        }}
+        .footer p{{margin:5px auto;}}
+    </style>
+    <div style="position:absolute;left:0;width:100%;color:#6b6b6b;">
+        <div class="footer">
+            <section class="left">
+                <div class="footer-text">
+                    <p style="font-weight: bold">该图片由 RaianBot 生成</p>
+                    <p style="font-size: 14px">{datetime.now(CHINA_TZ).strftime("%Y/%m/%d %p %I:%M:%S")}</p>
+                </div>
+            </section>
+            <section class="right">{qr if guild_b64 and group_b64 else ""}
+            </section>
+        </div>
+        <section class="powered">Powered by Avilla</section>
+    </div>
+    """
+
 
 html_render = HTMLRenderer(
     page_option=PageOption(device_scale_factor=1.5),
@@ -68,6 +124,8 @@ html_render = HTMLRenderer(
         # "@font-face{font-family:'harmo';font-weight:600;"
         # "src:url('http://static.graiax/fonts/HarmonyOS_Sans_SC_Bold.ttf') format('truetype');}"
         # "*{font-family:'harmo',sans-serif}",
+        # "body{background-color:#fafafac0;}",
+        "@media(prefers-color-scheme:light){.markdown-body{--color-canvas-default:#fafafac0;}}",
     ),
     page_modifiers=[
         lambda page: page.route(lambda url: bool(re.match("^http://static.graiax/fonts/(.+)$", url)), fill_font)
