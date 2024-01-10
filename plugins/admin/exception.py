@@ -47,7 +47,7 @@ async def report(event: ExceptionThrown, avilla: Avilla):
         tb = fp.getvalue()
     data = {
         "event": str(event.event.__repr__()),
-        "exctype": str(type(event.exception)),
+        "exctype": type(event.exception).__name__,
         "exc": str(event.exception),
         "traceback": tb,
     }
@@ -86,6 +86,8 @@ async def report(event: ExceptionThrown, avilla: Avilla):
     if not (accounts := avilla.get_accounts(account_type=ElizabethAccount)):
         return
     for account in accounts:
-        async for friend in account.account.staff.query_entities("land.friend", friend=lambda x: x in masters):
+        async for friend in account.account.staff.query_entities("land.friend"):
+            if friend["friend"] not in masters:
+                continue
             ctx = account.account.get_context(friend)
             await ctx.scene.send_message(Picture(RawResource(img)))

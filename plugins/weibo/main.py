@@ -376,7 +376,8 @@ async def update(avilla: Avilla):
                 dy, name = dynamics[uid]
                 await ctx.scene.send_message(f"{name} 有一条新动态！请查收!")
                 await ctx.scene.send_message(dy[0])
-                await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in dy[1])])
+                if dy[1]:
+                    await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in dy[1])])
                 await asyncio.sleep(10)
 
     dynamics.clear()

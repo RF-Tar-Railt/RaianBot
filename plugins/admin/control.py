@@ -48,14 +48,21 @@ function_control = Alconna(
         "禁用",
         Args["names", MultiVar(str), Field(completion=lambda: "试试用‘greet’")],
         alias=["ban", "disable"],
-        help_text="禁用一个功能",
+        help_text="禁用功能",
     ),
     Option(
         "启用",
         Args["names", MultiVar(str), Field(completion=lambda: "试试用‘greet’")],
         alias=["active"],
-        help_text="启用一个功能",
+        help_text="启用功能",
     ),
+    Option(
+        "保留",
+        Args["names", MultiVar(str), Field(completion=lambda: "试试用‘greet’")],
+        alias=["reserve"],
+        help_text="保留功能，禁用除此之外的所有功能",
+    ),
+    Option("清空", alias=["clear"], help_text="清空所有被禁用功能"),
     meta=CommandMeta(
         "管理机器人的功能",
         usage="可传入多个功能名, 以空格分隔",
@@ -220,8 +227,10 @@ async def _f_main(ctx: Context):
         """\
 功能管理
 - 列出：列出所有已安装功能
-- 禁用：禁用一个功能
-- 启用：启用一个功能
+- 禁用：禁用功能
+- 启用：启用功能
+- 保留：保留功能，禁用除此之外的所有
+- 清空：清空所有被禁用功能
 """
     )
 
@@ -302,6 +311,41 @@ async def _f(ctx: Context, arp: Arparma, bot: RaianBotService, db: DatabaseServi
             await session.commit()
             await session.refresh(group)
         return await ctx.scene.send_message(f"功能 {', '.join(names)} 禁用成功")
+
+
+@alcommand(function_control, post=True, send_error=True)
+@permission("admin")
+@assign("保留")
+@exclusive
+async def _f_reserve(ctx: Context, arp: Arparma, bot: RaianBotService, db: DatabaseService):
+    async with db.get_session() as session:
+        group = (await session.scalars(select(Group).where(Group.id == ctx.scene.channel))).one_or_none()
+        if not group:
+            return await ctx.scene.send_message("请在群组内使用该命令")
+        if group.in_blacklist:
+            return await ctx.scene.send_message("所在群组已进入黑名单, 设置无效")
+        names = arp.query[tuple[str, ...]]("names")
+        group.disabled = [i for i in bot.functions.keys() if i not in names]
+        await session.commit()
+        await session.refresh(group)
+        return await ctx.scene.send_message(f"功能 {', '.join(names)} 保留成功")
+
+
+@alcommand(function_control, post=True, send_error=True)
+@permission("admin")
+@assign("清空")
+@exclusive
+async def _f_clear(ctx: Context, db: DatabaseService):
+    async with db.get_session() as session:
+        group = (await session.scalars(select(Group).where(Group.id == ctx.scene.channel))).one_or_none()
+        if not group:
+            return await ctx.scene.send_message("请在群组内使用该命令")
+        if group.in_blacklist:
+            return await ctx.scene.send_message("所在群组已进入黑名单, 设置无效")
+        group.disabled = []
+        await session.commit()
+        await session.refresh(group)
+        return await ctx.scene.send_message("成功清空所有被禁用功能!")
 
 
 @alcommand(blacklist_control, post=True, send_error=True)

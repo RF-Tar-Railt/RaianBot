@@ -188,6 +188,8 @@ async def shed(avilla: Avilla):
                 await asyncio.sleep(1)
         await session.commit()
     for account in accounts:
-        async for friend in account.account.staff.query_entities("land.friend", friend=lambda x: x in results):
+        async for friend in account.account.staff.query_entities("land.friend"):
+            if friend["friend"] not in results:
+                continue
             ctx = account.account.get_context(friend)
             await ctx.scene.send_message("\n".join(results[friend["friend"]]))

@@ -154,7 +154,7 @@ async def main():
                                     elem["type"] = "Text"
                                 elif elem["type"] == "Face":
                                     elem["id"] = str(elem.pop("face_id", 24))
-                            record = Learn(id=group_id, key=key, author=author, content=content)
+                            record = Learn(gid=group_id, key=key, author=author, content=content)
                             await session.merge(record)
                             await session.commit()
             (new_plugins / "learn_repeat").mkdir(exist_ok=True, parents=True)

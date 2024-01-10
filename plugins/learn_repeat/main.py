@@ -66,7 +66,7 @@ async def shelp(ctx: Context):
 @accessable
 async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
     async with db.get_session() as session:
-        records = (await session.scalars(Select(Learn).where(Learn.id == ctx.scene.channel))).all()
+        records = (await session.scalars(Select(Learn).where(Learn.gid == ctx.scene.channel))).all()
     if not records:
         return await ctx.scene.send_message("该群未找到任何学习记录")
     if target.available:
@@ -102,7 +102,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
 async def rfind(ctx: Context, target: Match[str], db: DatabaseService):
     async with db.get_session() as session:
         rec = (
-            await session.scalars(Select(Learn).where(Learn.id == ctx.scene.channel).where(Learn.key == target.result))
+            await session.scalars(Select(Learn).where(Learn.gid == ctx.scene.channel).where(Learn.key == target.result))
         ).one_or_none()
     if not rec:
         return await ctx.scene.send_message("查找失败！")
@@ -116,7 +116,7 @@ async def rfind(ctx: Context, target: Match[str], db: DatabaseService):
 @accessable
 async def rremove(ctx: Context, db: DatabaseService, target: Match[Union[str, Notice]]):
     async with db.get_session() as session:
-        records = (await session.scalars(Select(Learn).where(Learn.id == ctx.scene.channel))).all()
+        records = (await session.scalars(Select(Learn).where(Learn.gid == ctx.scene.channel))).all()
         if not records:
             return await ctx.scene.send_message("该群未找到任何学习记录")
         if isinstance(target.result, Notice):
@@ -151,7 +151,12 @@ async def radd(ctx: Context, name: Match[str], result: Arparma, db: DatabaseServ
     if len(key) > 256:
         return await ctx.scene.send_message("关键词过长！")
     async with db.get_session() as session:
-        rec = Learn(id=ctx.scene.channel, key=key, author=ctx.client.display_without_land, content=serialized)
+        rec = (
+            await session.scalars(Select(Learn).where(Learn.gid == ctx.scene.channel).where(Learn.key == key))
+        ).one_or_none()
+        if rec:
+            return await ctx.scene.send_message("呜, 这个关键词已经被占用了")
+        rec = Learn(gid=ctx.scene.channel, key=key, author=ctx.client.display_without_land, content=serialized)
         session.add(rec)
         await session.commit()
     return await ctx.scene.send_message("我学会了！你现在可以来问我了！")
@@ -170,7 +175,7 @@ async def redit(ctx: Context, name: Match[str], result: Arparma, db: DatabaseSer
         return await ctx.scene.send_message("喂, 没有内容啊~")
     async with db.get_session() as session:
         rec = (
-            await session.scalars(Select(Learn).where(Learn.id == ctx.scene.channel).where(Learn.key == name.result))
+            await session.scalars(Select(Learn).where(Learn.gid == ctx.scene.channel).where(Learn.key == name.result))
         ).one_or_none()
         if not rec:
             return await ctx.scene.send_message("呜, 找不到这条记录")
@@ -185,13 +190,16 @@ async def redit(ctx: Context, name: Match[str], result: Arparma, db: DatabaseSer
 async def handle(ctx: Context, message: MessageChain, db: DatabaseService, alc: AlconnaGraiaService):
     """依据记录回复对应内容"""
     async with db.get_session() as session:
-        records = (await session.scalars(Select(Learn).where(Learn.id == ctx.scene.channel))).all()
+        records = (await session.scalars(Select(Learn).where(Learn.gid == ctx.scene.channel))).all()
         if not records:
             return
         alc: AlconnaGraiaService[AlconnaAvillaAdapter]
         msg = str(alc.get_adapter().remove_tome(message, ctx.account.route))
         for rec in records:
-            if re.fullmatch(rec.key, msg):
-                content = deserialize_message(rec.content)
-                await ctx.scene.send_message(content)
-                raise PropagationCancelled
+            try:
+                if re.fullmatch(rec.key, msg):
+                    content = deserialize_message(rec.content)
+                    await ctx.scene.send_message(content)
+                    raise PropagationCancelled
+            except Exception:
+                pass
