@@ -227,7 +227,7 @@ files = [
 
 [[package]]
 name = "avilla-core"
-version = "1.0.0a21"
+version = "1.0.0a22"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -238,23 +238,23 @@ dependencies = [
     "loguru>=0.6.0",
 ]
 files = [
-    {file = "avilla_core-1.0.0a21-py3-none-any.whl", hash = "sha256:bda5167905376dca9ddd4bfaccafa2fdf1e2419a6c738b0ab7827251abbdf26f"},
-    {file = "avilla_core-1.0.0a21.tar.gz", hash = "sha256:281acb73e0e5d223ed2f7ff746a467902a51bf2e4f70d763a986b34a68d95a39"},
+    {file = "avilla_core-1.0.0a22-py3-none-any.whl", hash = "sha256:46d23b1fd2b62975f9be38669f535f95507be915ce51a6ead4688efdcf42b685"},
+    {file = "avilla_core-1.0.0a22.tar.gz", hash = "sha256:ee290f799243fced1d7d35e1624b9d9e84115044cc35341104e1b5a20298bb04"},
 ]
 
 [[package]]
 name = "avilla-elizabeth"
-version = "1.0.0a22"
+version = "1.0.0a23"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "aiohttp>=3.8.1",
-    "avilla-core>=1.0.0a21",
+    "avilla-core>=1.0.0a22",
     "avilla-standard-qq>=1.0.0a21",
 ]
 files = [
-    {file = "avilla_elizabeth-1.0.0a22-py3-none-any.whl", hash = "sha256:09035cf48f3cfcd10164fab94c24e87dd21846857cc1a1e30ce9e0bf1361dd39"},
-    {file = "avilla_elizabeth-1.0.0a22.tar.gz", hash = "sha256:8184e9864e0e8303b6bcbe4bc88c6bd55ff34f0bae9548a5a8956863ab5efdd8"},
+    {file = "avilla_elizabeth-1.0.0a23-py3-none-any.whl", hash = "sha256:3faac987b87089811ddb2bc8c7ae93a0439bca919e8da1fb546bd5ad41427d36"},
+    {file = "avilla_elizabeth-1.0.0a23.tar.gz", hash = "sha256:0683cf852c56443da047a10f99ebfdae65704620ec06f3e5be0a49a9f6930413"},
 ]
 
 [[package]]
