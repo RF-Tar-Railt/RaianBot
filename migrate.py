@@ -75,6 +75,8 @@ async def main():
                 else:
                     group.accounts = [*group.accounts, f"land(qq).account({dr.name})"]
                     group.accounts = list(set(group.accounts))
+                    group.disabled.extend(["member_mute", "member_unmute"])
+                    group.disabled = list(set(group.disabled))
                     await session.merge(group)
                 logger.info(f"migrating group {group_id} ...")
                 if "weibo_followers" in data["additional"]:
@@ -92,7 +94,7 @@ async def main():
                     user = User(id=user_id, trust=data["trust"])
                     await session.merge(user)
                 else:
-                    user.trust = data["trust"]
+                    user.trust = max(data["trust"], user.trust)
                     await session.merge(user)
                 logger.info(f"migrating user {user_id} ...")
                 now = datetime.now()
