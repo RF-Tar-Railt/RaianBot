@@ -1,8 +1,7 @@
 import asyncio
 from secrets import token_hex
 
-from arclet.alconna import Alconna, Args, CommandMeta, Option, OptionResult
-from arclet.alconna import namespace, store_true
+from arclet.alconna import Alconna, Args, CommandMeta, Option, OptionResult, namespace, store_true
 from arclet.alconna.avilla import AlconnaAvillaAdapter
 from arclet.alconna.graia import AlconnaBehaviour, AlconnaGraiaService, AlconnaOutputMessage
 from arclet.alconna.tools import MarkdownTextFormatter

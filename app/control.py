@@ -105,7 +105,7 @@ def check_exclusive():
             return True
         account_routes = group.accounts.copy()
         for account in group.accounts:
-            if Selector.from_follows_pattern(f"land(qq).{account}") not in event.context.avilla.accounts:
+            if Selector.from_follows_pattern(account) not in event.context.avilla.accounts:
                 account_routes.remove(account)
         if len(account_routes) < 2:
             return True
