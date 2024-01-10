@@ -323,7 +323,7 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
         await ctx.scene.send_message(notice)
 
 
-@every(5, "minute")
+@every(1, "minute")
 @record("微博动态自动获取", False)
 async def update(avilla: Avilla):
     dynamics = {}
@@ -364,7 +364,9 @@ async def update(avilla: Avilla):
             accounts = []
             for account in group.accounts:
                 _route = Selector.from_follows_pattern(account)
-                if _route in avilla.accounts and isinstance(acc := avilla.get_account(_route), ElizabethAccount):
+                if _route in avilla.accounts and isinstance(
+                    (acc := avilla.get_account(_route)).account, ElizabethAccount
+                ):
                     accounts.append(acc.account)
             if not accounts:
                 continue

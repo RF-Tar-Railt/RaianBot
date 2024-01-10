@@ -47,7 +47,7 @@ async def ill_(ctx: Context, name: Match[Union[str, Notice]], template: Match[st
         if isinstance(_name, str):
             text = tp.format(target=_name[:20])
         else:
-            text = tp.format((_name.display or (await ctx.client.pull(Nick)).nickname)[:20])
+            text = tp.format(target=(_name.display or (await ctx.client.pull(Nick)).nickname)[:20])
     else:
-        text = tp.format((await ctx.client.pull(Nick)).nickname[:20])
+        text = tp.format(target=(await ctx.client.pull(Nick)).nickname[:20])
     return await ctx.scene.send_message(text)

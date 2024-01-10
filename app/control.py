@@ -74,7 +74,7 @@ def require_account(atype: type[BaseAccount] | tuple[type[BaseAccount], ...]):
             return True
         raise ExecutionStop
 
-    return __wrapper__
+    return Depend(__wrapper__)
 
 
 def check_disabled(path: str):
