@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from arclet.alconna.graia import startswith
 from avilla.core import Context, Notice
 from avilla.core.event import SceneCreated, SceneDestroyed
 from avilla.elizabeth.account import ElizabethAccount
-from avilla.standard.core.message import MessageReceived, MessageSend
+from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
 from graia.amnesia.message import MessageChain
 from graia.saya.builtins.broadcast.shortcut import listen, priority
@@ -20,6 +21,30 @@ from . import exception  # noqa: F401
 from . import member  # noqa: F401
 from . import request  # noqa: F401
 from .model import BlacklistCache
+
+
+@listen(MessageReceived)
+@startswith("清理失效群")
+@priority(6)
+async def _init_f(ctx: Context, db: DatabaseService, bot: RaianBotService, conf: BotConfig):
+    if ctx.client.user != conf.master_id:
+        return
+    groups = set()
+    async for group in ctx.query("land.group"):
+        groups.add(group.pattern["group"])
+    async with db.get_session() as session:
+        gps = (
+            await session.scalars(
+                select(Group)
+                .where(Group.platform == "qq")
+                .where(Group.accounts == [ctx.account.route.display])
+                .where(Group.id.notin_(groups))
+            )
+        ).all()
+        for gp in gps:
+            await session.delete(gp)
+        await session.commit()
+    await ctx.account.get_context(conf.master()).scene.send_message(f"已清理失效群聊，共清理 {len(gps)} 个群聊")
 
 
 @listen(MessageReceived, SceneCreated)
@@ -57,9 +82,8 @@ async def introduce(ctx: Context, bot: RaianBotService, conf: BotConfig, db: Dat
     if not isinstance(ctx.account, ElizabethAccount):
         return
     group_id = ctx.scene.channel
-    await ctx[MessageSend.send](
-        conf.master(),
-        MessageChain("收到加入群聊事件\n" f"群号：{group_id}\n" f"群名：{(await ctx.scene.summary()).name}\n"),
+    await ctx.account.get_context(conf.master()).scene.send_message(
+        "收到加入群聊事件\n" f"群号：{group_id}\n" f"群名：{(await ctx.scene.summary()).name}\n"
     )
     await ctx.scene.send_message(
         f"我是 {conf.master_id} 的机器人 {conf.name}\n"
@@ -136,25 +160,19 @@ async def _remove(ctx: Context, db: DatabaseService, event: SceneDestroyed, conf
             bl = BlacklistCache(id=group_id, in_blacklist=True)
             await session.merge(bl)
             await session.commit()
-            await ctx[MessageSend.send](
-                conf.master(),
-                MessageChain(
-                    f"""\
+            await ctx.account.get_context(conf.master()).scene.send_message(
+                f"""\
 收到被踢出群聊事件
 群号：{group_id}
 群名：{(await ctx.scene.nick()).name}
 已添加至黑名单
 """
-                ),
             )
         else:
-            await ctx[MessageSend.send](
-                conf.master(),
-                MessageChain(
-                    f"""\
+            await ctx.account.get_context(conf.master()).scene.send_message(
+                f"""\
 收到群聊解散事件
 群号：{group_id}
 群名：{(await ctx.scene.nick()).name}
 """
-                ),
             )

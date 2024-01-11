@@ -8,6 +8,7 @@ from arknights_toolkit.update.main import fetch
 from avilla.core import Context
 from creart import it
 from graia.broadcast.entities.dispatcher import BaseDispatcher
+from graia.broadcast.exceptions import PropagationCancelled
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.saya import Saya
 from launart import Launart, Service
@@ -16,6 +17,7 @@ from loguru import logger
 from .config import BasePluginConfig, BotConfig, RaianConfig, extract_plugin_config
 from .cos import CosConfig, put_object
 from .database import DatabaseService
+from .statistic import Statistic, commit
 
 BotServiceCtx: ContextVar["RaianBotService"] = ContextVar("bot_service")
 
@@ -147,3 +149,17 @@ class RaianBotDispatcher(BaseDispatcher):
                     return next(
                         (bot for bot in self.service.config.bots if bot.ensure(context.account)), None  # type: ignore
                     )
+
+    async def afterExecution(
+        self,
+        interface: DispatcherInterface,
+        exception: Union[Exception, None],
+        tb: ...,
+    ):
+        if interface.depth > 0:
+            return
+        await interface.exec_result
+        result = interface.exec_result.result()
+        if isinstance(result, Statistic):
+            await commit(self.service.db, result)
+            raise PropagationCancelled

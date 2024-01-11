@@ -136,18 +136,16 @@ async def ematch(
     if not content.endswith(conf.name):
         raise PropagationCancelled
     if content == conf.name:
-        rand_str = random.choice(dialog_templates["default"])
+        raise PropagationCancelled
+    content = content[: -len(conf.name)]
+    for key, value in dialog_templates["content"].items():
+        if re.match(f"^{key}.*?", content):
+            rand_str = random.sample(value, 1)[0]
+            if rand_str.startswith("#image"):
+                rand_str = await image(rand_str)
+            break
     else:
-        content = content[: -len(conf.name)]
-        for key, value in dialog_templates["content"].items():
-            if re.match(f"^{key}.*?", content):
-                rand_str = random.sample(value, 1)[0]
-                if rand_str.startswith("#image"):
-                    rand_str = await image(rand_str)
-                break
-        else:
-            print(2)
-            rand_str = await random_ai(ctx, content[:120], aio, conf, gpt=0.4, tx=0.55)
+        rand_str = await random_ai(ctx, content[:120], aio, conf, gpt=0.4, tx=0.55)
     await ctx.scene.send_message(rand_str)  # noqa
     raise PropagationCancelled
 
@@ -172,10 +170,10 @@ async def aitalk(
         if mid in cache:
             raise PropagationCancelled
     content = str(event.message.content.include(Text)).lstrip()
-    if not content:
+    if not content or content == conf.name:
         return
     names = [command_manager._command_part(name)[1] for name in command_manager.all_command_raw_help()]
-    if content[len(conf.name) :].split()[0] in names:
+    if content.removeprefix(conf.name).split()[0] in names:
         raise PropagationCancelled
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         reply = await random_ai(ctx, content[:120], aio, conf, gpt=0.55, tx=0.4)

@@ -12,7 +12,7 @@ pat1 = re.compile(".*?(早上好|早安|中午好|下午好|晚上好)$")
 
 @listen(MessageReceived)
 @record("greet")
-@priority(7)
+@priority(9)
 @exclusive
 @accessable
 async def greet(ctx: Context, message: MessageChain, source: Message):
