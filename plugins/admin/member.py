@@ -36,7 +36,7 @@ async def member_join_tell(
     Filter()
     .dispatch(MetadataModified)
     .assert_true(lambda e: e.route is MuteInfo)
-    .assert_true(lambda e: list(e.details.values())[0].current)
+    .assert_true(lambda e: e.details[MuteInfo.inh().muted].current)
 )
 @exclusive
 @allow(ElizabethAccount)
@@ -51,7 +51,7 @@ async def member_mute_tell(ctx: Context, event: MetadataModified):
     Filter()
     .dispatch(MetadataModified)
     .assert_true(lambda e: e.route is MuteInfo)
-    .assert_false(lambda e: list(e.details.values())[0].current)
+    .assert_false(lambda e: e.details[MuteInfo.inh().muted].current)
 )
 @exclusive
 @allow(ElizabethAccount)
