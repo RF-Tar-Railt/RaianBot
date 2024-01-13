@@ -126,7 +126,8 @@ async def send_handler(output: str, otype: str, ctx: Context):
     img = await md2img(output)
     try:
         return await ctx.scene.send_message(Picture(RawResource(img)))
-    except Exception:
+    except Exception as e:
+        logger.error(e)
         url = await bot_service.upload_to_cos(img, f"output_{token_hex(16)}.png")
         try:
             return await ctx.scene.send_message(picture(url, ctx))

@@ -44,7 +44,7 @@ async def recruit(ctx: Context, res: Arparma, pw: PlaywrightService, bot: RaianB
         await page.goto(url, timeout=60000, wait_until="networkidle")  # type: ignore
         locator = page.locator('//div[@id="root"]')
         elem = locator.first.get_by_role("table").nth(1)
-        await elem.click()
+        # await elem.click()
         await page.wait_for_timeout(1000)
         data = await page.screenshot(type="png", clip=await elem.bounding_box())
         try:

@@ -16,6 +16,7 @@ from app.core import RaianBotService
 from app.database import DatabaseService, Group
 from app.image import md2img
 from app.shortcut import exclusive, permission, picture
+from app.statistic import Statistic
 
 module_control = Alconna(
     "模块",
@@ -108,13 +109,15 @@ async def _m_list(ctx: Context, bot: RaianBotService, conf: BotConfig):
             md += f"| {path.split('.')[-2]} | {path} | ❌ 已禁用 |\n"
     img = await md2img(md)
     try:
-        return await ctx.scene.send_message(Picture(RawResource(img)))
+        await ctx.scene.send_message(Picture(RawResource(img)))
+        return Statistic("模块", ctx.scene.channel, ctx.client.user)
     except Exception:
         url = await bot.upload_to_cos(img, f"module_list_{token_hex(16)}.jpg")
         try:
-            return await ctx.scene.send_message(picture(url, ctx))
+            await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:
-            return await ctx.scene.send_message("模块列表：\n" + "\n".join(saya.channels.keys()))
+            await ctx.scene.send_message("模块列表：\n" + "\n".join(saya.channels.keys()))
+        return Statistic("模块", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(module_control, post=True, send_error=True)
@@ -138,7 +141,8 @@ async def _m_reload(ctx: Context, path: Match[str], bot: RaianBotService):
             if model := extract_plugin_config(bot.config, _path, name):
                 bot.config.plugin.configs[type(model)] = model
             saya.require(f"{_path}.{name}.main")
-        return await ctx.scene.send_message(f"重载 {_path}.{name} 成功")
+        await ctx.scene.send_message(f"重载 {_path}.{name} 成功")
+        return Statistic("模块", ctx.scene.channel, ctx.client.user)
     try:
         saya.uninstall_channel(_channel)
     except Exception as e:
@@ -153,14 +157,15 @@ async def _m_reload(ctx: Context, path: Match[str], bot: RaianBotService):
         await ctx.scene.send_message(f"重载 {_path}.{name} 过程中安装失败！\n{e}\n请修改后重试")
         raise e
     else:
-        return await ctx.scene.send_message(f"重载 {_path}.{name} 成功")
+        await ctx.scene.send_message(f"重载 {_path}.{name} 成功")
+        return Statistic("模块", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(module_control, post=True, send_error=True)
 @assign("$main")
 @exclusive
 async def _m_main(ctx: Context):
-    return await ctx.scene.send_message(
+    await ctx.scene.send_message(
         """\
 模块管理
 - 列出：列出所有已安装模块
@@ -169,6 +174,7 @@ async def _m_main(ctx: Context):
 - 重载：重载一个模块
 """
     )
+    return Statistic("模块", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(module_control, post=True, send_error=True)
@@ -191,7 +197,8 @@ async def _m_enable(ctx: Context, path: Match[str], bot: RaianBotService):
         return await ctx.scene.send_message("该模组未安装, 您可能需要安装它")
     if f"{_path}.{name}" in bot.config.plugin.disabled:
         bot.config.plugin.disabled.remove(f"{_path}.{name}")
-        return await ctx.scene.send_message(f"启用 {_path}.{name} 成功")
+        await ctx.scene.send_message(f"启用 {_path}.{name} 成功")
+        return Statistic("模块", ctx.scene.channel, ctx.client.user)
     return await ctx.scene.send_message("该模组已启用")
 
 
@@ -216,14 +223,15 @@ async def _m_disable(ctx: Context, path: Match[str], bot: RaianBotService):
     if f"{_path}.{name}" in bot.config.plugin.disabled:
         return await ctx.scene.send_message("该模组已被禁用")
     bot.config.plugin.disabled.append(f"{_path}.{name}")
-    return await ctx.scene.send_message(f"禁用 {_path}.{name} 成功")
+    await ctx.scene.send_message(f"禁用 {_path}.{name} 成功")
+    return Statistic("模块", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(function_control, post=True, send_error=True)
 @assign("$main")
 @exclusive
 async def _f_main(ctx: Context):
-    return await ctx.scene.send_message(
+    await ctx.scene.send_message(
         """\
 功能管理
 - 列出：列出所有已安装功能
@@ -233,6 +241,7 @@ async def _f_main(ctx: Context):
 - 清空：清空所有被禁用功能
 """
     )
+    return Statistic("功能", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(function_control, post=True, send_error=True)
@@ -258,13 +267,15 @@ async def _f_list(ctx: Context, bot: RaianBotService, db: DatabaseService, conf:
         md += f"| {i} | {stat} | {bot.func_description(i)}{' (默认禁用)' if i in bot.disabled else ''} |\n"
     img = await md2img(md)
     try:
-        return await ctx.scene.send_message(Picture(RawResource(img)))
+        await ctx.scene.send_message(Picture(RawResource(img)))
+        return Statistic("功能", ctx.scene.channel, ctx.client.user)
     except Exception:
         url = await bot.upload_to_cos(img, f"func_list_{token_hex(16)}.jpg")
         try:
-            return await ctx.scene.send_message(picture(url, ctx))
+            await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:
-            return await ctx.scene.send_message("功能列表：\n" + "\n".join(bot.functions.keys()))
+            await ctx.scene.send_message("功能列表：\n" + "\n".join(bot.functions.keys()))
+        return Statistic("功能", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(function_control, post=True, send_error=True)
@@ -287,7 +298,8 @@ async def _f_active(ctx: Context, arp: Arparma, bot: RaianBotService, db: Databa
             group.disabled = [i for i in group.disabled if i != name]
             await session.commit()
             await session.refresh(group)
-        return await ctx.scene.send_message(f"功能 {', '.join(names)} 启用成功")
+        await ctx.scene.send_message(f"功能 {', '.join(names)} 启用成功")
+        return Statistic("功能", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(function_control, post=True, send_error=True)
@@ -310,7 +322,8 @@ async def _f(ctx: Context, arp: Arparma, bot: RaianBotService, db: DatabaseServi
             group.disabled = [*group.disabled, name]
             await session.commit()
             await session.refresh(group)
-        return await ctx.scene.send_message(f"功能 {', '.join(names)} 禁用成功")
+        await ctx.scene.send_message(f"功能 {', '.join(names)} 禁用成功")
+        return Statistic("功能", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(function_control, post=True, send_error=True)
@@ -328,7 +341,8 @@ async def _f_reserve(ctx: Context, arp: Arparma, bot: RaianBotService, db: Datab
         group.disabled = [i for i in bot.functions.keys() if i not in names]
         await session.commit()
         await session.refresh(group)
-        return await ctx.scene.send_message(f"功能 {', '.join(names)} 保留成功")
+        await ctx.scene.send_message(f"功能 {', '.join(names)} 保留成功")
+        return Statistic("功能", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(function_control, post=True, send_error=True)
@@ -345,14 +359,15 @@ async def _f_clear(ctx: Context, db: DatabaseService):
         group.disabled = []
         await session.commit()
         await session.refresh(group)
-        return await ctx.scene.send_message("成功清空所有被禁用功能!")
+        await ctx.scene.send_message("成功清空所有被禁用功能!")
+        return Statistic("功能", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(blacklist_control, post=True, send_error=True)
 @assign("$main")
 @exclusive
 async def _bl_main(ctx: Context):
-    return await ctx.scene.send_message(
+    await ctx.scene.send_message(
         """\
 黑名单管理
 - 检查：查看当前群组是否在黑名单中
@@ -360,6 +375,7 @@ async def _bl_main(ctx: Context):
 - 移出：将当前群组移出黑名单
 """
     )
+    return Statistic("黑名单", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(blacklist_control, post=False, send_error=True)
@@ -371,8 +387,10 @@ async def _bl_state(ctx: Context, db: DatabaseService):
         if not group:
             return await ctx.scene.send_message("请在群组内使用该命令")
         if group.in_blacklist:
-            return await ctx.scene.send_message("所在群组已进入黑名单")
-        return await ctx.scene.send_message(f"所在群组已禁用功能: {group.disabled}")
+            await ctx.scene.send_message("所在群组已进入黑名单")
+        else:
+            await ctx.scene.send_message(f"所在群组已禁用功能: {group.disabled}")
+        return Statistic("黑名单", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(blacklist_control, post=True, send_error=True)
@@ -388,7 +406,8 @@ async def _bl_add(ctx: Context, db: DatabaseService):
             return await ctx.scene.send_message("所在群组已进入黑名单")
         group.in_blacklist = True
         await session.commit()
-        return await ctx.scene.send_message("该群组列入黑名单成功!")
+        await ctx.scene.send_message("该群组列入黑名单成功!")
+        return Statistic("黑名单", ctx.scene.channel, ctx.client.user)
 
 
 @alcommand(blacklist_control, post=True, send_error=True)
@@ -404,4 +423,5 @@ async def _bl_remove(ctx: Context, db: DatabaseService):
             return await ctx.scene.send_message("所在群组未进入黑名单")
         group.in_blacklist = False
         await session.commit()
-        return await ctx.scene.send_message("该群组移出黑名单成功!")
+        await ctx.scene.send_message("该群组移出黑名单成功!")
+        return Statistic("黑名单", ctx.scene.channel, ctx.client.user)

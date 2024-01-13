@@ -15,15 +15,20 @@ class SKAutoSignRecord(Protocol):
 
 app_code = "4ca99fa6b56cc2ba"
 header = {
-    "User-Agent": "Skland/1.4.1 (com.hypergryph.skland; build:100001014; Android 31; ) Okhttp/4.11.0",
+    "User-Agent": "Skland/1.5.1 (com.hypergryph.skland; build:100501001; Android 33; ) Okhttp/4.11.0",
     "Accept-Encoding": "gzip",
     "Connection": "close",
+    "Origin": "https://www.skland.com",
+    "Referer": "https://www.skland.com/",
+    "Content-Type": "application/json",
+    "manufacturer": "Xiaomi",
+    "os": "33",
 }
 header_for_sign = {
     "platform": "1",
     "timestamp": "",
     "dId": "de9759a5afaa634f",
-    "vName": "1.4.1",
+    "vName": "1.5.1",
 }
 
 # 签到url

@@ -92,7 +92,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
                 name = author.last_value
             content = deserialize_message(rec.content)
             forwards.append(Node(name=name, uid=author.last_value, time=now, content=f"{key}:\n" + content))
-        await ctx.scene.send_message(Forward(*forwards))
+        await ctx.scene.send_message(Forward(nodes=forwards))
 
 
 @alcommand(repeat, post=True, send_error=True)

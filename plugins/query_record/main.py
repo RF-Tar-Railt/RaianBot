@@ -54,7 +54,7 @@ querier = ArkRecord(
 alc.shortcut("方舟卡池更新", {"command": "抽卡查询 更新", "prefix": True})
 
 
-@alcommand(alc)
+@alcommand(alc, post=True, send_error=True)
 @assign("$main")
 @record("抽卡查询")
 @exclusive
@@ -102,7 +102,7 @@ B服：https://web-api.hypergryph.com/account/info/ak-b
         return await ctx.scene.send_message(str(e))
 
 
-@alcommand(alc)
+@alcommand(alc, post=True, send_error=True)
 @assign("更新")
 @record("抽卡查询")
 @exclusive
@@ -118,7 +118,7 @@ async def update(ctx: Context, arp: Arparma):
     return await ctx.scene.send_message("更新完成")
 
 
-@alcommand(alc)
+@alcommand(alc, post=True, send_error=True)
 @assign("绑定")
 @record("抽卡查询")
 @exclusive
