@@ -211,3 +211,12 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+.pdm-python
+library/ak_closure_talk/assets/characters/**
+logs/
+my_cache/
+plugins_old/
+my_config/
+.idea/
+gobang/
+chest/
