@@ -8,7 +8,14 @@ from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
 from graia.amnesia.message import MessageChain
 from graia.saya.builtins.broadcast.shortcut import listen, priority
+from graia.scheduler.saya.shortcut import crontab
 from sqlalchemy import select
+from graiax.playwright import PlaywrightService
+from graiax.playwright.i18n import N_
+from graiax.playwright.utils import log
+from launart import Launart
+
+from playwright.async_api import Error as PWError
 
 from app.config import BotConfig
 from app.core import RaianBotService
@@ -131,7 +138,8 @@ async def introduce(ctx: Context, bot: RaianBotService, conf: BotConfig, db: Dat
 """
             )
             group = (await session.scalars(select(Group).where(Group.id == group_id))).one_or_none()
-            group.in_blacklist = True
+            if group:
+                group.in_blacklist = True
             await session.delete(bl)
             await session.commit()
 
@@ -176,3 +184,37 @@ async def _remove(ctx: Context, db: DatabaseService, event: SceneDestroyed, conf
 群名：{(await ctx.scene.nick()).name}
 """
             )
+
+
+@crontab("0 4 * * * 0")
+async def restart_pw():
+    manager = Launart.current()
+    pw = manager.get_component(PlaywrightService)
+    await pw.playwright_mgr.__aexit__()
+    pw.playwright = await pw.playwright_mgr.__aenter__()
+    browser_type = {
+        "chromium": pw.playwright.chromium,
+        "firefox": pw.playwright.firefox,
+        "webkit": pw.playwright.webkit,
+    }[pw.browser_type]
+    try:
+        if pw.use_persistent_context:
+            log("info", N_("Playwright is currently starting in persistent context mode."))
+            pw.context = await browser_type.launch_persistent_context(**pw.launch_config)
+        else:
+            pw.browser = await browser_type.launch(**pw.launch_config)
+            pw.context = await pw.browser.new_context(**pw.global_context_config)
+    except PWError:
+        log(
+            "error",
+            N_(
+                "Unable to launch Playwright for {browser_type}, "
+                "please check the log output for the reason of failure. "
+                "It is possible that some system dependencies are missing. "
+                "You can set [magenta]`install_with_deps`[/] to [magenta]`True`[/] "
+                "to install dependencies when download browser."
+            ).format(browser_type=pw.browser_type),
+        )
+        raise
+    else:
+        log("success", N_("Playwright for {browser_type} is started.").format(browser_type=pw.browser_type))

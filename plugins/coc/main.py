@@ -6,6 +6,7 @@ from arclet.alconna import Alconna, Args, CommandMeta, Field, Option, namespace
 from arclet.alconna.graia import Match, alcommand, assign
 from arclet.alconna.tools import MarkdownTextFormatter
 from avilla.core import Context
+from avilla.elizabeth.account import ElizabethAccount
 from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya.builtins.broadcast.shortcut import priority
 from nepattern import BasePattern, MatchMode
@@ -210,8 +211,21 @@ async def rd_handle(
         coc_rule = (await session.scalars(select(CocRule).where(CocRule.id == ctx.scene.channel))).one_or_none()
         rule = coc_rule.rule if coc_rule else 0
     num = exp.result
+    pat = pattern.result
+    if pat.startswith("h"):
+        pat = pat[1:]
+        if (accounts := ctx.avilla.get_accounts(account_type=ElizabethAccount)):
+            user_id = ctx.client.user
+            for account in accounts:
+                async for friend in account.account.staff.query_entities("land.friend"):
+                    if friend["friend"] != user_id:
+                        continue
+                    ctx1 = account.account.get_context(friend)
+                    with suppress(ValueError):
+                        return await ctx1.scene.send_message(rd0(pat, num if num >= 0 else None, rule))
+                    return await ctx1.scene.send_message("出错了！")
     with suppress(ValueError):
-        return await ctx.scene.send_message(rd0(pattern.result, num if num >= 0 else None, rule))
+        return await ctx.scene.send_message(rd0(pat, num if num >= 0 else None, rule))
     return await ctx.scene.send_message("出错了！")
 
 

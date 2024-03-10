@@ -33,14 +33,19 @@ async def auto_accept(ctx: Context, opt: Match[bool], bot: RaianBotService):
 
 
 @listen(RequestReceived)
-@dispatch(Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type == "new_friend"))
+@dispatch(Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type == "elizabeth::new_friend"))
 async def get_friend_accept(ctx: Context, event: RequestReceived, bot: RaianBotService, conf: BotConfig):
     """
     收到好友申请
     """
     req = event.request
     await ctx.account.get_context(conf.master()).scene.send_message(
-        f"收到添加好友事件\nQQ：{req.sender.pattern['contact']}",
+        f"""\
+收到添加好友事件
+QQ：{req.sender.pattern['contact']}
+昵称：{(await ctx.client.nick()).name}
+申请消息：{req.message}"
+        """
     )
     if bot.cache.get("auto_accept", False):
         await req.accept()
@@ -66,7 +71,7 @@ async def get_friend_accept(ctx: Context, event: RequestReceived, bot: RaianBotS
 
 
 @listen(RequestReceived)
-@dispatch(Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type == "bot_invited_join_group"))
+@dispatch(Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type == "elizabeth::invited_join_group"))
 async def bot_invite(ctx: Context, event: RequestReceived, bot: RaianBotService, conf: BotConfig):
     """
     被邀请入群
@@ -79,6 +84,7 @@ async def bot_invite(ctx: Context, event: RequestReceived, bot: RaianBotService,
 收到邀请入群事件
 邀请者：{req.sender.pattern['member']}
 群号：{req.sender.pattern['group']}
+群名：{(await ctx.scene.summary()).name}
 """
             )
             if bot.cache.get("auto_accept", False):

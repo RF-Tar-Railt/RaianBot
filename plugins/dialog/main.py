@@ -100,11 +100,11 @@ async def smatch(
             raise PropagationCancelled
     content = str(event.message.content.include(Text)).lstrip()
     if not content.startswith(conf.name):
-        raise PropagationCancelled
+        return
     if content == conf.name:
         rand_str = random.choice(dialog_templates["default"])
     else:
-        content = content[len(conf.name) :]
+        content = content[len(conf.name) :].lstrip()
         names = [command_manager._command_part(name)[1] for name in command_manager.all_command_raw_help()]
         if content.split()[0] in names:
             raise PropagationCancelled
@@ -134,10 +134,10 @@ async def ematch(
     """依据语料进行匹配回复"""
     content = str(event.message.content.include(Text)).lstrip()
     if not content.endswith(conf.name):
-        raise PropagationCancelled
+        return
     if content == conf.name:
         raise PropagationCancelled
-    content = content[: -len(conf.name)]
+    content = content[: -len(conf.name)].rstrip()
     for key, value in dialog_templates["content"].items():
         if re.match(f"^{key}.*?", content):
             rand_str = random.sample(value, 1)[0]
