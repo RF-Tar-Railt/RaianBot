@@ -156,7 +156,7 @@ class RaianBotDispatcher(BaseDispatcher):
         exception: Union[Exception, None],
         tb: ...,
     ):
-        if interface.depth > 0:
+        if interface.depth > 0 or exception:
             return
         await interface.exec_result
         result = interface.exec_result.result()

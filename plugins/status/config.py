@@ -1,5 +1,3 @@
-from pydantic import Extra
-
 from app.config import BasePluginConfig
 
 CPU_TEMPLATE = r"""
@@ -43,7 +41,7 @@ PYTHON_VERSION_TEMPLATE = r"Python 版本: {{ python_version }}"
 SYSTEM_VERSION_TEMPLATE = r"系统版本: {{ system_version }}"
 
 
-class Config(BasePluginConfig, extra=Extra.ignore):
+class Config(BasePluginConfig):
     truncate: bool = True
     """Whether to render the status template with used variables only."""
 

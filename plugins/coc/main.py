@@ -75,7 +75,7 @@ with namespace("coc") as np:
             extra={"supports": {"mirai", "qqapi"}}
         ),
     )
-    s_or_f = BasePattern(r"\d+(?:d\d+)?\/\d+(?:d\d+)?", model=MatchMode.REGEX_MATCH, alias="suc/fail")
+    s_or_f = BasePattern(r"\d+(?:d\d+)?\/\d+(?:d\d+)?", mode=MatchMode.REGEX_MATCH, alias="suc/fail")
     sc_c = Alconna(
         "sc",
         Args[

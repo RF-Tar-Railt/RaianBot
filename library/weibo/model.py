@@ -2,6 +2,8 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
+MAPPING = {"info": 100505, "profile": 230283, "weibo": 107603, "video": 231567, "album": 107803}
+
 
 class WeiboUser(BaseModel):
     id: int
@@ -13,8 +15,6 @@ class WeiboUser(BaseModel):
     total: int = Field(default=0)
     latest: str = Field(default="")
 
-    __mapping = {"info": 100505, "profile": 230283, "weibo": 107603, "video": 231567, "album": 107803}
-
     @property
     def info_link(self):
         return f"https://m.weibo.cn/u/{self.id}"
@@ -24,7 +24,7 @@ class WeiboUser(BaseModel):
         return f"https://m.weibo.cn/api/container/getIndex?{self.contain_id('info')}"
 
     def contain_id(self, keys: Literal["info", "profile", "weibo", "video", "album"]) -> str:
-        return f"{self.__mapping[keys]}{self.id}"
+        return f"{MAPPING[keys]}{self.id}"
 
 
 class WeiboDynamic(BaseModel):

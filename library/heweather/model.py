@@ -1,10 +1,10 @@
 from enum import IntEnum
 from typing import Optional
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 
-class Now(BaseModel, extra=Extra.allow):
+class Now(BaseModel):
     obsTime: str
     temp: str
     icon: str
@@ -15,16 +15,20 @@ class Now(BaseModel, extra=Extra.allow):
     precip: str
     vis: str
 
+    model_config = ConfigDict(extra="allow")
 
-class NowApi(BaseModel, extra=Extra.allow):
+
+class NowApi(BaseModel):
     code: str
     now: Now
 
+    model_config = ConfigDict(extra="allow")
 
-class Daily(BaseModel, extra=Extra.allow):
+
+class Daily(BaseModel):
     fxDate: str
-    week: Optional[str]
-    date: Optional[str]
+    week: Optional[str] = None
+    date: Optional[str] = None
     tempMax: str
     tempMin: str
     textDay: str
@@ -32,13 +36,17 @@ class Daily(BaseModel, extra=Extra.allow):
     iconDay: str
     iconNight: str
 
+    model_config = ConfigDict(extra="allow")
 
-class DailyApi(BaseModel, extra=Extra.allow):
+
+class DailyApi(BaseModel):
     code: str
     daily: list[Daily]
 
+    model_config = ConfigDict(extra="allow")
 
-class Air(BaseModel, extra=Extra.allow):
+
+class Air(BaseModel):
     category: str
     aqi: str
     pm2p5: str
@@ -47,38 +55,50 @@ class Air(BaseModel, extra=Extra.allow):
     co: str
     no2: str
     so2: str
-    tag_color: Optional[str]
+    tag_color: Optional[str] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
-class AirApi(BaseModel, extra=Extra.allow):
+class AirApi(BaseModel):
     code: str
-    now: Optional[Air]
+    now: Optional[Air] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
-class Warning(BaseModel, extra=Extra.allow):
+class Warning(BaseModel):
     title: str
     type: str
     pubTime: str
     text: str
 
+    model_config = ConfigDict(extra="allow")
 
-class WarningApi(BaseModel, extra=Extra.allow):
+
+class WarningApi(BaseModel):
     code: str
-    warning: Optional[list[Warning]]
+    warning: Optional[list[Warning]] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
-class Hourly(BaseModel, extra=Extra.allow):
+class Hourly(BaseModel):
     fxTime: str
-    hour: Optional[str]
+    hour: Optional[str] = None
     temp: str
     icon: str
     text: str
-    temp_percent: Optional[str]
+    temp_percent: Optional[str] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
-class HourlyApi(BaseModel, extra=Extra.allow):
+class HourlyApi(BaseModel):
     code: str
     hourly: list[Hourly]
+
+    model_config = ConfigDict(extra="allow")
 
 
 class HourlyType(IntEnum):

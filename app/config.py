@@ -16,13 +16,12 @@ from avilla.qqapi.protocol import Intents as _Intents
 from avilla.qqapi.protocol import QQAPIConfig as _QQAPIConfig
 from avilla.qqapi.protocol import QQAPIProtocol
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 from sqlalchemy.engine.url import URL
 
 
 class BaseConfig(BaseModel):
-    class Config:
-        extra = "ignore"
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
 
 class BasePluginConfig(BaseModel):
@@ -33,8 +32,7 @@ class BasePluginConfig(BaseModel):
         if kwargs.get("domain", "global") == "global":
             cls.is_global = True
 
-    class Config:
-        extra = "ignore"
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="ignore")
 
 
 TConfig = TypeVar("TConfig", bound=BasePluginConfig)
@@ -69,16 +67,16 @@ class BrowserConfig(BaseConfig):
 
 
 class CommandConfig(BaseConfig):
-    prefix: list[str] = Field(default_factory=lambda x: ["."])
+    prefix: list[str] = Field(default_factory=lambda: ["."])
     """命令前缀; At:123456 会转换为 At(123456), Face:xxx 会转换为 Face(name=xxx)"""
 
-    help: list[str] = Field(default_factory=lambda x: ["-h", "--help"])
+    help: list[str] = Field(default_factory=lambda: ["-h", "--help"])
     """帮助选项的名称"""
 
-    shortcut: list[str] = Field(default_factory=lambda x: ["-sct", "--shortcut"])
+    shortcut: list[str] = Field(default_factory=lambda: ["-sct", "--shortcut"])
     """快捷命令选项的名称"""
 
-    completion: list[str] = Field(default_factory=lambda x: ["-cp", "--comp"])
+    completion: list[str] = Field(default_factory=lambda: ["-cp", "--comp"])
     """补全选项的名称"""
 
     disables: set[Literal["help", "shortcut", "completion"]] = Field(default_factory=set)
@@ -118,7 +116,7 @@ class PluginConfig(BaseConfig):
     root: str = Field(default="plugins", exclude={"bots", "data", "config"})
     """模块各数据的根路径"""
 
-    paths: list[str] = Field(default_factory=lambda x: ["plugins"])
+    paths: list[str] = Field(default_factory=lambda: ["plugins"])
     """模块存放的路径"""
 
     disabled: list[str] = Field(default_factory=list)
@@ -340,7 +338,7 @@ def load_config(root_dir: Union[str, Path] = "config") -> RaianConfig:
         config_path = path / "config.yml"
         if config_path.exists() and config_path.is_file():
             with open(config_path, encoding="utf-8") as f:
-                main_config = RaianConfig.parse_obj(yaml.safe_load(f))
+                main_config = TypeAdapter(RaianConfig).validate_python(yaml.safe_load(f))
             main_config.root = root_dir
             for bot in main_config.bots.copy():
                 if bot.account == "UNDEFINED":
@@ -357,5 +355,6 @@ def extract_plugin_config(main_config: RaianConfig, plugin_path: str, name: str)
         if (path := Path.cwd() / main_config.root / "plugins" / f"{name}.yml").exists():
             with path.open("r+", encoding="UTF-8") as f_obj:
                 data = yaml.safe_load(f_obj.read())
-            return cast(BasePluginConfig, config_module.Config).parse_obj(data)
+            config = cast(BasePluginConfig, config_module.Config)
+            return TypeAdapter(config).validate_python(data)
     return

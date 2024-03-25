@@ -1,4 +1,5 @@
 import asyncio
+import re
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Option, OptionResult, namespace, store_true
@@ -102,7 +103,7 @@ async def send_handler(output: str, otype: str, ctx: Context):
     if otype in ("shortcut", "error"):
         if ctx.scene.follows("::group"):
             output = f"\n{output}"
-        return await ctx.scene.send_message(output)
+        return await ctx.scene.send_message(re.sub(r"\w\.\w", lambda mat: mat[0].replace(".", ". "), output))
     if otype == "completion":
         output = (
             output.replace("\n\n", "\n")
