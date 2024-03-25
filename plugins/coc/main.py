@@ -214,7 +214,7 @@ async def rd_handle(
     pat = pattern.result
     if pat.startswith("h"):
         pat = pat[1:]
-        if (accounts := ctx.avilla.get_accounts(account_type=ElizabethAccount)):
+        if accounts := ctx.avilla.get_accounts(account_type=ElizabethAccount):
             user_id = ctx.client.user
             for account in accounts:
                 async for friend in account.account.staff.query_entities("land.friend"):

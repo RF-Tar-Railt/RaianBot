@@ -1,4 +1,5 @@
 """Broadcast Interrupt 相关的工具"""
+
 from __future__ import annotations
 
 import asyncio
@@ -37,16 +38,13 @@ class _ExtendedWaiter(Waiter, Generic[T, T_E]):
         self.block_propagation = block_propagation
 
     @overload
-    async def wait(self, timeout: float, default: T) -> T:
-        ...
+    async def wait(self, timeout: float, default: T) -> T: ...
 
     @overload
-    async def wait(self, timeout: float, default: T | None = None) -> T | None:
-        ...
+    async def wait(self, timeout: float, default: T | None = None) -> T | None: ...
 
     @overload
-    async def wait(self, timeout: None = None) -> T:
-        ...
+    async def wait(self, timeout: None = None) -> T: ...
 
     async def wait(self, timeout: float | None = None, default: T | None = None):
         """等待 Waiter, 如果超时则返回默认值

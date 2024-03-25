@@ -1,18 +1,22 @@
 {
-  "weibo_follower": {
     "2311005302": {
-      "id": "2311005302",
-      "name": "NVIDIA英伟达GPU计算",
-      "total": 5305
+        "id": 2311005302,
+        "name": "NVIDIA英伟达GPU计算",
+        "description": "",
+        "avatar": "",
+        "statuses": 0,
+        "visitable": true,
+        "total": 5305,
+        "latest": ""
     },
     "2808306097": {
-      "id": "2808306097",
-      "name": "UBISOFT育碧",
-      "total": 5706
+        "id": 2808306097,
+        "name": "UBISOFT育碧",
+        "description": "",
+        "avatar": "",
+        "statuses": 0,
+        "visitable": true,
+        "total": 5706,
+        "latest": ""
     }
-  },
-  "mapping": {
-    "NVIDIA英伟达GPU计算": "2311005302",
-    "UBISOFT育碧": "2808306097"
-  }
 }

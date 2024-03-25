@@ -6,8 +6,7 @@ from .tencentcloud import TencentCloudApi
 
 
 class BaseTrans:
-    async def trans(self, content: str, lang: str) -> Optional[str]:
-        ...
+    async def trans(self, content: str, lang: str) -> Optional[str]: ...
 
 
 class TencentTrans(BaseTrans):

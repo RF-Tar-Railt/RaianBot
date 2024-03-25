@@ -45,7 +45,9 @@ weibo_fetch = Alconna(
     Arg(
         "user;?#微博用户名称",
         str,
-        Field(completion=lambda: "比如说, 育碧", unmatch_tips=lambda x: f"请输入微博用户名称，而不是{x}\n例如: /微博 育碧"),  # noqa: E501
+        Field(
+            completion=lambda: "比如说, 育碧", unmatch_tips=lambda x: f"请输入微博用户名称，而不是{x}\n例如: /微博 育碧"
+        ),  # noqa: E501
     ),
     Arg("select#选择第几个用户", int, Field(default=-1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
     Option(

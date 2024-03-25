@@ -15,6 +15,7 @@ from graia.saya.builtins.broadcast.shortcut import listen, priority
 from app.config import BotConfig
 from app.core import RaianBotService
 from app.shortcut import accessable, exclusive, is_qqapi_group, record
+from library.chatglm import GlmBot
 from library.rand import random_pick_small
 from library.tencentcloud import TencentCloudApi
 
@@ -33,6 +34,22 @@ if config.tencent:
         bot.config.platform.tencentcloud_secret_id,
         bot.config.platform.tencentcloud_secret_key,
         proxy=bot.config.proxy,
+    )
+
+glm = None
+if config.open_bigmodel:
+    glm = GlmBot(
+        bot.config.platform.open_bigmodel_api_key,
+        model="glm-3-turbo",
+        max_token=1024,
+        temperature=0.8,
+        prompt=lambda nick: f"""
+- {nick}是一个专门用于在游戏群，动漫群等群聊中负责闲聊的对话机器人；
+- {nick}的语气应该略显可爱，会使用一点点表情（颜文字或者emoji)；
+- {nick}不会说长的句子，简短就好。
+接下来，请你进入 '{nick}' 这个角色与大家对话。
+请记住你是 '{nick}'，你不能说你是程序或者AI,你是有血有肉、有真实情感的。
+""",
     )
 
 
@@ -59,16 +76,24 @@ def error_handle(t) -> str:
     )
 
 
-async def random_ai(ctx: Context, msg: str, aio: AiohttpClientService, conf: BotConfig, **kwargs: float):
+async def random_ai(
+    ctx: Context, msg: str, aio: AiohttpClientService, conf: BotConfig, direct: bool = True, **kwargs: float
+):
     session = f"{ctx.client}"
-    if not config.tencent and not config.gpt_api:
+    if not config.tencent and not config.open_bigmodel and not config.gpt_api:
         return
     ai_url = config.gpt_api
     rand = random_pick_small([1, 2, 3], [0.05, kwargs.get("tx", 0.45), kwargs.get("gpt", 0.5)])
-    if rand == 3 and ai_url:
-        async with aio.session.get(ai_url, params={"text": msg, "session": f"{conf.name}/{session}"}) as resp:
-            return "".join((await resp.json())["result"])
-    if (rand == 2 or not ai_url) and api:
+    if rand == 3:
+        if ai_url:
+            async with aio.session.get(ai_url, params={"text": msg, "session": f"{conf.name}/{session}"}) as resp:
+                return "".join((await resp.json())["result"])
+        elif config.open_bigmodel and glm:
+            reply = await glm.chat(msg, direct, conf.name)
+            if not reply and not direct:
+                return
+            return reply or error_handle(msg)
+    if (rand == 2 or not ai_url or not glm) and api:
         reply = await api.chat(
             msg,
             session,
@@ -162,6 +187,8 @@ async def aitalk(
     aio: AiohttpClientService,
 ):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
+    if not isinstance(ctx.account, ElizabethAccount):
+        return
     mid = f"{event.message.id}@{ctx.account.route}"
     for cache in result_cache.values():
         if mid in cache and ((res := cache[mid].result()) and res.result.matched):
@@ -199,6 +226,6 @@ async def aitalk(
         if isinstance(elem, str):
             content = content.replace(elem, "", 1)
     if random.randint(0, 2000) == datetime.now().microsecond // 5000:
-        reply = await random_ai(ctx, content[:120], aio, conf, gpt=0.55, tx=0.45)
+        reply = await random_ai(ctx, content[:120], aio, conf, direct=False, gpt=0.55, tx=0.45)
         if reply:
             await ctx.scene.send_message(reply, reply=event.message)

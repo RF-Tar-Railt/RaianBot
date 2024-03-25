@@ -43,7 +43,6 @@ def check(lines: list[str]):
                     value = node.right.value
                     if isinstance(value, (int, float)) and value > 3:
                         return False
-
     return True
 
 
@@ -54,3 +53,11 @@ if __name__ == "__main__":
     print(check(["while True: pass"]))
     print(check(["2**3"]))
     print(check(["2**100"]))
+    print(
+        check(
+            [
+                "[ x.__init__.__globals__ for x in "
+                '.__class__.__base__.__subclasses__() if "wrapper" not in str(x.__init__) and "builtins" in x.__init__.__globals__ ]'  # noqa: E501
+            ]
+        )
+    )

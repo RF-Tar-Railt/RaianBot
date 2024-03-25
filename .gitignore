@@ -211,6 +211,9 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+/.pdm-python
+
+.idea/
 .pdm-python
 library/ak_closure_talk/assets/characters/**
 logs/

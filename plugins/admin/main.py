@@ -9,13 +9,12 @@ from avilla.standard.core.privilege import Privilege
 from graia.amnesia.message import MessageChain
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 from graia.scheduler.saya.shortcut import crontab
-from sqlalchemy import select
 from graiax.playwright import PlaywrightService
 from graiax.playwright.i18n import N_
 from graiax.playwright.utils import log
 from launart import Launart
-
 from playwright.async_api import Error as PWError
+from sqlalchemy import select
 
 from app.config import BotConfig
 from app.core import RaianBotService

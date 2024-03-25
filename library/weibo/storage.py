@@ -13,12 +13,10 @@ class BaseWeiboData(metaclass=ABCMeta):
         self.path = Path(filepath)
 
     @abstractmethod
-    def load(self) -> None:
-        ...
+    def load(self) -> None: ...
 
     @abstractmethod
-    def save(self) -> None:
-        ...
+    def save(self) -> None: ...
 
 
 class DefaultWeiboData(BaseWeiboData):

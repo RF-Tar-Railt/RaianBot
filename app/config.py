@@ -170,6 +170,8 @@ class PlatformConfig(BaseConfig):
     1 = 未来12小时 (默认值)
     2 = 未来24小时
     """
+    open_bigmodel_api_key: Optional[str] = Field(default=None)
+    """智谱AI开放平台 的 api_key"""
 
 
 class BotConfig(BaseConfig, Generic[TA]):
@@ -197,8 +199,7 @@ class BotConfig(BaseConfig, Generic[TA]):
     def administrators(self, channel: Optional[str] = None) -> list[Selector]:
         raise NotImplementedError
 
-    def ensure(self, account: TA):
-        ...
+    def ensure(self, account: TA): ...
 
 
 class ElizabethConfig(BotConfig[ElizabethAccount]):

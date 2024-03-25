@@ -71,7 +71,9 @@ QQ：{req.sender.pattern['contact']}
 
 
 @listen(RequestReceived)
-@dispatch(Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type == "elizabeth::invited_join_group"))
+@dispatch(
+    Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type == "elizabeth::invited_join_group")
+)
 async def bot_invite(ctx: Context, event: RequestReceived, bot: RaianBotService, conf: BotConfig):
     """
     被邀请入群
