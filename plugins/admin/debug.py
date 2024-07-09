@@ -88,6 +88,8 @@ def handle_time(time: str):
         return now - timedelta(days=365), now
     elif time == "总":
         return datetime.fromtimestamp(0), now
+    else:
+        return now - timedelta(days=1), now
 
 
 @alcommand(stat, post=True, send_error=True)

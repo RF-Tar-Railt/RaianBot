@@ -2,7 +2,7 @@ import importlib
 import sys
 from contextlib import suppress
 from pathlib import Path
-from typing import ClassVar, Generic, Literal, Optional, TypeVar, Union, cast
+from typing import ClassVar, Generic, Literal, Optional, TypeVar, Union, cast, Any
 
 import yaml
 from avilla.core import Selector
@@ -16,7 +16,7 @@ from avilla.qqapi.protocol import Intents as _Intents
 from avilla.qqapi.protocol import QQAPIConfig as _QQAPIConfig
 from avilla.qqapi.protocol import QQAPIProtocol
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
 from sqlalchemy.engine.url import URL
 
 
@@ -113,7 +113,7 @@ class DatabaseConfig(BaseConfig):
 
 
 class PluginConfig(BaseConfig):
-    root: str = Field(default="plugins", exclude={"bots", "data", "config"})
+    root: str = Field(default="plugins")
     """模块各数据的根路径"""
 
     paths: list[str] = Field(default_factory=lambda: ["plugins"])
@@ -126,7 +126,13 @@ class PluginConfig(BaseConfig):
     """插件配置存放处"""
 
     def get(self, mtype: type[TConfig]) -> TConfig:
-        return self.configs[mtype]
+        return self.configs[mtype]  # type: ignore
+
+    @field_validator("root", mode="after")
+    def check(cls, v: str):
+        if v in {"bots", "data", "config"}:
+            raise ValueError(f"根目录不能为 {v}")
+        return v
 
 
 class PlatformConfig(BaseConfig):
@@ -147,6 +153,9 @@ class PlatformConfig(BaseConfig):
 
     tencentcloud_bucket: Optional[str] = Field(default=None)
     """腾讯云API 下 COS 的 bucket"""
+
+    tencentcloud_custom_domain: Optional[str] = Field(default=None)
+    """腾讯云API 下 COS 的自定义域名"""
 
     heweather_api_key: Optional[str] = Field(default=None)
     """和风天气API 的 key
@@ -255,6 +264,9 @@ class Intents(BaseConfig):
 class QQAPIConfig(BotConfig[QQAPIAccount]):
     type: Literal["qqapi"] = "qqapi"
 
+    uin: int
+    """bot 的 qq 账号"""
+
     token: str
     """bot 的令牌"""
 
@@ -339,7 +351,7 @@ def load_config(root_dir: Union[str, Path] = "config") -> RaianConfig:
         if config_path.exists() and config_path.is_file():
             with open(config_path, encoding="utf-8") as f:
                 main_config = TypeAdapter(RaianConfig).validate_python(yaml.safe_load(f))
-            main_config.root = root_dir
+            main_config.root = str(root_dir)
             for bot in main_config.bots.copy():
                 if bot.account == "UNDEFINED":
                     main_config.bots.remove(bot)

@@ -1,9 +1,11 @@
+import math
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
 from avilla.core import Context, MessageChain, Picture, RawResource, Text
+from avilla.qqapi.element import Keyboard, Markdown
 from avilla.core.exceptions import ActionFailed
 from fastapi.responses import JSONResponse, Response
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
@@ -12,7 +14,7 @@ from sqlalchemy.sql import select
 
 from app.core import RaianBotService
 from app.database import DatabaseService, User
-from app.shortcut import accessable, exclusive, picture, record
+from app.shortcut import accessable, exclusive, picture, record, is_qqapi_group
 
 from .config import GachaConfig
 from .model import ArkgachaRecord
@@ -118,6 +120,19 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
                 data = gacha.create_image(guser, result, count_, True)
                 await ctx.scene.send_message("您未签到，抽卡水位是继承不了的说")
     try:
+        if is_qqapi_group(ctx):
+            url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png", custom_domain=True)
+            return await ctx.scene.send_message([
+                Markdown(
+                    custom_template_id="102060544_1720161790",
+                    params={
+                        "text": [f"博士已经抽取了{guser.six_statis}次没有6星了, 当前出6星的机率为 {guser.six_per}%"],
+                        "image_spec": [f"#720px #{20 * int(math.ceil(count.result / 10) + 1) + 130}px"],
+                        "image": [url],
+                    }
+                ),
+                Keyboard(id="102060544_1720339674")
+            ])
         return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
     except Exception:
         url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png")
@@ -191,10 +206,24 @@ async def simulate(ctx: Context, db: DatabaseService):
                 result = gacha.gacha(guser, 10)
                 data = await simulate_image(result[0])
                 await ctx.scene.send_message("您未签到，抽卡水位是继承不了的说")
+    url = None
     try:
+        if is_qqapi_group(ctx):
+            url = await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png", custom_domain=True)
+            return await ctx.scene.send_message([
+                Markdown(
+                    custom_template_id="102060544_1720161790",
+                    params={
+                        "text": [f"博士已经抽取了{guser.six_statis}次没有6星了, 当前出6星的机率为 {guser.six_per}%"],
+                        "image_spec": ["#1280px #720px"],
+                        "image": [url],
+                    }
+                ),
+                Keyboard(id="102060544_1720339360")
+            ])
         return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
     except Exception:
-        url = await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png")
+        url = url or await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png")
         try:
             return await ctx.scene.send_message(picture(url, ctx))
         except ActionFailed:

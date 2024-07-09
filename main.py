@@ -42,7 +42,7 @@ arp = cli()
 if not arp.matched:
     exit()
 
-config = load_config(root_dir=arp.query[str]("root.dir"))
+config = load_config(root_dir=arp.query[str]("root.dir", "config"))
 setup_logger(config.log_level)
 setup_qrcode(config)
 
@@ -77,8 +77,8 @@ manager.add_component(AiohttpClientService())
 manager.add_component(
     AlconnaGraiaService(AlconnaAvillaAdapter, enable_cache=False, cache_dir=config.data_dir, global_remove_tome=True)
 )
-manager.add_component(FastAPIService(fastapi))
-manager.add_component(UvicornASGIService(config.api.host, config.api.port))
+# manager.add_component(FastAPIService(fastapi))
+# manager.add_component(UvicornASGIService(config.api.host, config.api.port))
 manager.add_component(SchedulerService(it(GraiaScheduler)))
 manager.add_component(bot_service := RaianBotService(config))
 bcc.finale_dispatchers.append(RaianBotDispatcher(bot_service))

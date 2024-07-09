@@ -154,6 +154,7 @@ class CosConfig:
             domain = self.domain
         if domain is not None:
             url = domain
+            scheme = "http"
         else:
             if endpoint is None:
                 endpoint = self.endpoint

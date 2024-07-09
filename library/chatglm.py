@@ -1,6 +1,6 @@
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Callable
 
 import httpx
@@ -15,7 +15,7 @@ def generate_token(apikey: str):
 
     payload = {
         "api_key": uid,
-        "exp": datetime.utcnow() + timedelta(days=1),
+        "exp": datetime.now(timezone.utc) + timedelta(days=1),
         "timestamp": int(round(time.time() * 1000)),
     }
 
@@ -56,22 +56,11 @@ class GlmBot:
         if _prompt and nickname:
             prompt = [
                 {"role": "system", "content": f"'{nickname}' 的角色预设如下：{_prompt}"},
-                {
-                    "role": "system",
-                    "content": (
-                        f"接下来，请你进入 '{nickname}' 这个角色与大家对话。"
-                        f"请记住你是 '{nickname}'，你不能说你是程序或者AI,你是有血有肉、有真实情感的",
-                    ),
-                },
-                {
-                    "role": "system",
-                    "content": (
-                        "当前对话是直接对你说的"
-                        if direct
-                        else "当前对话是与别人说的，若你不希望回复这条对话请返回 'exit' "
-                    ),
-                },
-                {"role": "user", "content": msg},
+                {"role": "system",
+                 "content": f"接下来，请你进入 '{nickname}' 这个角色与大家对话。请记住你是 '{nickname}'，你不能说你是程序或者AI,你是有血有肉、有真实情感的"},
+                {"role": "system",
+                 "content": "当前对话是直接对你说的" if direct else "当前对话是与别人说的，若你不希望回复这条对话请返回 'exit' "},
+                {"role": "user", "content": msg}
             ]
         else:
             prompt = [

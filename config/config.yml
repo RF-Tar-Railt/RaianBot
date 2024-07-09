@@ -101,6 +101,8 @@ bots:
     name: 莱安
     ## bot 的 appid
     account: "UNDEFINED"
+    ## bot 的 qq 号
+    uin: "UNDEFINED"
     ## bot 的令牌
     token: "UNDEFINED"
     ## bot 的密钥

@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 from uuid import uuid4
 
 from avilla.core import Context, LocalFileResource
@@ -46,7 +45,6 @@ async def serialize_message(msg: MessageChain, ctx: Context, image_path: Path):
     res = []
     msg = msg.include(Text, Picture, Face)
     for elem in msg:
-        elem: Union[Text, Picture, Face]
         if isinstance(elem, Picture):
             name = f"{uuid4().hex}.jpg"
             with (image_path / name).open("wb+") as img:

@@ -9,7 +9,7 @@ from graiax.text2img.playwright import HTMLRenderer, MarkdownConverter, PageOpti
 from graiax.text2img.playwright.renderer import BuiltinCSS
 from PIL import Image
 from playwright.async_api import Request, Route
-from qrcode import QRCode
+from qrcode.main import QRCode
 from qrcode.image.styledpil import StyledPilImage
 from yarl import URL
 
@@ -49,7 +49,7 @@ def setup_qrcode(config: "RaianConfig"):
             guild_b64 = b64encode(bio.getvalue()).decode()
 
             qrcode.clear()
-            qrcode.add_data(f"https://qun.qq.com/qunpro/robot/qunshare?robot_appid={bot.account}")
+            qrcode.add_data(f"https://qun.qq.com/qunpro/robot/qunshare?robot_appid={bot.account}&robot_uin={bot.uin}")
             invite_group: Image.Image = (
                 qrcode.make_image(fill_color="black", back_color="#fafafac0").get_image().resize((200, 200))
             )

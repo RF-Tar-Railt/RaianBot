@@ -3,7 +3,7 @@ import traceback
 from contextvars import ContextVar
 from pathlib import Path
 from typing import Literal, Union
-
+from collections import OrderedDict
 from arknights_toolkit.update.main import fetch
 from avilla.core import Context
 from creart import it
@@ -115,7 +115,7 @@ class RaianBotService(Service):
     def func_description(self, name: str):
         return func.__doc__ if (func := self.cache.get("function::record", {}).get(name)) else "Unknown"
 
-    async def upload_to_cos(self, content: Union[bytes, str], name: str):
+    async def upload_to_cos(self, content: Union[bytes, str], name: str, custom_domain: bool = False):
         config = CosConfig(
             secret_id=self.config.platform.tencentcloud_secret_id,
             secret_key=self.config.platform.tencentcloud_secret_key,
@@ -125,7 +125,7 @@ class RaianBotService(Service):
         await put_object(
             config, self.config.platform.tencentcloud_bucket, content, name, headers={"StorageClass": "STANDARD"}
         )
-        return config.uri(self.config.platform.tencentcloud_bucket, name)
+        return config.uri(self.config.platform.tencentcloud_bucket, name, domain=self.config.platform.tencentcloud_custom_domain if custom_domain else None)
 
 
 class RaianBotDispatcher(BaseDispatcher):

@@ -18,7 +18,7 @@ async def render(weather: HeWeatherData, hourly_type: int) -> str:
         if weather.air.now:
             air = add_tag_color(weather.air.now)
     templates = {
-        "csspath": str(template_path / "css"),
+        "csspath": (template_path / "css").as_uri(),
         "now": weather.now.now,
         "days": add_date(weather.daily.daily),
         "city": weather.name,

@@ -1,3 +1,4 @@
+import random
 from contextlib import suppress
 from pathlib import Path
 from secrets import token_hex
@@ -8,10 +9,11 @@ from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.wordle import Guess, OperatorWordle
 from avilla.core import Context, MessageChain, MessageReceived, Notice, Picture, RawResource
 from avilla.core.exceptions import ActionFailed
+from avilla.qqapi.element import Keyboard, Markdown
 
 from app.core import RaianBotService
 from app.interrupt import FunctionWaiter
-from app.shortcut import accessable, exclusive, picture, record
+from app.shortcut import accessable, exclusive, picture, record, is_qqapi_group
 
 alc = Alconna(
     "猜干员",
@@ -97,17 +99,36 @@ async def guess(
         await ctx.scene.send_message("游戏继续！")
         return
     else:
-        wordle.select(session)
-        await ctx.scene.send_message(
-            "猜干员游戏开始！\n" "请尽量用回复bot的形式发送干员名字\n" "发送 取消 或 @bot 取消 可以结束当前游戏",
-        )
+        _, selected = wordle.select(session)
+        if is_qqapi_group(ctx):
+            rule_img = Path("assets/image/guess.png").read_bytes()
+            url = await bot.upload_to_cos(rule_img, f"guess_rule_{token_hex(16)}.png", custom_domain=True)
+            await ctx.scene.send_message(
+                [
+                    Markdown(
+                        custom_template_id="102060544_1720161790",
+                        params={
+                            "text": ["猜干员游戏开始！请尽量用回复bot的形式发送干员名字，发送 取消 或 @bot 取消 可以结束当前游戏"],
+                            "image_spec": ["#420px #267px"],
+                            "image": [url],
+                        }
+                    ),
+                    Keyboard(id="102060544_1720338276"),
+                ]
+            )
+        else:
+            await ctx.scene.send_message(
+                "猜干员游戏开始！\n" "请尽量用回复bot的形式发送干员名字\n" "发送 取消 或 @bot 取消 可以结束当前游戏",
+            )
 
     async def waiter(waiter_ctx: Context, message: MessageChain):
-        name = str(message.exclude(Notice)).lstrip()
+        name = str(message.exclude(Notice)).strip()
         if waiter_ctx.scene.pattern == ctx.scene.pattern:
             if name.startswith("取消"):
                 await waiter_ctx.scene.send_message("已取消")
                 return False
+            if name.startswith("提示"):
+                return True
             with suppress(ValueError):
                 return wordle.guess(name, session, max_guess.result)
             return
@@ -125,15 +146,42 @@ async def guess(
             ans = wordle.restart(session)
             bot.cache["$guess"].remove(session)
             return await ctx.scene.send_message("游戏已结束！" + (f"\n答案为{ans.select}" if ans else ""))
+        if res is True:
+            data = {
+                "rarity": f"星数：{'★' * (selected['rarity'] + 1)}",
+                "career": f"职业：{selected['career']}",
+                "race": f"种族：{selected['race']}",
+                "org": f"阵营：{selected['org']}",
+                "artist": f"画师：{selected['artist']}\n"
+            }
+            key = random.choice(list(data.keys()))
+            return await ctx.scene.send_message(data[key])
         try:
             if simple.result:
                 await ctx.scene.send_message(wordle.draw(res, simple=True, max_guess=max_guess.result))
             else:
                 img = wordle.draw(res, max_guess=max_guess.result)
+                url = None
                 try:
-                    await ctx.scene.send_message(Picture(RawResource(img)))
+                    if is_qqapi_group(ctx):
+                        url = await bot.upload_to_cos(img, f"guess_{token_hex(16)}.jpg", custom_domain=True)
+                        kb = Keyboard(id="102060544_1720338276")
+                        kb1 = Keyboard(id="102060544_1720338672")
+                        await ctx.scene.send_message([
+                            Markdown(
+                                custom_template_id="102060544_1720161790",
+                                params={
+                                    "text": [f"{len(res.lines)}/{max_guess.result}"],
+                                    "image_spec": [f"#600px #{80 * (len(res.lines) + 2)}px"],
+                                    "image": [url],
+                                }
+                            ),
+                            kb1 if res.state != "guessing" else kb,
+                        ])
+                    else:
+                        await ctx.scene.send_message(Picture(RawResource(img)))
                 except Exception:
-                    url = await bot.upload_to_cos(img, f"guess_{token_hex(16)}.jpg")
+                    url = url or await bot.upload_to_cos(img, f"guess_{token_hex(16)}.jpg")
                     try:
                         await ctx.scene.send_message(picture(url, ctx))
                     except ActionFailed:
