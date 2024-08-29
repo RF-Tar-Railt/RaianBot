@@ -128,6 +128,20 @@ class ArknightsClosureStore:
                 except Exception as e:
                     logger.error(f"[ClosureTalk] [{char_index} / {total}] 下载 {image} 时出现错误：{e}")
         logger.debug("[ClosureTalk] 已下载资源")
+        try:
+            resp = httpx.get(
+                GITHUB_RAW_LINK.format(path="resources/ak/char.json"),
+                proxies={
+                    "http://": proxy,
+                    "https://": proxy,
+                },
+                verify=False,
+            )
+            with (self.base_path / "char.json").open("wb+") as f:
+                f.write(resp.read())
+                logger.debug("[ClosureTalk] 成功更新 char.json")
+        except Exception as e:
+            logger.error(f"[ClosureTalk] 更新 char.json 时出现错误：{e}")
 
 
 if __name__ == "__main__":

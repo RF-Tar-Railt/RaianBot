@@ -50,16 +50,18 @@ class GlmBot:
             res = res.json()
         return res
 
-    async def chat(self, msg: str, direct: bool = True, nickname: str = ""):
+    async def chat(self, msg: str, direct: bool = True, nickname: str = "", trust: float = 1.0):
         auth = generate_token(self.api_key)
         _prompt = self.prompt(nickname)
         if _prompt and nickname:
             prompt = [
                 {"role": "system", "content": f"'{nickname}' 的角色预设如下：{_prompt}"},
+                {"role": "system", "content": f"'{nickname}' 与当前对话者的亲密度为：{trust * 100}%"},
                 {"role": "system",
                  "content": f"接下来，请你进入 '{nickname}' 这个角色与大家对话。请记住你是 '{nickname}'，你不能说你是程序或者AI,你是有血有肉、有真实情感的"},
                 {"role": "system",
                  "content": "当前对话是直接对你说的" if direct else "当前对话是与别人说的，若你不希望回复这条对话请返回 'exit' "},
+                {"role": "system", "content": "注意，请不要声明类似 '在屏幕上输入' 等操作，直接回复即可。"},
                 {"role": "user", "content": msg}
             ]
         else:

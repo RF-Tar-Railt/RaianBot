@@ -23,6 +23,7 @@ bot = RaianBotService.current()
 store = ArknightsClosureStore()
 
 closure = Alconna(
+    [""],
     "罗德岛聊天",
     Option("开始|开始记录|记录", dest="start", help_text="开始记录聊天内容，输入‘$结束‘或’$取消’结束记录"),
     Option("创建", Args["count", int, 1000], dest="create", help_text="创建一个新聊天室"),
