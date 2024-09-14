@@ -288,8 +288,8 @@ async def coc_handle(ctx: Context, val: Match[int], mode: Match[str]):
     if mode.result == "7d":
         return await ctx.scene.send_message(coc7d())
     if mode.result == "6":
-        return await ctx.scene.send_message(coc6(val.result))
-    return await ctx.scene.send_message(coc7(val.result))
+        return await ctx.scene.send_message(coc6(min(val.result, 20)))
+    return await ctx.scene.send_message(coc7(min(val.result, 20)))
 
 
 @alcommand(dnd_c, post=True, send_error=True)
@@ -297,7 +297,7 @@ async def coc_handle(ctx: Context, val: Match[int], mode: Match[str]):
 @exclusive
 @accessable
 async def dnd_handle(ctx: Context, val: Match[int]):
-    return await ctx.scene.send_message(dnd(val.result))
+    return await ctx.scene.send_message(dnd(min(val.result, 20)))
 
 
 @alcommand(sc_c, post=True, send_error=True)

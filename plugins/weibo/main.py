@@ -20,10 +20,8 @@ from avilla.core import (
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.standard.core.application import ApplicationClosing
 from avilla.standard.qq.elements import Forward, Node
-from fastapi.responses import JSONResponse, RedirectResponse
 from graia.saya.builtins.broadcast.shortcut import listen
 from graia.scheduler.saya.shortcut import every
-from graiax.fastapi import route
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
 from launart import Launart
 from loguru import logger
@@ -78,7 +76,7 @@ async def _handle_dynamic(
     data: WeiboDynamic,
     pw: PlaywrightService,
 ):
-    page = await pw.get_interface(PlaywrightBrowser).new_page(viewport={"width": 800, "height": 2400})
+    page = await pw.get_interface(PlaywrightBrowser).browser.new_page(viewport={"width": 800, "height": 2400})
     try:
         await page.click("html")
         await page.goto(data.url, timeout=60000, wait_until="networkidle")
@@ -108,11 +106,6 @@ async def _handle_dynamic(
     # return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
 
 
-@route.route(["GET"], "/weibo/check", response_model=WeiboUser)
-async def get_check(user: str, index: int = 0):
-    return JSONResponse(
-        (await api.get_profile_by_name(user, index, save=False, cache=False)).dict(), headers={"charset": "utf-8"}
-    )
 
 
 @alcommand(weibo_fetch, comp_session={}, post=True)
@@ -181,14 +174,6 @@ async def wget(ctx: Context, user: Match[str], select: Match[int]):
 是否可见: {'是' if prof.visitable else '否'}
 """
             )
-
-
-@route.route(["GET"], "/weibo/get", response_model=WeiboDynamic)
-async def get_fetch(user: str, index: int = -1, page: int = 1, jump: bool = False):
-    prof = await api.get_profile_by_name(user, save=False, cache=False)
-    if jump:
-        return RedirectResponse((await api.get_dynamic(prof, index=index, page=page)).url)
-    return JSONResponse((await api.get_dynamic(prof, index=index, page=page)).dict(), headers={"charset": "utf-8"})
 
 
 @alcommand(weibo_fetch, comp_session={}, post=True)
@@ -324,10 +309,13 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
     if notice:
         await ctx.scene.send_message(notice)
 
+FIRST_STARTUP = False
+
 
 @every(1, "minute")
 @record("微博动态自动获取", False)
 async def update(avilla: Avilla):
+    global FIRST_STARTUP
     dynamics = {}
     pw = Launart.current().get_component(PlaywrightService)
     followers = set()
@@ -352,6 +340,12 @@ async def update(avilla: Avilla):
                 api.data.followers[uid] = wp
                 api.data.save()
                 continue
+        if not FIRST_STARTUP:
+            FIRST_STARTUP = True
+            dynamics.clear()
+            mapping.clear()
+            followers.clear()
+            return 
         for group_id in list(mapping.keys()):
             union = set(mapping[group_id]).intersection(dynamics.keys())
             if not union:
@@ -378,8 +372,8 @@ async def update(avilla: Avilla):
                 dy, name = dynamics[uid]
                 await ctx.scene.send_message(f"{name} 有一条新动态！请查收!")
                 await ctx.scene.send_message(dy[0])
-                if dy[1]:
-                    await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in dy[1])])
+                # if dy[1]:
+                #     await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in dy[1])])
                 await asyncio.sleep(10)
 
     dynamics.clear()

@@ -31,6 +31,7 @@ from app.shortcut import accessable, exclusive, is_qqapi_group, picture, record
     ),
     send_error=True,
     post=True,
+    merge_reply=True,
 )
 @record("随机干员")
 @exclusive

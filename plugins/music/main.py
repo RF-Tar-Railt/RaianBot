@@ -36,7 +36,7 @@ async def song(ctx: Context, name: Match[str], singer: Match[str], config: Music
     api = config.api
     if not api:
         return await ctx.scene.send_message("网易云没有配置！")
-    song_search_url = f"{api}/search?keywords={_singer + name.result}&limit=10"
+    song_search_url = f"{api}search?keywords={_singer + name.result}&limit=10"
     try:
         async with aio.session.get(song_search_url, timeout=20) as resp:
             data = await resp.json()
@@ -72,7 +72,7 @@ async def song(ctx: Context, name: Match[str], singer: Match[str], config: Music
         return await ctx.scene.send_message("别捣乱！")
     song_ = data["result"]["songs"][index]
     song_id = song_["id"]
-    async with aio.session.get(f"{api}/song/detail?ids={song_id}", timeout=20) as resp:
+    async with aio.session.get(f"{api}song/detail?ids={song_id}", timeout=20) as resp:
         picture = (await resp.json())["songs"][0]["al"]["picUrl"]
     song_summary = f"{song_['name']}--{', '.join(artist['name'] for artist in song_['artists'])}"
     return await ctx.scene.send_message(

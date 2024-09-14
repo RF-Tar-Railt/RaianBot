@@ -7,7 +7,8 @@ from arclet.alconna import Alconna, Args, CommandMeta, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from avilla.core import Context, LocalFileResource, Picture
 from avilla.qqapi.exception import ActionFailed
-from avilla.standard.core.message import MessageReceived
+from graia.broadcast.exceptions import PropagationCancelled
+from avilla.standard.core.message import MessageReceived, MessageSent
 from creart import it
 from graia.saya import Saya
 from graia.saya.builtins.broadcast.shortcut import listen, priority
@@ -25,10 +26,29 @@ image_path.mkdir(exist_ok=True)
 
 
 @listen(MessageReceived)
+@priority(0)
+async def protect(ctx: Context, event: MessageReceived):
+    if ctx.client.user == "3382510837":
+        raise PropagationCancelled
+    # text = str(event.message.content)
+    # if text.startswith('{"detail":"ParamsMismatch'):
+    #     raise PropagationCancelled
+    # if text == "....................„-~~'''''''~~--„„_\n..............„-~''-,::::::::::::::::::: ''-„\n..........,~''::::::::',:::::::::::::::: ::::|',\n.....::::::,-~'''¯¯¯''''~~--~'''¯'''-,:|\n.........'|:::::|: : : : : : : : : : : ::: : |,'\n........|:::::|: : :-~~---: : : -----: |\n.......(¯''~-': : : :'¯°: ',: :|: :°-: :|\n.....'....''~-,|: : : : : : ~---': : : :,'\n...............|,: : : : : :-~~--: : ::/\n......,-''\\':\\: :'~„„_: : : : : _,-'\n__„-';;;;;\\:''-,: : : :'~---~''/|\n;;;;;/;;;;;;;\\: :\\: : :____/: :',__\n;;;;;;;;;;;;;;',. .''-,:|:::::::|. . |;;;;''-„__\n;;;;;;,;;;;;;;;;\\. . .''|::::::::|. .,';;;;;;;;;;''-„\n;;;;;;;|;;;;;;;;;;;\\. . .\\:::::,'. ./|;;;;;;;;;;;;|\n;;;;;;;\\;;;;;;;;;;;',: : :|¯¯|. . .|;;;;;;;;;,';;|\n;;;;;;;;;',;;;;;;;;;;;\\. . |:::|. . .'',;;;;;;;;|;;/\n;;;;;;;;;;\\;;;;;;;;;;;\\. .|:::|. . . |;;;;;;;;|/\n;;;;;;;;;;;;,;;;;;;;;;;|. .\\:/. . . .|;;;;;;;;|":
+    # 	raise PropagationCancelled
+
+
+@listen(MessageReceived)
 @priority(1)
 def record_recv():
     recv = bot.cache.get("recv", 0)
     bot.cache["recv"] = recv + 1
+
+
+@listen(MessageSent)
+@priority(1)
+def record_sent():
+    sent = bot.cache.get("sent", 0)
+    bot.cache["sent"] = sent + 1
 
 
 @alcommand(
@@ -43,13 +63,13 @@ def record_recv():
 )
 @permission("admin")
 @exclusive
-async def debug(ctx: Context, db: DatabaseService, conf: BotConfig):
+async def debug(ctx: Context, db: DatabaseService, conf: BotConfig, bot: RaianBotService):
     async with db.get_session() as session:
-        all_group_count: int = (await session.execute(select(func.count("*")).select_from(Group))).first()[0]
+        all_group_count: int = (await session.execute(select(func.count("*")).select_from(Group))).one()[0]
         qqapi_group_count: int = (
             await session.execute(select(func.count("*")).select_from(Group).where(Group.platform == "qqapi"))
-        ).first()[0]
-        user_count: int = (await session.execute(select(func.count("*")).select_from(User))).first()[0]
+        ).one()[0]
+        user_count: int = (await session.execute(select(func.count("*")).select_from(User))).one()[0]
 
     text = (
         f"{conf.name} ({conf.account}) 调试信息\n"
@@ -57,7 +77,8 @@ async def debug(ctx: Context, db: DatabaseService, conf: BotConfig):
         f"当前共加入群与频道：  {all_group_count} 个\n"
         f"官方接口下的频道与群：{qqapi_group_count} 个\n"
         f"参与机器人交互的用户：{user_count} 人\n"
-        f"自启动后共收到消息：  {bot.cache.get('recv', 0)} 条"
+        f"自启动后共收到消息：  {bot.cache.get('recv', 0)} 条\n"
+        f"自启动后共发出消息：  {bot.cache.get('sent', 0)} 条"
     )
     if disabled := bot.config.plugin.disabled:
         text += "\n已禁用模块:\n  - " + "\n  - ".join(disabled).replace(".", "::") + "\n"

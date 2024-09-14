@@ -2,8 +2,8 @@ import random
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, command_manager
-from arclet.alconna.avilla import AlconnaAvillaAdapter
-from arclet.alconna.graia import AlconnaGraiaService, Match, alcommand
+from arclet.alconna.avilla import Match, alcommand
+from arclet.alconna.avilla.dispatcher import AlconnaDispatcher
 from avilla.core import ActionFailed, Context, MessageChain, Notice, Picture, RawResource
 from avilla.core.tools.filter import Filter
 from avilla.elizabeth.account import ElizabethAccount
@@ -37,11 +37,10 @@ cmd_help.shortcut("菜单", {"prefix": True})
 @listen(MessageReceived)
 @dispatch(Filter.cx.scene.follows("::group"))
 @allow(QQAPIAccount)
-async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain, alc: AlconnaGraiaService):
+async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain):
     if str(message.exclude(Notice)).lstrip() != "":
         return
-    alc: AlconnaGraiaService[AlconnaAvillaAdapter]
-    if not alc.get_adapter().is_tome(message, ctx.account.route):
+    if not AlconnaDispatcher.is_tome(..., message, ctx.account.route):
         return
     plat: str = {ElizabethAccount: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore
     md = f"""\
@@ -94,9 +93,9 @@ async def send_text_help(ctx: Context):
 @alcommand(cmd_help, post=True, send_error=True)
 @exclusive
 @accessable
-async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, config: BotConfig, alc: AlconnaGraiaService):
+async def send_help(ctx: Context, query: Match[str], bot: RaianBotService, config: BotConfig):
     if not query.available:
-        return await send_(ctx, bot, config, MessageChain([Notice(ctx.self)]), alc)
+        return await send_(ctx, bot, config, MessageChain([Notice(ctx.self)]))
     try:
         if query.result.isdigit():
             cmds = list(command_manager.all_command_raw_help().keys())

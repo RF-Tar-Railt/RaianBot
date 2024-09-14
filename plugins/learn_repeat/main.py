@@ -3,8 +3,7 @@ from datetime import datetime
 from typing import Union
 
 from arclet.alconna import Alconna, AllParam, Args, Arparma, CommandMeta, Option
-from arclet.alconna.avilla.adapter import AlconnaAvillaAdapter
-from arclet.alconna.graia import AlconnaGraiaService, Match, alcommand, assign
+from arclet.alconna.avilla import Match, alcommand, assign, AlconnaDispatcher
 from avilla.core import Context, MessageChain, MessageReceived, Notice, Selector
 from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.profile import Nick
@@ -60,7 +59,7 @@ async def shelp(ctx: Context):
     )
 
 
-@alcommand(repeat, post=True, send_error=True)
+@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
 @assign("列出")
 @exclusive
 @accessable
@@ -95,7 +94,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
         await ctx.scene.send_message(Forward(nodes=forwards))
 
 
-@alcommand(repeat, post=True, send_error=True)
+@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
 @assign("查找")
 @exclusive
 @accessable
@@ -110,7 +109,7 @@ async def rfind(ctx: Context, target: Match[str], db: DatabaseService):
     return await ctx.scene.send_message("查找成功！\n内容为:\n" + content)
 
 
-@alcommand(repeat, post=True, send_error=True)
+@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
 @assign("删除")
 @exclusive
 @accessable
@@ -134,7 +133,7 @@ async def rremove(ctx: Context, db: DatabaseService, target: Match[Union[str, No
     return await ctx.scene.send_message("删除记录成功了！")
 
 
-@alcommand(repeat, private=False, send_error=True)
+@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
 @assign("增加")
 @exclusive
 @accessable
@@ -162,7 +161,7 @@ async def radd(ctx: Context, name: Match[str], result: Arparma, db: DatabaseServ
     return await ctx.scene.send_message("我学会了！你现在可以来问我了！")
 
 
-@alcommand(repeat, private=False, send_error=True)
+@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
 @assign("修改")
 @exclusive
 @accessable
@@ -187,14 +186,14 @@ async def redit(ctx: Context, name: Match[str], result: Arparma, db: DatabaseSer
 @listen(MessageReceived)
 @priority(17)
 @record("repeat")
-async def handle(ctx: Context, message: MessageChain, db: DatabaseService, alc: AlconnaGraiaService):
+@accessable
+async def handle(ctx: Context, message: MessageChain, db: DatabaseService):
     """依据记录回复对应内容"""
     async with db.get_session() as session:
         records = (await session.scalars(Select(Learn).where(Learn.gid == ctx.scene.channel))).all()
         if not records:
             return
-        alc: AlconnaGraiaService[AlconnaAvillaAdapter]
-        msg = str(alc.get_adapter().remove_tome(message, ctx.account.route))
+        msg = str(AlconnaDispatcher.tome_remove(..., message, ctx.account.route))
         for rec in records:
             try:
                 if re.fullmatch(rec.key, msg):

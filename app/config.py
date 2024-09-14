@@ -135,35 +135,31 @@ class PluginConfig(BaseConfig):
         return v
 
 
-class PlatformConfig(BaseConfig):
-    tencentcloud_region: Optional[str] = Field(default=None)
+class TencentCloudConfig(BaseConfig):
+    region: str
     """腾讯云API 的 region"""
 
-    tencentcloud_secret_id: Optional[str] = Field(default=None)
+    secret_id: str
     """腾讯云API 的 secret-id"""
 
-    tencentcloud_secret_key: Optional[str] = Field(default=None)
+    secret_key: str
     """腾讯云API 的 secret-key"""
 
-    tencentcloud_tbp_bot_id: Optional[str] = Field(default=None)
-    """腾讯云API 下 腾讯对话平台 (TBP) 的 bot-id"""
-
-    tencentcloud_tbp_bot_env: Optional[Literal["dev", "release"]] = Field(default=None)
-    """腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env"""
-
-    tencentcloud_bucket: Optional[str] = Field(default=None)
+    bucket: str
     """腾讯云API 下 COS 的 bucket"""
 
-    tencentcloud_custom_domain: Optional[str] = Field(default=None)
+    custom_domain: Optional[str] = None
     """腾讯云API 下 COS 的自定义域名"""
 
-    heweather_api_key: Optional[str] = Field(default=None)
-    """和风天气API 的 key
 
+class HeweatherConfig(BaseConfig):
+    key: str
+    """和风天气API 的 key
+    
     获取地址: https://id.qweather.com/#/login
     """
 
-    heweather_api_type: Optional[Literal[0, 1, 2]] = Field(default=None)
+    type: Literal[0, 1, 2]
     """和风天气API 的类型
 
     0 = 普通版，免费订阅 (3 天天气预报)
@@ -171,12 +167,21 @@ class PlatformConfig(BaseConfig):
     2 = 商业版 (7 天天气预报)
     """
 
-    heweather_api_hourly_type: Literal[1, 2] = Field(default=1)
+    hourly_type: Literal[1, 2]
     """和风天气API 的逐小时类型
 
     1 = 未来12小时 (默认值)
     2 = 未来24小时
     """
+
+
+class PlatformConfig(BaseConfig):
+    tencentcloud: Optional[TencentCloudConfig] = Field(default=None)
+    """腾讯云API 的配置"""
+
+    heweather: Optional[HeweatherConfig] = Field(default=None)
+    """和风天气API 的配置"""
+
     open_bigmodel_api_key: Optional[str] = Field(default=None)
     """智谱AI开放平台 的 api_key"""
 

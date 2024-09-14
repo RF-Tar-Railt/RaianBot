@@ -120,19 +120,55 @@ async def gacha_(ctx: Context, count: Match[int], db: DatabaseService):
                 data = gacha.create_image(guser, result, count_, True)
                 await ctx.scene.send_message("您未签到，抽卡水位是继承不了的说")
     try:
-        if is_qqapi_group(ctx):
-            url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png", custom_domain=True)
-            return await ctx.scene.send_message([
-                Markdown(
-                    custom_template_id="102060544_1720161790",
-                    params={
-                        "text": [f"博士已经抽取了{guser.six_statis}次没有6星了, 当前出6星的机率为 {guser.six_per}%"],
-                        "image_spec": [f"#720px #{20 * int(math.ceil(count.result / 10) + 1) + 130}px"],
-                        "image": [url],
-                    }
-                ),
-                Keyboard(id="102060544_1720339674")
-            ])
+        # if is_qqapi_group(ctx):
+        #     url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png", custom_domain=True)
+        #     return await ctx.scene.send_message([
+        #         Markdown(
+        #             custom_template_id="102060544_1720161790",
+        #             params={
+        #                 "text": [f"博士已经抽取了{guser.six_statis}次没有6星了, 当前出6星的机率为 {guser.six_per}%"],
+        #                 "image_spec": [f"#720px #{20 * int(math.ceil(count.result / 10) + 1) + 130}px"],
+        #                 "image": [url],
+        #             }
+        #         ),
+        #         Keyboard(id="102060544_1720339674")
+        #     ])
+        # if is_qqapi_group(ctx):
+        #     url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png", custom_domain=True)
+        #     kb = [
+        #         [
+        #             Button(
+        #                 RenderData("再来一发！", "再来一发！", 1),
+        #                 Action(type=2, data=f"/抽卡 {count_}", enter=True),
+        #             ),
+        #             Button(
+        #                 RenderData("再来百抽！", "再来百抽！", 1),
+        #                 Action(type=2, data="/抽卡 100", enter=True),
+        #             ),
+        #             Button(
+        #                 RenderData("更新卡池", "更新卡池", 1),
+        #                 Action(type=2, data="/抽卡 更新", enter=True),
+        #             )
+        #         ]
+        #     ]
+        #     if not proba and not user:
+        #         kb[0].append(
+        #             Button(
+        #                 RenderData("签到", "签到", 1),
+        #                 Action(type=2, data="/签到", enter=True),
+        #             )
+        #         )
+        #     return await ctx.scene.send_message([
+        #         Markdown(
+        #             custom_template_id="102060544_1720161790",
+        #             params={
+        #                 "text": [f"博士已经抽取了{guser.six_statis}次没有6星了, 当前出6星的机率为 {guser.six_per}%"],
+        #                 "image_spec": [f"#720px #{20 * int(math.ceil(count.result / 10) + 1) + 130}px"],
+        #                 "image": [url],
+        #             }
+        #         ),
+        #         Keyboard(content=kb)
+        #     ])
         return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
     except Exception:
         url = await bot.upload_to_cos(data, f"gacha_{token_hex(16)}.png")
@@ -208,19 +244,47 @@ async def simulate(ctx: Context, db: DatabaseService):
                 await ctx.scene.send_message("您未签到，抽卡水位是继承不了的说")
     url = None
     try:
-        if is_qqapi_group(ctx):
-            url = await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png", custom_domain=True)
-            return await ctx.scene.send_message([
-                Markdown(
-                    custom_template_id="102060544_1720161790",
-                    params={
-                        "text": [f"博士已经抽取了{guser.six_statis}次没有6星了, 当前出6星的机率为 {guser.six_per}%"],
-                        "image_spec": ["#1280px #720px"],
-                        "image": [url],
-                    }
-                ),
-                Keyboard(id="102060544_1720339360")
-            ])
+        # if is_qqapi_group(ctx):
+        #     url = await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png", custom_domain=True)
+        #     return await ctx.scene.send_message([
+        #         Markdown(
+        #             custom_template_id="102060544_1720161790",
+        #             params={
+        #                 "text": [f"博士已经抽取了{guser.six_statis}次没有6星了, 当前出6星的机率为 {guser.six_per}%"],
+        #                 "image_spec": ["#1280px #720px"],
+        #                 "image": [url],
+        #             }
+        #         ),
+        #         Keyboard(id="102060544_1720339360")
+        #     ])
+        # if is_qqapi_group(ctx):
+        #     url = await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png", custom_domain=True)
+        #     kb = [
+        #         [
+        #             Button(
+        #                 RenderData("再来一发！", "再来一发！", 1),
+        #                 Action(type=2, data="/十连", enter=True),
+        #             )
+        #         ]
+        #     ]
+        #     if not proba and not user:
+        #         kb[0].append(
+        #             Button(
+        #                 RenderData("签到", "签到", 1),
+        #                 Action(type=2, data="/签到", enter=True),
+        #             )
+        #         )
+        #     return await ctx.scene.send_message([
+        #         Markdown(
+        #             custom_template_id="102060544_1720161790",
+        #             params={
+        #                 "text": [f"博士已经抽取了{guser.six_statis}次没有6星了, 当前出6星的机率为 {guser.six_per}%"],
+        #                 "image_spec": ["#1280px #720px"],
+        #                 "image": [url],
+        #             }
+        #         ),
+        #         Keyboard(content=kb)
+        #     ])
         return await ctx.scene.send_message(MessageChain([Picture(RawResource(data))]))
     except Exception:
         url = url or await bot.upload_to_cos(data, f"gacha_sim_{token_hex(16)}.png")

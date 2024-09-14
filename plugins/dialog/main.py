@@ -18,7 +18,6 @@ from app.core import RaianBotService
 from app.shortcut import accessable, exclusive, is_qqapi_group, record
 from library.chatglm import GlmBot
 from library.rand import random_pick_small
-from library.tencentcloud import TencentCloudApi
 
 from sqlalchemy.sql import select
 
@@ -34,9 +33,11 @@ config: DialogConfig = bot.config.plugin.get(DialogConfig)
 
 glm = None
 if config.open_bigmodel:
+    if not bot.config.platform.open_bigmodel_api_key:
+        raise ValueError("open_bigmodel_api_key is required")
     glm = GlmBot(
-        bot.config.platform.open_bigmodel_api_key,  # type: ignore
-        model="glm-4-air",
+        bot.config.platform.open_bigmodel_api_key,
+        model=config.glm_model,
         max_token=1024,
         temperature=0.8,
         prompt=lambda nick: f"""
@@ -80,16 +81,13 @@ async def random_ai(
     if not config.open_bigmodel and not config.gpt_api:
         return
     ai_url = config.gpt_api
-    rand = random_pick_small([1, 3], [0.05, 0.95])
-    if rand == 3:
+    rand = random_pick_small([0, 1], [0.05, 0.95])
+    if rand == 1:
+        if glm:
+            return await glm.chat(msg, direct, conf.name, trust=trust)
         if ai_url:
             async with aio.session.get(str(ai_url), params={"text": msg, "session": f"{conf.name}/{user_id}"}) as resp:
                 return "".join((await resp.json())["result"])
-        elif config.open_bigmodel and glm:
-            reply = await glm.chat(msg, direct, conf.name, trust=trust)
-            if not reply and not direct:
-                return
-            return reply or error_handle(msg)
     return error_handle(msg)
 
 
@@ -136,7 +134,8 @@ async def smatch(
                     rand_str = await random_ai(ctx.client.user, content[:120], aio, conf, 0.01)
                 else:
                     rand_str = await random_ai(user.id, content[:120], aio, conf, user.trust / sign_conf.max)
-    await ctx.scene.send_message(rand_str)  # noqa
+    if rand_str:
+        await ctx.scene.send_message(rand_str)  # noqa
     raise PropagationCancelled
 
 
@@ -173,7 +172,8 @@ async def ematch(
                 rand_str = await random_ai(ctx.client.user, content[:120], aio, conf, 0.01)
             else:
                 rand_str = await random_ai(user.id, content[:120], aio, conf, user.trust / sign_conf.max)
-    await ctx.scene.send_message(rand_str)  # noqa
+    if rand_str:
+        await ctx.scene.send_message(rand_str)  # noqa
     raise PropagationCancelled
 
 

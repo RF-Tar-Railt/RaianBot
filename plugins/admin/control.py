@@ -104,9 +104,9 @@ async def _m_list(ctx: Context, bot: RaianBotService, conf: BotConfig):
         md += f"| {channel.meta.get('name') or path.split('.')[-2]} | {path} | ✔ 已安装 |\n"
     for path in bot.config.plugin.disabled:
         if path not in saya.channels:
-            md += f"| {path.split('.')[-2]} | {path} | ❌ 已卸载 |\n"
+            md += f"| {path.split('.')[-1]} | {path} | ❌ 已卸载 |\n"
         else:
-            md += f"| {path.split('.')[-2]} | {path} | ❌ 已禁用 |\n"
+            md += f"| {path.split('.')[-1]} | {path} | ❌ 已禁用 |\n"
     img = await md2img(md)
     try:
         await ctx.scene.send_message(Picture(RawResource(img)))
@@ -136,17 +136,17 @@ async def _m_reload(ctx: Context, path: Match[str], bot: RaianBotService):
                 parts.insert(0, root)
                 break
     _path, name = parts[0], parts[-1]
-    if not (_channel := saya.channels.get(f"{_path}.{name}.main")):
+    if not (_channel := saya.channels.get(f"{_path}. {name}.main")):
         with saya.module_context():
             if model := extract_plugin_config(bot.config, _path, name):
                 bot.config.plugin.configs[type(model)] = model
             saya.require(f"{_path}.{name}.main")
-        await ctx.scene.send_message(f"重载 {_path}.{name} 成功")
+        await ctx.scene.send_message(f"重载 {_path}. {name} 成功")
         return Statistic("模块", ctx.scene.channel, ctx.client.user)
     try:
         saya.uninstall_channel(_channel)
     except Exception as e:
-        await ctx.scene.send_message(f"重载 {_path}.{name} 过程中卸载失败！\n{e}\n请修改后重试")
+        await ctx.scene.send_message(f"重载 {_path}. {name} 过程中卸载失败！\n{e}\n请修改后重试")
         raise e
     try:
         with saya.module_context():
@@ -154,10 +154,10 @@ async def _m_reload(ctx: Context, path: Match[str], bot: RaianBotService):
                 bot.config.plugin.configs[type(model)] = model
             saya.require(f"{_path}.{name}.main")
     except Exception as e:
-        await ctx.scene.send_message(f"重载 {_path}.{name} 过程中安装失败！\n{e}\n请修改后重试")
+        await ctx.scene.send_message(f"重载 {_path}. {name} 过程中安装失败！\n{e}\n请修改后重试")
         raise e
     else:
-        await ctx.scene.send_message(f"重载 {_path}.{name} 成功")
+        await ctx.scene.send_message(f"重载 {_path}. {name} 成功")
         return Statistic("模块", ctx.scene.channel, ctx.client.user)
 
 
@@ -193,11 +193,11 @@ async def _m_enable(ctx: Context, path: Match[str], bot: RaianBotService):
                 parts.insert(0, root)
                 break
     _path, name = parts[0], parts[-1]
-    if not (_channel := saya.channels.get(f"{_path}.{name}.main")):
+    if not (_channel := saya.channels.get(f"{_path}. {name}.main")):
         return await ctx.scene.send_message("该模组未安装, 您可能需要安装它")
     if f"{_path}.{name}" in bot.config.plugin.disabled:
-        bot.config.plugin.disabled.remove(f"{_path}.{name}")
-        await ctx.scene.send_message(f"启用 {_path}.{name} 成功")
+        bot.config.plugin.disabled.remove(f"{_path}. {name}")
+        await ctx.scene.send_message(f"启用 {_path}. {name} 成功")
         return Statistic("模块", ctx.scene.channel, ctx.client.user)
     return await ctx.scene.send_message("该模组已启用")
 
@@ -218,12 +218,12 @@ async def _m_disable(ctx: Context, path: Match[str], bot: RaianBotService):
                 parts.insert(0, root)
                 break
     _path, name = parts[0], parts[-1]
-    if not (_channel := saya.channels.get(f"{_path}.{name}.main")):
+    if not (_channel := saya.channels.get(f"{_path}. {name}.main")):
         return await ctx.scene.send_message("该模组未安装, 您可能需要安装它")
     if f"{_path}.{name}" in bot.config.plugin.disabled:
         return await ctx.scene.send_message("该模组已被禁用")
-    bot.config.plugin.disabled.append(f"{_path}.{name}")
-    await ctx.scene.send_message(f"禁用 {_path}.{name} 成功")
+    bot.config.plugin.disabled.append(f"{_path}. {name}")
+    await ctx.scene.send_message(f"禁用 {_path}. {name} 成功")
     return Statistic("模块", ctx.scene.channel, ctx.client.user)
 
 
@@ -289,7 +289,7 @@ async def _f_active(ctx: Context, arp: Arparma, bot: RaianBotService, db: Databa
             return await ctx.scene.send_message("请在群组内使用该命令")
         if group.in_blacklist:
             return await ctx.scene.send_message("所在群组已进入黑名单, 设置无效")
-        names = arp.query[tuple[str, ...]]("names")
+        names = arp.query[tuple[str, ...]]("names", ())
         for name in names:
             if name not in bot.functions:
                 return await ctx.scene.send_message(f"功能 {name} 不存在")
@@ -313,7 +313,7 @@ async def _f(ctx: Context, arp: Arparma, bot: RaianBotService, db: DatabaseServi
             return await ctx.scene.send_message("请在群组内使用该命令")
         if group.in_blacklist:
             return await ctx.scene.send_message("所在群组已进入黑名单, 设置无效")
-        names = arp.query[tuple[str, ...]]("names")
+        names = arp.query[tuple[str, ...]]("names", ())
         for name in names:
             if name not in bot.functions:
                 return await ctx.scene.send_message(f"功能 {name} 不存在")
@@ -337,7 +337,7 @@ async def _f_reserve(ctx: Context, arp: Arparma, bot: RaianBotService, db: Datab
             return await ctx.scene.send_message("请在群组内使用该命令")
         if group.in_blacklist:
             return await ctx.scene.send_message("所在群组已进入黑名单, 设置无效")
-        names = arp.query[tuple[str, ...]]("names")
+        names = arp.query[tuple[str, ...]]("names", ())
         group.disabled = [i for i in bot.functions.keys() if i not in names]
         await session.commit()
         await session.refresh(group)

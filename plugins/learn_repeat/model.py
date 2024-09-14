@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, ForeignKey, Integer, String
+from sqlalchemy import JSON, ForeignKey, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base, Group

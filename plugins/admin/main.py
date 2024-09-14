@@ -7,22 +7,24 @@ from avilla.elizabeth.account import ElizabethAccount
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
 from graia.amnesia.message import MessageChain
+
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 from graia.scheduler.saya.shortcut import crontab
+from sqlalchemy import select
 from graiax.playwright import PlaywrightService
 from graiax.playwright.i18n import N_
 from graiax.playwright.utils import log
 from launart import Launart
+
 from playwright.async_api import Error as PWError
-from sqlalchemy import select
 
 from app.config import BotConfig
 from app.core import RaianBotService
 from app.database import DatabaseService, Group
-from app.shortcut import allow
+from app.shortcut import allow, permission
 
-from . import control  # noqa: F401
 from . import debug  # noqa: F401
+from . import control  # noqa: F401
 from . import exception  # noqa: F401
 from . import member  # noqa: F401
 from . import request  # noqa: F401
@@ -30,6 +32,7 @@ from .model import BlacklistCache
 
 
 @listen(MessageReceived)
+@permission("admin")
 @startswith("清理失效群")
 @priority(6)
 async def _init_f(ctx: Context, db: DatabaseService, bot: RaianBotService, conf: BotConfig):
@@ -180,17 +183,15 @@ async def _remove(ctx: Context, db: DatabaseService, event: SceneDestroyed, conf
                 f"""\
 收到群聊解散事件
 群号：{group_id}
-群名：{(await ctx.scene.nick()).name}
 """
             )
 
 
-@crontab("0 4 * * * 0")
 async def restart_pw():
     manager = Launart.current()
     pw = manager.get_component(PlaywrightService)
-    await pw.playwright_mgr.__aexit__()
-    pw.playwright = await pw.playwright_mgr.__aenter__()
+    await pw.playwright_mgr.__aexit__()  # type: ignore
+    pw.playwright = await pw.playwright_mgr.__aenter__()  # type: ignore
     browser_type = {
         "chromium": pw.playwright.chromium,
         "firefox": pw.playwright.firefox,
@@ -217,3 +218,8 @@ async def restart_pw():
         raise
     else:
         log("success", N_("Playwright for {browser_type} is started.").format(browser_type=pw.browser_type))
+
+
+crontab("0 4 * * * 0")(restart_pw)
+
+listen(MessageReceived)(permission("admin")(startswith("重启pw")(restart_pw)))

@@ -19,10 +19,10 @@ from library.tencentcloud import TencentCloudApi
 bot = RaianBotService.current()
 
 api = None
-if bot.config.platform.tencentcloud_secret_id:
+if bot.config.platform.tencentcloud:
     api = TencentCloudApi(
-        bot.config.platform.tencentcloud_secret_id,
-        bot.config.platform.tencentcloud_secret_key,
+        bot.config.platform.tencentcloud.secret_id,
+        bot.config.platform.tencentcloud.secret_key,
         proxy=bot.config.proxy,
     )
 
@@ -48,7 +48,7 @@ async def report(event: ExceptionThrown, avilla: Avilla):
     data = {
         "event": str(event.event.__repr__()),
         "exctype": type(event.exception).__name__,
-        "exc": str(event.exception),
+        "exc": repr(event.exception),
         "traceback": tb,
     }
     masters = {conf.master_id for conf in bot.config.bots}
