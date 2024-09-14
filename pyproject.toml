@@ -1,6 +1,6 @@
 [project]
 name = "raian-bot"
-version = "1.0.0"
+version = "1.1.0"
 description = ""
 authors = [
     {name = "RF-Tar-Railt",email = "3165388245@qq.com"},

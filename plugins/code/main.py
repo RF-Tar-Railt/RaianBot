@@ -41,7 +41,7 @@ code.shortcut(
 )
 
 code.shortcut(
-    "(?:https?://)?github.com/(.+)/([^#]+).*?",
+    "gh:(?:https?://)?github.com/(.+)/([^#]+).*?",
     command="""\
 /执行 --no-output --pure-text
 import secrets
