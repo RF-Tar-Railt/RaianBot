@@ -7,9 +7,9 @@ from arclet.alconna import Alconna, Args, CommandMeta, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from avilla.core import Context, LocalFileResource, Picture
 from avilla.qqapi.exception import ActionFailed
-from graia.broadcast.exceptions import PropagationCancelled
 from avilla.standard.core.message import MessageReceived, MessageSent
 from creart import it
+from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya import Saya
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 from sqlalchemy import func, select
@@ -27,14 +27,9 @@ image_path.mkdir(exist_ok=True)
 
 @listen(MessageReceived)
 @priority(0)
-async def protect(ctx: Context, event: MessageReceived):
+async def protect(ctx: Context):
     if ctx.client.user == "3382510837":
         raise PropagationCancelled
-    # text = str(event.message.content)
-    # if text.startswith('{"detail":"ParamsMismatch'):
-    #     raise PropagationCancelled
-    # if text == "....................„-~~'''''''~~--„„_\n..............„-~''-,::::::::::::::::::: ''-„\n..........,~''::::::::',:::::::::::::::: ::::|',\n.....::::::,-~'''¯¯¯''''~~--~'''¯'''-,:|\n.........'|:::::|: : : : : : : : : : : ::: : |,'\n........|:::::|: : :-~~---: : : -----: |\n.......(¯''~-': : : :'¯°: ',: :|: :°-: :|\n.....'....''~-,|: : : : : : ~---': : : :,'\n...............|,: : : : : :-~~--: : ::/\n......,-''\\':\\: :'~„„_: : : : : _,-'\n__„-';;;;;\\:''-,: : : :'~---~''/|\n;;;;;/;;;;;;;\\: :\\: : :____/: :',__\n;;;;;;;;;;;;;;',. .''-,:|:::::::|. . |;;;;''-„__\n;;;;;;,;;;;;;;;;\\. . .''|::::::::|. .,';;;;;;;;;;''-„\n;;;;;;;|;;;;;;;;;;;\\. . .\\:::::,'. ./|;;;;;;;;;;;;|\n;;;;;;;\\;;;;;;;;;;;',: : :|¯¯|. . .|;;;;;;;;;,';;|\n;;;;;;;;;',;;;;;;;;;;;\\. . |:::|. . .'',;;;;;;;;|;;/\n;;;;;;;;;;\\;;;;;;;;;;;\\. .|:::|. . . |;;;;;;;;|/\n;;;;;;;;;;;;,;;;;;;;;;;|. .\\:/. . . .|;;;;;;;;|":
-    # 	raise PropagationCancelled
 
 
 @listen(MessageReceived)

@@ -3,7 +3,7 @@ import traceback
 from contextvars import ContextVar
 from pathlib import Path
 from typing import Literal, Union
-from collections import OrderedDict
+
 from arknights_toolkit.update.main import fetch
 from avilla.core import Context
 from creart import it
@@ -71,7 +71,7 @@ class RaianBotService(Service):
             saya = it(Saya)
             with saya.module_context():
                 for module_info in pkgutil.iter_modules(self.config.plugin.paths):
-                    path = Path(module_info.module_finder.path).stem  # noqa
+                    path = Path(module_info.module_finder.path).stem  # noqa  # type: ignore
                     name = module_info.name
                     if name == "config" or name.startswith("_") or f"{path}.{name}" in self.config.plugin.disabled:
                         continue
@@ -116,16 +116,22 @@ class RaianBotService(Service):
         return func.__doc__ if (func := self.cache.get("function::record", {}).get(name)) else "Unknown"
 
     async def upload_to_cos(self, content: Union[bytes, str], name: str, custom_domain: bool = False):
+        if not self.config.platform.tencentcloud:
+            return name
         config = CosConfig(
-            secret_id=self.config.platform.tencentcloud_secret_id,
-            secret_key=self.config.platform.tencentcloud_secret_key,
-            region=self.config.platform.tencentcloud_region,
+            secret_id=self.config.platform.tencentcloud.secret_id,
+            secret_key=self.config.platform.tencentcloud.secret_key,
+            region=self.config.platform.tencentcloud.region,
             scheme="https",
         )
         await put_object(
-            config, self.config.platform.tencentcloud_bucket, content, name, headers={"StorageClass": "STANDARD"}
+            config, self.config.platform.tencentcloud.bucket, content, name, headers={"StorageClass": "STANDARD"}
         )
-        return config.uri(self.config.platform.tencentcloud_bucket, name, domain=self.config.platform.tencentcloud_custom_domain if custom_domain else None)
+        return config.uri(
+            self.config.platform.tencentcloud.bucket,
+            name,
+            domain=self.config.platform.tencentcloud.custom_domain if custom_domain else None,
+        )
 
 
 class RaianBotDispatcher(BaseDispatcher):

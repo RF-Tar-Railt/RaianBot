@@ -32,7 +32,7 @@ from app.core import RaianBotService
 from app.database import DatabaseService, Group
 from app.interrupt import FunctionWaiter
 from app.shortcut import accessable, allow, exclusive, picture, record
-from library.weibo import WeiboAPI, WeiboDynamic, WeiboUser
+from library.weibo import WeiboAPI, WeiboDynamic
 
 from .model import WeiboFollower
 
@@ -104,8 +104,6 @@ async def _handle_dynamic(
     #     nodes.append(MessageChain(Forward(*(await _handle_dynamic(app, data.retweet, time, target, name, method)))))
     # # return nodes
     # return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
-
-
 
 
 @alcommand(weibo_fetch, comp_session={}, post=True)
@@ -309,6 +307,7 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
     if notice:
         await ctx.scene.send_message(notice)
 
+
 FIRST_STARTUP = False
 
 
@@ -345,7 +344,7 @@ async def update(avilla: Avilla):
             dynamics.clear()
             mapping.clear()
             followers.clear()
-            return 
+            return
         for group_id in list(mapping.keys()):
             union = set(mapping[group_id]).intersection(dynamics.keys())
             if not union:

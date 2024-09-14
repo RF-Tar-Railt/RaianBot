@@ -1,11 +1,9 @@
-import math
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
 from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
 from avilla.core import Context, MessageChain, Picture, RawResource, Text
-from avilla.qqapi.element import Keyboard, Markdown
 from avilla.core.exceptions import ActionFailed
 from fastapi.responses import JSONResponse, Response
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
@@ -14,7 +12,7 @@ from sqlalchemy.sql import select
 
 from app.core import RaianBotService
 from app.database import DatabaseService, User
-from app.shortcut import accessable, exclusive, picture, record, is_qqapi_group
+from app.shortcut import accessable, exclusive, picture, record
 
 from .config import GachaConfig
 from .model import ArkgachaRecord

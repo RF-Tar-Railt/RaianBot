@@ -2,7 +2,7 @@ import importlib
 import sys
 from contextlib import suppress
 from pathlib import Path
-from typing import ClassVar, Generic, Literal, Optional, TypeVar, Union, cast, Any
+from typing import ClassVar, Generic, Literal, Optional, TypeVar, Union, cast
 
 import yaml
 from avilla.core import Selector
@@ -155,7 +155,7 @@ class TencentCloudConfig(BaseConfig):
 class HeweatherConfig(BaseConfig):
     key: str
     """和风天气API 的 key
-    
+
     获取地址: https://id.qweather.com/#/login
     """
 

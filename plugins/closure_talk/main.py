@@ -184,11 +184,7 @@ async def _record_self(event: MessageSent, db: DatabaseService, config: BotConfi
     if gid not in bot.cache.setdefault("$closure_rooms", []):
         return
     async with db.get_session() as session:
-        group = (
-            await session.scalars(
-                select(Group).where(Group.id == gid)
-            )
-        ).one_or_none()
+        group = (await session.scalars(select(Group).where(Group.id == gid))).one_or_none()
         if not group:
             return
         if "closure" in group.disabled:

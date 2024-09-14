@@ -1,12 +1,11 @@
 import asyncio
 
-from avilla.core import MessageReceived, Context, MessageChain, Picture, RawResource
+from arclet.alconna.graia import startswith
+from avilla.core import Context, MessageChain, MessageReceived, Picture, RawResource
 from graia.saya.builtins.broadcast.shortcut import listen
 
-from arclet.alconna.graia import startswith
-
 from app.image import md2img
-from app.shortcut import permission, exclusive, accessable
+from app.shortcut import accessable, exclusive, permission
 
 
 @listen(MessageReceived)
@@ -45,12 +44,5 @@ async def shell(ctx: Context, echos: MessageChain):
 ```
 """
     return await ctx.scene.send_message(
-        Picture(
-            RawResource(
-                await md2img(
-                    md,
-                    max(max(len(i.strip()) for i in md.splitlines()) * 14, 240)
-                )
-            )
-        )
+        Picture(RawResource(await md2img(md, max(max(len(i.strip()) for i in md.splitlines()) * 14, 240))))
     )

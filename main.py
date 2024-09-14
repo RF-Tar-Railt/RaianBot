@@ -3,20 +3,18 @@ import re
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Option, OptionResult, namespace, store_true
-from arclet.alconna.avilla import AlconnaAvillaAdapter
-from arclet.alconna.graia import AlconnaBehaviour, AlconnaGraiaService, AlconnaOutputMessage
+from arclet.alconna.avilla import AlconnaBehaviour, AlconnaOutputMessage
 from arclet.alconna.tools import MarkdownTextFormatter
 from avilla.core import Avilla, Context, Picture, RawResource
 from avilla.core.exceptions import ActionFailed
 from creart import it
 from fastapi import FastAPI
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
-from graia.amnesia.builtins.asgi import UvicornASGIService
 from graia.broadcast import Broadcast
 from graia.saya import Saya
 from graia.scheduler import GraiaScheduler
 from graia.scheduler.service import SchedulerService
-from graiax.fastapi import FastAPIBehaviour, FastAPIService
+from graiax.fastapi import FastAPIBehaviour
 from graiax.playwright import PlaywrightService
 from launart import Launart
 from loguru import logger
@@ -74,9 +72,6 @@ manager.add_component(
     )
 )
 manager.add_component(AiohttpClientService())
-manager.add_component(
-    AlconnaGraiaService(AlconnaAvillaAdapter, enable_cache=False, cache_dir=config.data_dir, global_remove_tome=True)
-)
 # manager.add_component(FastAPIService(fastapi))
 # manager.add_component(UvicornASGIService(config.api.host, config.api.port))
 manager.add_component(SchedulerService(it(GraiaScheduler)))

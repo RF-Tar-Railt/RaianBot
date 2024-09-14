@@ -66,7 +66,9 @@ async def get_friend_accept(ctx: Context, event: RequestReceived, bot: RaianBotS
 
 
 @listen(RequestReceived)
-@dispatch(Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type == "elizabeth::invited_join_group"))
+@dispatch(
+    Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type == "elizabeth::invited_join_group")
+)
 async def bot_invite(ctx: Context, event: RequestReceived, bot: RaianBotService, conf: BotConfig):
     """
     被邀请入群
@@ -75,7 +77,7 @@ async def bot_invite(ctx: Context, event: RequestReceived, bot: RaianBotService,
     async for friend in ctx.query("land.friend"):
         if friend.pattern["friend"] == req.sender.pattern["member"]:
             await ctx.account.get_context(conf.master()).scene.send_message(
-                    f"""\
+                f"""\
 收到邀请入群事件
 邀请者：{req.sender.pattern['member']}
 群号：{req.sender.pattern['group']}

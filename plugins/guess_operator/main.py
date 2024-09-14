@@ -9,11 +9,10 @@ from arclet.alconna.graia import Match, alcommand, assign
 from arknights_toolkit.wordle import Guess, OperatorWordle
 from avilla.core import Context, MessageChain, MessageReceived, Notice, Picture, RawResource
 from avilla.core.exceptions import ActionFailed
-from avilla.qqapi.element import Keyboard, Button, Markdown, RenderData, Action
 
 from app.core import RaianBotService
 from app.interrupt import FunctionWaiter
-from app.shortcut import accessable, exclusive, picture, record, is_qqapi_group
+from app.shortcut import accessable, exclusive, picture, record
 
 alc = Alconna(
     "猜干员",
@@ -108,7 +107,7 @@ async def guess(
         #             Markdown(
         #                 custom_template_id="102060544_1720161790",
         #                 params={
-        #                     "text": ["猜干员游戏开始！请尽量用回复bot的形式发送干员名字，发送 取消 或 @bot 取消 可以结束当前游戏"],
+        #                     "text": ["猜干员游戏开始！发送 取消 或 @bot 取消 可以结束当前游戏"],
         #                     "image_spec": ["#420px #267px"],
         #                     "image": [url],
         #                 }
@@ -154,7 +153,7 @@ async def guess(
                 "career": f"职业：{selected['career']}",
                 "race": f"种族：{selected['race']}",
                 "org": f"阵营：{selected['org']}",
-                "artist": f"画师：{selected['artist']}\n"
+                "artist": f"画师：{selected['artist']}\n",
             }
             key = random.choice(list(data.keys()))
             return await ctx.scene.send_message(data[key])

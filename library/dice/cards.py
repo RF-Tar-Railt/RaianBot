@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import diro
 import ujson
@@ -46,13 +47,12 @@ class Cards:
                 self.data = ujson.load(f)
 
     def update(self, inv_dict: dict, level: str = "0", uid: int = 0, save: bool = True):
-        uid = str(uid)
         data = self.data.setdefault(level, {})
-        data.update({uid: inv_dict})
+        data.update({str(uid): inv_dict})
         if save:
             self.save()
 
-    def get(self, level: str = "0", uid: int = 0) -> dict[str, dict] | None:
+    def get(self, level: str = "0", uid: int = 0) -> dict[str, Any] | None:
         return data.get(str(uid)) if (data := self.data.get(level)) else None
 
     def delete(self, level: str = "0", uid: int = 0, save: bool = True) -> bool:
@@ -74,9 +74,8 @@ class Cards:
         return False
 
     def cache_update(self, inv_dict: dict, level: str = "0", uid: int = 0):
-        uid = str(uid)
         data = self.cache.setdefault(level, {})
-        data.update({uid: inv_dict})
+        data.update({str(uid): inv_dict})
 
     def cache_get(self, level: str = "0", uid: int = 0) -> dict[str, dict] | None:
         return cache.get(str(uid)) if (cache := self.cache.get(level)) else None
@@ -202,16 +201,18 @@ class Cards:
             else:
                 card = self.get(level, uid)
                 using_card = True
+            if card is None:
+                return "未找到人物卡，请先使用set指令保存人物卡"
             r = diro.Dice().roll()()
             s = f"San Check:{r}"
             down = success if r <= card["san"] else failure
             s += f"理智降低了{down}点"
             if down >= card["san"]:
-                s += "\n%s陷入了永久性疯狂" % card["name"]
+                s += f"\n{card['name']}陷入了永久性疯狂"
             elif down >= (card["san"] // 5):
-                s += "\n%s陷入了不定性疯狂" % card["name"]
+                s += f"\n{card['name']}陷入了不定性疯狂"
             elif down >= 5:
-                s += "\n%s陷入了临时性疯狂" % card["name"]
+                s += f"\n{card['name']}陷入了临时性疯狂"
             if using_card:
                 card["san"] -= down
                 self.update(card, level, uid)

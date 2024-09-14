@@ -11,18 +11,17 @@ from avilla.elizabeth.account import ElizabethAccount
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya.builtins.broadcast.shortcut import listen, priority
+from sqlalchemy.sql import select
 
 from app.config import BotConfig
-from app.database import DatabaseService, User
 from app.core import RaianBotService
+from app.database import DatabaseService, User
 from app.shortcut import accessable, exclusive, is_qqapi_group, record
 from library.chatglm import GlmBot
 from library.rand import random_pick_small
 
-from sqlalchemy.sql import select
-
-from .config import DialogConfig
 from ..sign.config import SignConfig
+from .config import DialogConfig
 
 bot = RaianBotService.current()
 
@@ -76,7 +75,12 @@ def error_handle(t) -> str:
 
 
 async def random_ai(
-    user_id: str, msg: str, aio: AiohttpClientService, conf: BotConfig, trust: float, direct: bool = True,
+    user_id: str,
+    msg: str,
+    aio: AiohttpClientService,
+    conf: BotConfig,
+    trust: float,
+    direct: bool = True,
 ):
     if not config.open_bigmodel and not config.gpt_api:
         return

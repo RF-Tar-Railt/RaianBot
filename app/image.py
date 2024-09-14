@@ -9,8 +9,8 @@ from graiax.text2img.playwright import HTMLRenderer, MarkdownConverter, PageOpti
 from graiax.text2img.playwright.renderer import BuiltinCSS
 from PIL import Image
 from playwright.async_api import Request, Route
-from qrcode.main import QRCode
 from qrcode.image.styledpil import StyledPilImage
+from qrcode.main import QRCode
 from yarl import URL
 
 from .datetime import CHINA_TZ
