@@ -3,7 +3,7 @@ from contextlib import suppress
 
 import diro
 from arclet.alconna import Alconna, Args, CommandMeta, Field, Option, namespace
-from arclet.alconna.graia import Match, alcommand, assign
+from arclet.alconna.avilla import Match, alcommand, assign
 from arclet.alconna.tools import MarkdownTextFormatter
 from avilla.core import Context
 from avilla.elizabeth.account import ElizabethAccount

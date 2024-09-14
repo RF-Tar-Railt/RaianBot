@@ -3,7 +3,7 @@ import random
 from datetime import datetime
 
 from arclet.alconna import Alconna, CommandMeta
-from arclet.alconna.graia import alcommand
+from arclet.alconna.avilla import alcommand
 from avilla.core import Context, Message
 from sqlalchemy import select
 

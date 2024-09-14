@@ -3,7 +3,7 @@ import random
 from typing import Union
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
-from arclet.alconna.graia import Match, alcommand
+from arclet.alconna.avilla import Match, alcommand
 from avilla.core import Context, Nick, Notice
 from avilla.elizabeth.account import ElizabethAccount
 

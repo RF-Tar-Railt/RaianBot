@@ -2,7 +2,7 @@ from secrets import token_hex
 from typing import Union
 
 from arclet.alconna import Alconna, Args, Arparma, CommandMeta
-from arclet.alconna.graia import alcommand
+from arclet.alconna.avilla import alcommand
 from avilla.core import Context, RawResource
 from avilla.core.elements import Notice, Picture
 from avilla.elizabeth.account import ElizabethAccount

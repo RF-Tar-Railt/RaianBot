@@ -5,7 +5,7 @@ from pathlib import Path
 
 import ujson
 from arclet.alconna import command_manager
-from arclet.alconna.graia.dispatcher import output_cache, result_cache
+from arclet.alconna.avilla.dispatcher import output_cache, result_cache
 from avilla.core import Context, MessageReceived, Notice, Picture, Text
 from avilla.elizabeth.account import ElizabethAccount
 from graia.amnesia.builtins.aiohttp import AiohttpClientService

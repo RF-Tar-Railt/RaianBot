@@ -49,32 +49,36 @@ api:
   host: 'localhost'
   ## FastAPI 服务的运行端口
   port: 8000
-## 腾讯云相关配置
+## 平台接口相关配置
 platform:
-  ## 腾讯云API 的 region
-  tencentcloud_region: null
-  ## 腾讯云API 的 secret-id
-  tencentcloud_secret_id: null
-  ## 腾讯云API 的 secret-key
-  tencentcloud_secret_key: null
-  ## 腾讯云API 下 腾讯对话平台 (TBP) 的 bot-id
-  tencentcloud_tbp_bot_id: null
-  ## 腾讯云API 下 腾讯对话平台 (TBP) 的 bot-env
-  tencentcloud_tbp_bot_env: null
-  ## 腾讯云API 下 COS 的 bucket
-  tencentcloud_bucket: null
-  ## 和风天气API 的 key
-  ## 获取地址: https://id.qweather.com/#/login
-  heweather_api_key: null
-  ## 和风天气API 的类型
-  ##  0 = 普通版，免费订阅 (3 天天气预报)
-  ##  1 = 个人开发版，标准订阅 (7 天天气预报)
-  ##  2 = 商业版 (7 天天气预报)
-  heweather_api_type: null
-  ## 和风天气API 的逐小时类型
-  ## 1 = 未来12小时 (默认值)
-  ## 2 = 未来24小时
-  heweather_api_hourly_type: 1
+  ## 腾讯云API
+  tencentcloud:
+    ## 腾讯云API 的 region
+    region: ap-guangzhou
+    ## 腾讯云API 的 secret-id
+    secret_id: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ## 腾讯云API 的 secret-key
+    secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ## 腾讯云API 下 COS 的 bucket
+    bucket: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ## 腾讯云API 下 COS 的 custom_domain
+    custom_domain: null
+  ## 和风天气API
+  heweather:
+    ## 和风天气API 的 key
+    ## 获取地址: https://id.qweather.com/#/login
+    key: XXXXXXXXXXX
+    ## 和风天气API 的类型
+    ##  0 = 普通版，免费订阅 (3 天天气预报)
+    ##  1 = 个人开发版，标准订阅 (7 天天气预报)
+    ##  2 = 商业版 (7 天天气预报)
+    type: 0
+    ## 和风天气API 的逐小时类型
+    ## 1 = 未来12小时 (默认值)
+    ## 2 = 未来24小时
+    hourly_type: 1
+  ## 智谱AI开放平台 的 api_key
+  open_bigmodel_api_key: null
 ## bot 配置
 bots:
   -

@@ -4,7 +4,7 @@ from pathlib import Path
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, Arparma, CommandMeta, Field, MultiVar, Option
-from arclet.alconna.graia import Match, alcommand, assign
+from arclet.alconna.avilla import Match, alcommand, assign
 from avilla.core import Context, Picture, RawResource
 from avilla.qqapi.exception import ActionFailed
 from creart import it

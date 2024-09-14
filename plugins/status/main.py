@@ -3,7 +3,7 @@ from datetime import datetime
 from secrets import token_hex
 
 from arclet.alconna import Alconna, CommandMeta
-from arclet.alconna.graia import alcommand
+from arclet.alconna.avilla import alcommand
 from avilla.core import ActionFailed, BaseAccount, Context, Picture, RawResource
 from avilla.standard.core.account import AccountRegistered, AccountUnregistered
 from graia.saya.builtins.broadcast.shortcut import listen

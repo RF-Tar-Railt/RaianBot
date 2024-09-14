@@ -4,7 +4,7 @@ from pathlib import Path
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Arg, Args, Arparma, CommandMeta, Field, Option
-from arclet.alconna.graia import Match, alcommand, assign
+from arclet.alconna.avilla import Match, alcommand, assign
 from arknights_toolkit.images import update_operators
 from arknights_toolkit.record import ArkRecord
 from arknights_toolkit.update.record import generate

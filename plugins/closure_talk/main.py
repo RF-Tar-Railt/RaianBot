@@ -1,5 +1,5 @@
 from arclet.alconna import Alconna, Args, CommandMeta, Option
-from arclet.alconna.graia import Match, alcommand, assign
+from arclet.alconna.avilla import Match, alcommand, assign
 from avilla.core import Context, MessageChain, MessageReceived, MessageSent, Picture, RawResource
 from avilla.core.elements import Face, Notice
 from avilla.core.exceptions import ActionFailed

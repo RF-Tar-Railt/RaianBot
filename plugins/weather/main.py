@@ -5,7 +5,7 @@ from secrets import token_hex
 
 import ujson
 from arclet.alconna import Alconna, Args, CommandMeta, Field
-from arclet.alconna.graia import Match, alcommand
+from arclet.alconna.avilla import Match, alcommand
 from avilla.core import Context, Notice, Picture, RawResource
 from avilla.qqapi.exception import ActionFailed
 from avilla.standard.core.message import MessageReceived
@@ -36,10 +36,9 @@ cmd.shortcut(
     },
 )
 
-if config.heweather and bot.config.platform.heweather_api_key and bot.config.platform.heweather_api_type is not None:
-    heweather = HeWeather(
-        bot.config.platform.heweather_api_key, bot.config.platform.heweather_api_type, bot.config.proxy
-    )
+if config.heweather and bot.config.platform.heweather:
+    heweather_config = bot.config.platform.heweather
+    heweather = HeWeather(heweather_config.key, heweather_config.type, bot.config.proxy)
     cache_dir = Path(bot.config.data_dir) / "plugins" / "weather"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -71,9 +70,9 @@ if config.heweather and bot.config.platform.heweather_api_key and bot.config.pla
             return await ctx.scene.send_message("地点是...空气吗?? >_<")
         file = cache_dir / f"{data.city_id}.html"
         with file.open("w+", encoding="utf-8") as f:
-            f.write(await render(data, bot.config.platform.heweather_api_hourly_type))
-        browser: PlaywrightBrowser = pw.get_interface(PlaywrightBrowser)
-        page = await browser.new_page(
+            f.write(await render(data, heweather_config.hourly_type))
+        browser = pw.get_interface(PlaywrightBrowser)
+        page = await browser.browser.new_page(
             viewport={"width": 1000, "height": 300},
             device_scale_factor=2,
         )
@@ -117,8 +116,8 @@ else:
                 return await ctx.scene.send_message("等待已超时，取消查询。")
         if city_name not in city_ids:
             return await ctx.scene.send_message("地点是...空气吗?? >_<")
-        browser: PlaywrightBrowser = pw.get_interface(PlaywrightBrowser)
-        page = await browser.new_page()
+        browser = pw.get_interface(PlaywrightBrowser)
+        page = await browser.browser.new_page()
         await page.click("html")
         await page.goto(f"https://m.weather.com.cn/mweather/{city_ids[city_name]}.shtml")
         ad = page.locator("//div[@class='guanggao']")

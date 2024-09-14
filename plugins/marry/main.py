@@ -2,7 +2,7 @@ from io import BytesIO
 from secrets import token_hex
 
 from arclet.alconna import Alconna, CommandMeta
-from arclet.alconna.graia import alcommand
+from arclet.alconna.avilla import alcommand
 from avilla.core import Context, RawResource
 from avilla.core.elements import Picture
 from avilla.qqapi.exception import ActionFailed

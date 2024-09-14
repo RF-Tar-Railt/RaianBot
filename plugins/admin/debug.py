@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Option
-from arclet.alconna.graia import Match, alcommand, assign
+from arclet.alconna.avilla import Match, alcommand, assign
 from avilla.core import Context, LocalFileResource, Picture
 from avilla.qqapi.exception import ActionFailed
 from avilla.standard.core.message import MessageReceived, MessageSent

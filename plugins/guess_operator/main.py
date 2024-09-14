@@ -5,7 +5,7 @@ from secrets import token_hex
 from typing import Union
 
 from arclet.alconna import Alconna, Args, CommandMeta, Kw, Option
-from arclet.alconna.graia import Match, alcommand, assign
+from arclet.alconna.avilla import Match, alcommand, assign
 from arknights_toolkit.wordle import Guess, OperatorWordle
 from avilla.core import Context, MessageChain, MessageReceived, Notice, Picture, RawResource
 from avilla.core.exceptions import ActionFailed
@@ -117,7 +117,10 @@ async def guess(
         #     )
         # else:
         await ctx.scene.send_message(
-            "猜干员游戏开始！\n" "请尽量用回复bot的形式发送干员名字\n" "发送 取消 或 @bot 取消 可以结束当前游戏",
+            "猜干员游戏开始！\n"
+            "请尽量用回复bot的形式发送干员名字\n"
+            "发送 提示 或 @bot 提示 可以获取提示\n"
+            "发送 取消 或 @bot 取消 可以结束当前游戏",
         )
 
     async def waiter(waiter_ctx: Context, message: MessageChain):
@@ -156,7 +159,8 @@ async def guess(
                 "artist": f"画师：{selected['artist']}\n",
             }
             key = random.choice(list(data.keys()))
-            return await ctx.scene.send_message(data[key])
+            await ctx.scene.send_message(data[key])
+            continue
         try:
             if simple.result:
                 await ctx.scene.send_message(wordle.draw(res, simple=True, max_guess=max_guess.result))

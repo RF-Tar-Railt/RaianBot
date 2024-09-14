@@ -1,7 +1,7 @@
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, Arparma, CommandMeta, Field, MultiVar
-from arclet.alconna.graia import alcommand
+from arclet.alconna.avilla import alcommand
 from arknights_toolkit.recruit import recruitment
 from avilla.core import Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount

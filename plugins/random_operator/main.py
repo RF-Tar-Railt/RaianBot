@@ -2,7 +2,7 @@ from secrets import token_hex
 from typing import Union
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field
-from arclet.alconna.graia import Match, alcommand
+from arclet.alconna.avilla import Match, alcommand
 from arknights_toolkit.random_operator import RandomOperator
 from avilla.core import ActionFailed, Context, MessageChain, Nick, Notice, Picture, RawResource
 from avilla.standard.core.message import MessageReceived

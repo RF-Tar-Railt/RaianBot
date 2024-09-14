@@ -5,7 +5,7 @@ from io import StringIO
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, Arparma, CommandMeta, Field, MultiVar, Option
-from arclet.alconna.graia import alcommand
+from arclet.alconna.avilla import alcommand
 from avilla.core import ActionFailed, Context, Picture, RawResource
 from graiax.playwright import PlaywrightService
 from nepattern import AnyString
