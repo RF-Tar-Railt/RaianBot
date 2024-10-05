@@ -59,7 +59,7 @@ async def shelp(ctx: Context):
     )
 
 
-@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
+@alcommand(repeat, post=True, send_error=True, patterns=["::group.member", "::guild.channel.member"])
 @assign("列出")
 @exclusive
 @accessable
@@ -94,7 +94,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
         await ctx.scene.send_message(Forward(nodes=forwards))
 
 
-@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
+@alcommand(repeat, post=True, send_error=True, patterns=["::group.member", "::guild.channel.member"])
 @assign("查找")
 @exclusive
 @accessable
@@ -109,7 +109,7 @@ async def rfind(ctx: Context, target: Match[str], db: DatabaseService):
     return await ctx.scene.send_message("查找成功！\n内容为:\n" + content)
 
 
-@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
+@alcommand(repeat, post=True, send_error=True, patterns=["::group.member", "::guild.channel.member"])
 @assign("删除")
 @exclusive
 @accessable
@@ -133,7 +133,7 @@ async def rremove(ctx: Context, db: DatabaseService, target: Match[Union[str, No
     return await ctx.scene.send_message("删除记录成功了！")
 
 
-@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
+@alcommand(repeat, post=True, send_error=True, patterns=["::group.member", "::guild.channel.member"])
 @assign("增加")
 @exclusive
 @accessable
@@ -161,7 +161,7 @@ async def radd(ctx: Context, name: Match[str], result: Arparma, db: DatabaseServ
     return await ctx.scene.send_message("我学会了！你现在可以来问我了！")
 
 
-@alcommand(repeat, post=True, send_error=True, patterns=["::group"])
+@alcommand(repeat, post=True, send_error=True, patterns=["::group.member", "::guild.channel.member"])
 @assign("修改")
 @exclusive
 @accessable
@@ -193,7 +193,9 @@ async def handle(ctx: Context, message: MessageChain, db: DatabaseService):
         records = (await session.scalars(Select(Learn).where(Learn.gid == ctx.scene.channel))).all()
         if not records:
             return
-        msg = str(AlconnaDispatcher.tome_remove(..., message, ctx.account.route))
+        if AlconnaDispatcher.is_tome(..., message, ctx.account.route):
+            message = AlconnaDispatcher.tome_remove(..., message, ctx.account.route)
+        msg = str(message)
         for rec in records:
             try:
                 if re.fullmatch(rec.key, msg):

@@ -5,9 +5,7 @@ from arclet.alconna.avilla import Match, alcommand, assign
 from arknights_toolkit.gacha import ArknightsGacha, GachaUser
 from avilla.core import Context, MessageChain, Picture, RawResource, Text
 from avilla.core.exceptions import ActionFailed
-from fastapi.responses import JSONResponse, Response
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
-from graiax.fastapi import route
 from sqlalchemy.sql import select
 
 from app.core import RaianBotService
@@ -20,24 +18,6 @@ from .model import ArkgachaRecord
 bot = RaianBotService.current()
 config = bot.config.plugin.get(GachaConfig)
 gacha = ArknightsGacha(config.file or f"{bot.config.plugin_data_dir / 'gachapool.json'}", bot.config.proxy)
-
-
-@route.route(["GET"], "/gacha/normal")
-async def get_gacha(count: int = 10, per: int = 2, status: int = 0, img: bool = False):
-    guser = GachaUser(per, status)
-    if img:
-        return Response(gacha.gacha_with_img(guser, count), media_type="image/png")
-    data = gacha.gacha(guser, count)
-    return JSONResponse([[i._asdict() for i in line] for line in data], headers={"charset": "utf-8"})
-
-
-@route.route(["GET"], "/gacha/sim")
-async def get_sim_gacha(per: int = 2, status: int = 0):
-    from arknights_toolkit.gacha.simulate import simulate_image
-
-    guser = GachaUser(per, status)
-    data = gacha.gacha(guser, 10)
-    return Response(await simulate_image(data[0]), media_type="image/png")
 
 
 cmd = Alconna(

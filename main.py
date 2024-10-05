@@ -8,13 +8,11 @@ from arclet.alconna.tools import MarkdownTextFormatter
 from avilla.core import Avilla, Context, Picture, RawResource
 from avilla.core.exceptions import ActionFailed
 from creart import it
-from fastapi import FastAPI
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast import Broadcast
 from graia.saya import Saya
 from graia.scheduler import GraiaScheduler
 from graia.scheduler.service import SchedulerService
-from graiax.fastapi import FastAPIBehaviour
 from graiax.playwright import PlaywrightService
 from launart import Launart
 from loguru import logger
@@ -60,8 +58,6 @@ bcc = it(Broadcast)
 
 it(AlconnaBehaviour)
 it(GraiaScheduler)
-fastapi = FastAPI()
-saya.install_behaviours(FastAPIBehaviour(fastapi))
 manager.add_component(
     PlaywrightService(
         config.browser.type,

@@ -42,6 +42,7 @@ class GlmBot:
             "max_tokens": self.max_token,
             "temperature": self.temperature,
             "messages": messages,
+            "tools": [{"type": "web_search", "web_search": {"search_result": True}}],
         }
         if self.max_token == 0:
             del data["max_tokens"]

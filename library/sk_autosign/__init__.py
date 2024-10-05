@@ -7,11 +7,15 @@ from urllib import parse
 
 from httpx import AsyncClient
 
+from .crypto import get_d_id
+
 
 class SKAutoSignRecord(Protocol):
     id: Any
     token: Any
 
+
+dId = get_d_id()
 
 app_code = "4ca99fa6b56cc2ba"
 header = {
@@ -23,13 +27,15 @@ header = {
     "Content-Type": "application/json",
     "manufacturer": "Xiaomi",
     "os": "33",
+    "dId": dId  # "de9759a5afaa634f",
 }
 header_for_sign = {
     "platform": "1",
     "timestamp": "",
-    "dId": "de9759a5afaa634f",
+    "dId": "",
     "vName": "1.5.1",
 }
+
 
 # 签到url
 sign_url = "https://zonai.skland.com/api/v1/game/attendance"
@@ -38,7 +44,7 @@ binding_url = "https://zonai.skland.com/api/v1/game/player/binding"
 # 使用token获得认证代码
 grant_code_url = "https://as.hypergryph.com/user/oauth2/v2/grant"
 # 使用认证代码获得cred
-cred_code_url = "https://zonai.skland.com/api/v1/user/auth/generate_cred_by_code"
+cred_code_url = "https://zonai.skland.com/web/v1/user/auth/generate_cred_by_code"
 
 
 def generate_signature(token: str, path, body_or_query):
@@ -54,12 +60,12 @@ def generate_signature(token: str, path, body_or_query):
     """
     # 总是说请勿修改设备时间，怕不是yj你的服务器有问题吧，所以这里特地-2
     t = str(int(time.time()) - 2)
-    token = token.encode("utf-8")
+    _token = token.encode("utf-8")
     header_ca = header_for_sign.copy()
     header_ca["timestamp"] = t
     header_ca_str = json.dumps(header_ca, separators=(",", ":"))
     s = path + body_or_query + t + header_ca_str
-    hex_s = hmac.new(token, s.encode("utf-8"), hashlib.sha256).hexdigest()
+    hex_s = hmac.new(_token, s.encode("utf-8"), hashlib.sha256).hexdigest()
     md5 = hashlib.md5(hex_s.encode("utf-8")).hexdigest()
     return md5, header_ca
 
