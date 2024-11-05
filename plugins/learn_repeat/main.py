@@ -199,7 +199,7 @@ async def handle(ctx: Context, message: MessageChain, db: DatabaseService):
         msg = str(message)
         for rec in records:
             try:
-                if re.fullmatch(rec.key, msg):
+                if rec.key == msg:
                     content = deserialize_message(rec.content)
                     await ctx.scene.send_message(content)
                     raise PropagationCancelled

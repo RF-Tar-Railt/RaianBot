@@ -246,7 +246,7 @@ class OneBot11Config(BotConfig[OneBot11Account]):
         return [Selector.from_follows_pattern(f"land(qq).group({channel}).member({admin})") for admin in self.admins]
 
     def ensure(self, account: OneBot11Account):
-        return int(self.account) in account.connection.accounts
+        return isinstance(account, OneBot11Account) and int(self.account) in account.connection.accounts
 
 
 class ElizabethConfig(BotConfig[ElizabethAccount]):
@@ -277,7 +277,7 @@ class ElizabethConfig(BotConfig[ElizabethAccount]):
         return [Selector.from_follows_pattern(f"land(qq).group({channel}).member({admin})") for admin in self.admins]
 
     def ensure(self, account: ElizabethAccount):
-        return account.connection.account_id == int(self.account)
+        return isinstance(account, ElizabethAccount) and account.connection.account_id == int(self.account)
 
 
 class Intents(BaseConfig):
@@ -343,7 +343,7 @@ class QQAPIConfig(BotConfig[QQAPIAccount]):
         return [Selector.from_follows_pattern(f"land(qq).channel({channel}).member({admin})") for admin in self.admins]
 
     def ensure(self, account: QQAPIAccount):
-        return account.connection.config.id == self.account  # type: ignore
+        return isinstance(account, QQAPIAccount) and account.connection.config.id == self.account  # type: ignore
 
 
 class RaianConfig(BaseConfig):

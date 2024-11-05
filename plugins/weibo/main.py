@@ -79,7 +79,7 @@ async def _handle_dynamic(
     page = await pw.get_interface(PlaywrightBrowser).browser.new_page(viewport={"width": 800, "height": 2400})
     try:
         await page.click("html")
-        await page.goto(data.url, timeout=60000, wait_until="networkidle")
+        await page.goto(data.url, timeout=10000, wait_until="networkidle")
         elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
         elem1 = page.locator("//article[@class='weibo-main']").first
         bounding = await elem.bounding_box()
