@@ -7,7 +7,9 @@ from typing import Callable, Literal, TypeVar
 from avilla.core import Context
 from avilla.core.account import BaseAccount
 from avilla.core.elements import Picture
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.elizabeth.resource import ElizabethImageResource
+from avilla.onebot.v11.resource import OneBot11ImageResource
 from avilla.qqapi.account import QQAPIAccount
 from avilla.qqapi.resource import QQAPIImageResource
 from graia.saya.factory import ensure_buffer
@@ -25,6 +27,8 @@ def is_qqapi_group(ctx: Context):
 def picture(url: str, ctx: Context):
     if isinstance(ctx.account, QQAPIAccount):
         return Picture(QQAPIImageResource(ctx.scene.image(url), "image", url))
+    if isinstance(ctx.account, OneBot11Account):
+        return Picture(OneBot11ImageResource(ctx.scene.image(url), file="", url=url))
     return Picture(ElizabethImageResource(ctx.scene.image(url), id="", url=url))
 
 

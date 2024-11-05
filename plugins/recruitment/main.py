@@ -5,6 +5,7 @@ from arclet.alconna.avilla import alcommand
 from arknights_toolkit.recruit import recruitment
 from avilla.core import Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.qqapi.exception import ActionFailed
 from graiax.playwright import PlaywrightBrowser, PlaywrightService
 
@@ -57,7 +58,7 @@ async def recruit(ctx: Context, res: Arparma, pw: PlaywrightService, bot: RaianB
                 return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")
     except Exception:
         await ctx.scene.send_message("prts超时，获取失败")
-        if isinstance(ctx.account, ElizabethAccount):
+        if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
             await ctx.scene.send_message(url)
     finally:
         await page.close()

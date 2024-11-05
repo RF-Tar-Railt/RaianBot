@@ -5,6 +5,8 @@ from io import StringIO
 from arclet.alconna.avilla import startswith
 from avilla.core import Avilla, Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
+from avilla.core.exceptions import NetworkError
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.profile import NickCapability
 from graia.broadcast.builtin.event import EventExceptionThrown, ExceptionThrown
@@ -29,7 +31,7 @@ if bot.config.platform.tencentcloud:
 
 @listen(MessageReceived)
 @permission("admin")
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @startswith("昵称还原")
 @exclusive
 async def nickname_restore(ctx: Context, conf: BotConfig):
@@ -42,6 +44,10 @@ async def nickname_restore(ctx: Context, conf: BotConfig):
 @listen(ExceptionThrown, EventExceptionThrown)
 @priority(13)
 async def report(event: ExceptionThrown, avilla: Avilla):
+    if isinstance(event.exception, NetworkError):
+        args = event.exception.args
+        if args[1]["code"] == 500 and "GROUP_CHAT_LIMITED" in args[1]["msg"]:
+            return
     with StringIO() as fp:
         traceback.print_tb(event.exception.__traceback__, file=fp)
         tb = fp.getvalue()
@@ -83,7 +89,7 @@ async def report(event: ExceptionThrown, avilla: Avilla):
 ```
 """
     img = await md2img(template.format_map(data), 1500)
-    if not (accounts := avilla.get_accounts(account_type=ElizabethAccount)):
+    if not (accounts := avilla.get_accounts(account_type=(ElizabethAccount, OneBot11Account))):
         return
     for account in accounts:
         async for friend in account.account.staff.query_entities("land.friend"):

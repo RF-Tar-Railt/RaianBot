@@ -7,7 +7,7 @@ from app.database import Base, User
 class ArkgachaRecord(Base):
     __tablename__ = "arkgacha"
 
-    id: Mapped[str] = mapped_column(ForeignKey(User.id), primary_key=True)
+    id: Mapped[str] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"), primary_key=True)
     """用户 ID"""
 
     statis: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

@@ -4,6 +4,7 @@ from arclet.alconna import Alconna, Args, CommandMeta, Field
 from arclet.alconna.avilla import Match, alcommand
 from avilla.core import Context, MessageChain, MessageReceived
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.standard.qq.elements import MusicShare, MusicShareKind
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 
@@ -28,7 +29,7 @@ MUSIC_URL = "https://music.163.com/song/media/outer/url?id={id}.mp3"
 
 
 @alcommand(music)
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @exclusive
 @accessable
 async def song(ctx: Context, name: Match[str], singer: Match[str], config: MusicConfig, aio: AiohttpClientService):

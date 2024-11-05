@@ -6,6 +6,7 @@ from arclet.alconna.avilla import alcommand
 from avilla.core import Context, RawResource
 from avilla.core.elements import Notice, Picture
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.qqapi.exception import ActionFailed
 from avilla.standard.core.activity import ActivityTrigged
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
@@ -15,16 +16,16 @@ from app.core import RaianBotService
 from app.shortcut import accessable, allow, exclusive, picture, record
 from library.petpet import generate
 
-rua = Alconna(
+cmd = Alconna(
     "摸",
     Args["target", [Notice, int]],
     meta=CommandMeta("rua别人", example="$摸@123456", extra={"supports": {"mirai"}}),
 )
 
 
-@alcommand(rua, post=True, send_error=True)
+@alcommand(cmd, post=True, send_error=True)
 @record("rua")
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @exclusive
 @accessable
 async def rua(

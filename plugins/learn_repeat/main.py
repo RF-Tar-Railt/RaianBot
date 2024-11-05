@@ -10,7 +10,7 @@ from avilla.standard.core.profile import Nick
 from avilla.standard.qq.elements import Forward, Node
 from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya.builtins.broadcast.shortcut import listen, priority
-from sqlalchemy import Select
+from sqlalchemy import Select, Insert
 
 from app.core import RaianBotService
 from app.database import DatabaseService
@@ -155,8 +155,9 @@ async def radd(ctx: Context, name: Match[str], result: Arparma, db: DatabaseServ
         ).one_or_none()
         if rec:
             return await ctx.scene.send_message("呜, 这个关键词已经被占用了")
-        rec = Learn(gid=ctx.scene.channel, key=key, author=ctx.client.display_without_land, content=serialized)
-        session.add(rec)
+        #rec = Learn(gid=ctx.scene.channel, key=key, author=ctx.client.display_without_land, content=serialized)
+        #session.add(rec)
+        await session.execute(Insert(Learn).values(gid=ctx.scene.channel, key=key, author=ctx.client.display_without_land, content=serialized))
         await session.commit()
     return await ctx.scene.send_message("我学会了！你现在可以来问我了！")
 

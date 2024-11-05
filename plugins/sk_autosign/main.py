@@ -7,6 +7,7 @@ from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
 from arclet.alconna.avilla import Match, alcommand, assign
 from avilla.core import ActionFailed, Avilla, Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from graia.scheduler.saya.shortcut import crontab
 from sqlalchemy import select
 
@@ -202,7 +203,7 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
 @record("森空自动签到", False)
 async def shed(avilla: Avilla):
     results = {}
-    if not (accounts := avilla.get_accounts(account_type=ElizabethAccount)):
+    if not (accounts := avilla.get_accounts(account_type=(ElizabethAccount, OneBot11Account))):
         return
     async with bot.db.get_session() as session:
         for rec in (await session.scalars(select(SKAutoSignRecord))).all():

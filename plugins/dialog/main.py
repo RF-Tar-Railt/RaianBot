@@ -8,6 +8,7 @@ from arclet.alconna import command_manager
 from arclet.alconna.avilla.dispatcher import output_cache, result_cache
 from avilla.core import Context, MessageReceived, Notice, Picture, Text
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya.builtins.broadcast.shortcut import listen, priority
@@ -195,7 +196,7 @@ async def aitalk(
     sign_conf: SignConfig,
 ):
     """真AI对话功能, 通过@机器人或者回复机器人来触发，机器人也会有几率自动对话"""
-    if not isinstance(ctx.account, ElizabethAccount):
+    if not isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
         return
     if ctx.client.user == "2854196310":
         return
@@ -236,7 +237,7 @@ async def aitalk(
         if reply:
             await ctx.scene.send_message(reply, reply=event.message)
         return
-    if not isinstance(ctx.account, ElizabethAccount):
+    if not isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
         return
     for elem in bot.config.command.headers:
         if isinstance(elem, str):

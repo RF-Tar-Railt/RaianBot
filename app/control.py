@@ -9,6 +9,7 @@ from avilla.core.account import BaseAccount
 from avilla.core.elements import Notice, Text
 from avilla.core.event import AvillaEvent
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
@@ -23,7 +24,7 @@ from .database import DatabaseService, Group
 
 def require_admin(only: bool = False, __record: Any = None):
     async def __wrapper__(event: MessageReceived, serv: RaianBotService, bot: BotConfig, ctx: Context):
-        if not isinstance(ctx.account, ElizabethAccount):
+        if not isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
             if ctx.scene.pattern.get("group"):
                 return True
             if ctx.scene.pattern.get("friend"):
@@ -98,7 +99,7 @@ def check_exclusive():
                 await session.scalars(
                     select(Group)
                     .where(Group.id == ctx.scene.channel)
-                    .where(Group.platform == ("qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi"))
+                    .where(Group.platform == ("qq" if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)) else "qqapi"))
                 )
             ).one_or_none()
         if not group:

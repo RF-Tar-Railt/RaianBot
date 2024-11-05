@@ -6,6 +6,7 @@ from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
 from arclet.alconna.avilla import Match, alcommand
 from avilla.core import Context, Nick, Notice
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 
 from app.shortcut import accessable, allow, exclusive, record
 
@@ -32,7 +33,7 @@ ill = Alconna(
 
 
 @alcommand(ill, send_error=True)
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @record("发病")
 @exclusive
 @accessable

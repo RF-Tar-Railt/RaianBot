@@ -4,6 +4,7 @@ from arclet.alconna.avilla import startswith
 from avilla.core import Context, Notice
 from avilla.core.event import SceneCreated, SceneDestroyed
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
 from graia.amnesia.message import MessageChain
@@ -67,7 +68,7 @@ async def _init_g(ctx: Context, db: DatabaseService, bot: RaianBotService):
         if not group:
             group = Group(
                 id=ctx.scene.channel,
-                platform="qq" if isinstance(ctx.account, ElizabethAccount) else "qqapi",
+                platform="qq" if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)) else "qqapi",
                 accounts=[account],
                 disabled=list(bot.disabled),
             )
@@ -82,11 +83,11 @@ async def _init_g(ctx: Context, db: DatabaseService, bot: RaianBotService):
 
 @listen(SceneCreated)
 @priority(8)
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 async def introduce(ctx: Context, bot: RaianBotService, conf: BotConfig, db: DatabaseService):
     if ctx.scene.follows("::friend") or ctx.scene.follows("::guild.user"):
         return
-    if not isinstance(ctx.account, ElizabethAccount):
+    if not isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
         return
     group_id = ctx.scene.channel
     await ctx.account.get_context(conf.master()).scene.send_message(
@@ -162,7 +163,7 @@ async def _remove(ctx: Context, db: DatabaseService, event: SceneDestroyed, conf
                 await session.commit()
         if event.active:
             return
-        if not isinstance(ctx.account, ElizabethAccount):
+        if not isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
             return
         if not event.indirect:
             bl = BlacklistCache(id=group_id, in_blacklist=True)

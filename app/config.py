@@ -5,9 +5,13 @@ from pathlib import Path
 from typing import ClassVar, Generic, Literal, Optional, TypeVar, Union, cast
 
 import yaml
+from yarl import URL as _URL
 from avilla.core import Selector
 from avilla.core.account import BaseAccount
 from avilla.core.elements import Notice
+from avilla.onebot.v11.account import OneBot11Account
+from avilla.onebot.v11.protocol import OneBot11ForwardConfig
+from avilla.onebot.v11.protocol import OneBot11Protocol
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.elizabeth.protocol import ElizabethConfig as _ElizabethConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
@@ -214,6 +218,37 @@ class BotConfig(BaseConfig, Generic[TA]):
     def ensure(self, account: TA): ...
 
 
+class OneBot11Config(BotConfig[OneBot11Account]):
+    type: Literal["onebot11"] = "onebot11"
+
+    host: str
+    """onebot-v11 协议端的正向地址"""
+
+    port: int
+    """onebot-v11 协议端的正向端口"""
+
+    access_token: str
+    """onebot-v11 协议端的正向鉴权"""
+
+    def export(self):
+        return OneBot11Protocol, OneBot11ForwardConfig(
+            endpoint=_URL(f"ws://{self.host}:{self.port}"), access_token=self.access_token
+        )
+
+    def master(self, channel: Optional[str] = None) -> Selector:
+        if not channel:
+            return Selector.from_follows_pattern(f"land(qq).friend({self.master_id})")
+        return Selector.from_follows_pattern(f"land(qq).group({channel}).member({self.master_id})")
+
+    def administrators(self, channel: Optional[str] = None) -> list[Selector]:
+        if not channel:
+            return [Selector.from_follows_pattern(f"land(qq).friend({admin})") for admin in self.admins]
+        return [Selector.from_follows_pattern(f"land(qq).group({channel}).member({admin})") for admin in self.admins]
+
+    def ensure(self, account: OneBot11Account):
+        return int(self.account) in account.connection.accounts
+
+
 class ElizabethConfig(BotConfig[ElizabethAccount]):
     type: Literal["mirai"] = "mirai"
 
@@ -339,7 +374,7 @@ class RaianConfig(BaseConfig):
     platform: PlatformConfig
     """外部平台接口相关配置"""
 
-    bots: list[Union[ElizabethConfig, QQAPIConfig]] = Field(default_factory=list)
+    bots: list[Union[ElizabethConfig, OneBot11Config, QQAPIConfig]] = Field(default_factory=list)
     """bot 配置"""
 
     root: str = Field(default="config")

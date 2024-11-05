@@ -7,6 +7,7 @@ from arclet.alconna.avilla import Match, alcommand, assign
 from arclet.alconna.tools import MarkdownTextFormatter
 from avilla.core import Context
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from graia.broadcast.exceptions import PropagationCancelled
 from graia.saya.builtins.broadcast.shortcut import priority
 from nepattern import BasePattern, MatchMode
@@ -214,7 +215,7 @@ async def rd_handle(
     pat = pattern.result
     if pat.startswith("h"):
         pat = pat[1:]
-        if accounts := ctx.avilla.get_accounts(account_type=ElizabethAccount):
+        if accounts := ctx.avilla.get_accounts(account_type=(ElizabethAccount, OneBot11Account)):
             user_id = ctx.client.user
             for account in accounts:
                 async for friend in account.account.staff.query_entities("land.friend"):

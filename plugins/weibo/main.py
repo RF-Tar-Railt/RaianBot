@@ -1,7 +1,6 @@
 import asyncio
 import random
 from secrets import token_hex
-tuple
 from arclet.alconna import Alconna, Arg, CommandMeta, Field, Option
 from arclet.alconna.avilla import Match, alcommand, assign
 from avilla.core import (
@@ -18,6 +17,7 @@ from avilla.core import (
     UrlResource,
 )
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.standard.core.application import ApplicationClosing
 from avilla.standard.qq.elements import Forward, Node
 from graia.saya.builtins.broadcast.shortcut import listen
@@ -200,12 +200,12 @@ async def wfetch(
             except ActionFailed:
                 return await ctx.scene.send_message(picture(url, ctx))
         await ctx.scene.send_message(str(e))
-    if isinstance(ctx.account, ElizabethAccount) and nodes[1]:
+    if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)) and nodes[1]:
         await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in nodes[1])])
 
 
 @alcommand(weibo_fetch, comp_session={}, post=True)
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @record("微博功能")
 @assign("follow")
 @accessable
@@ -236,7 +236,7 @@ async def wfollow(ctx: Context, user: Match[str], select: Match[int], db: Databa
 
 @alcommand(weibo_fetch, comp_session={}, post=True)
 @record("微博功能")
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @assign("unfollow")
 @accessable
 @exclusive
@@ -265,7 +265,7 @@ async def wunfollow(ctx: Context, user: Match[str], select: Match[int], db: Data
 
 
 @alcommand(weibo_fetch, comp_session={}, post=True)
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @record("微博功能")
 @assign("list")
 @accessable
@@ -318,7 +318,7 @@ async def update(avilla: Avilla):
     dynamics = {}
     pw = Launart.current().get_component(PlaywrightService)
     followers = set()
-    if not avilla.get_accounts(account_type=ElizabethAccount):
+    if not avilla.get_accounts(account_type=ElizabethAccount) and not avilla.get_accounts(account_type=OneBot11Account):
         return
     async with bot.db.get_session() as session:
         mapping = {}
@@ -360,7 +360,7 @@ async def update(avilla: Avilla):
             for account in group.accounts:
                 _route = Selector.from_follows_pattern(account)
                 if _route in avilla.accounts and isinstance(
-                    (acc := avilla.get_account(_route)).account, ElizabethAccount
+                    (acc := avilla.get_account(_route)).account, (ElizabethAccount, OneBot11Account)
                 ):
                     accounts.append(acc.account)
             if not accounts:

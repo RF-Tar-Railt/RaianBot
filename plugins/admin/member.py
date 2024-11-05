@@ -2,6 +2,7 @@ from avilla.core import Context, Notice
 from avilla.core.event import MemberCreated, MemberDestroyed, MetadataModified
 from avilla.core.tools.filter import Filter
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.standard.core.privilege import MuteInfo
 from graia.amnesia.message import MessageChain
 from graia.saya.builtins.broadcast.shortcut import dispatch, listen
@@ -12,7 +13,7 @@ from app.shortcut import allow, exclusive, record
 @listen(MemberDestroyed)
 @record("member_leave")
 @exclusive
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 async def member_leave_tell(ctx: Context):
     """用户离群提醒"""
     await ctx.scene.send_message(f"可惜了！\n{ctx.endpoint.user}退群了！")
@@ -21,7 +22,7 @@ async def member_leave_tell(ctx: Context):
 @listen(MemberCreated)
 @record("member_join")
 @exclusive
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 async def member_join_tell(
     ctx: Context,
 ):
@@ -39,7 +40,7 @@ async def member_join_tell(
     .assert_true(lambda e: list(e.details.values())[0].current)
 )
 @exclusive
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 async def member_mute_tell(ctx: Context, event: MetadataModified):
     """用户被禁言提醒"""
     await ctx.scene.send_message(MessageChain(["哎呀，", Notice(event.endpoint), " 没法说话了！"]))
@@ -54,7 +55,7 @@ async def member_mute_tell(ctx: Context, event: MetadataModified):
     .assert_false(lambda e: list(e.details.values())[0].current)
 )
 @exclusive
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 async def member_unmute_tell(ctx: Context, event: MetadataModified):
     """用户被解除禁言提醒, 注意是手动解禁"""
     if event.operator is None:

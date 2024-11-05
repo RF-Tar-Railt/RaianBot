@@ -7,6 +7,7 @@ from arclet.alconna.avilla.dispatcher import AlconnaDispatcher
 from avilla.core import ActionFailed, Context, MessageChain, Notice, Picture, RawResource
 from avilla.core.tools.filter import Filter
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.qqapi.account import QQAPIAccount
 from avilla.standard.core.message import MessageReceived
 from graia.saya.builtins.broadcast.shortcut import dispatch, listen
@@ -42,7 +43,7 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
         return
     if not AlconnaDispatcher.is_tome(..., message, ctx.account.route):
         return
-    plat: str = {ElizabethAccount: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore
+    plat: str = {ElizabethAccount: "mirai", OneBot11Account: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore
     md = f"""\
 # {config.name} {config.account} 帮助菜单
 #{lang.require('manager', 'help_header')}

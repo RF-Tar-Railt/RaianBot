@@ -9,7 +9,7 @@ from app.database import Base, User
 class SignRecord(Base):
     __tablename__ = "sign"
 
-    id: Mapped[str] = mapped_column(ForeignKey(User.id), primary_key=True)
+    id: Mapped[str] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"), primary_key=True)
     """用户 ID"""
 
     date: Mapped[datetime] = mapped_column(DateTime, nullable=False)

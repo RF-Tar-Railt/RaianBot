@@ -4,6 +4,7 @@ from avilla.core import Context, MessageChain, MessageReceived, MessageSent, Pic
 from avilla.core.elements import Face, Notice
 from avilla.core.exceptions import ActionFailed
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.standard.core.profile import Nick
 from avilla.standard.qq.elements import MarketFace
 from graia.saya.builtins.broadcast.shortcut import listen, priority
@@ -39,7 +40,7 @@ cache_dir.mkdir(parents=True, exist_ok=True)
 @alcommand(closure, post=True, send_error=True)
 @record("closure")
 @assign("$main")
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @exclusive
 @accessable
 async def _help(ctx: Context):
@@ -57,7 +58,7 @@ async def _help(ctx: Context):
 @alcommand(closure, post=True, send_error=True)
 @record("closure")
 @assign("reset")
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @exclusive
 @accessable
 async def _reset(ctx: Context):
@@ -71,7 +72,7 @@ async def _reset(ctx: Context):
 @alcommand(closure, post=True, send_error=True)
 @record("closure")
 @assign("bind")
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @exclusive
 @accessable
 async def _bind(ctx: Context, name: Match[str]):
@@ -88,7 +89,7 @@ async def _bind(ctx: Context, name: Match[str]):
 @alcommand(closure, post=True, send_error=True)
 @record("closure")
 @assign("create")
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @exclusive
 @accessable
 async def _create(ctx: Context, count: Match[int]):
@@ -102,7 +103,7 @@ async def _create(ctx: Context, count: Match[int]):
 @alcommand(closure, post=True, send_error=True)
 @record("closure")
 @assign("start")
-@allow(ElizabethAccount)
+@allow(ElizabethAccount, OneBot11Account)
 @exclusive
 @accessable
 async def _start(ctx: Context, pw: PlaywrightService):

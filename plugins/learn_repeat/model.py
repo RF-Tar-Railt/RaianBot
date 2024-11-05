@@ -9,7 +9,7 @@ class Learn(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    gid: Mapped[str] = mapped_column(ForeignKey(Group.id), nullable=False)
+    gid: Mapped[str] = mapped_column(ForeignKey(Group.id, ondelete="CASCADE"), nullable=False)
     """群组 ID"""
 
     key: Mapped[str] = mapped_column(String(256), nullable=False)

@@ -7,7 +7,7 @@ from app.database import Base, User
 class DrawRecord(Base):
     __tablename__ = "draw"
 
-    id: Mapped[str] = mapped_column(ForeignKey(User.id), primary_key=True)
+    id: Mapped[str] = mapped_column(ForeignKey(User.id, ondelete="CASCADE"), primary_key=True)
     """用户 ID"""
 
     date: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
