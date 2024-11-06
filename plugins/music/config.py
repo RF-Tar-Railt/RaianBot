@@ -8,6 +8,8 @@ from app.config import BasePluginConfig
 class Config(BasePluginConfig, domain="global"):
     api: Optional[AnyUrl] = Field(default=None)
     """网易云API 接口"""
+    music_share_sign: Optional[AnyUrl] = Field(default=None)
+    """音乐分享签名"""
 
 
 MusicConfig = Config

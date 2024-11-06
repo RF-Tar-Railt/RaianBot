@@ -99,6 +99,24 @@ bots:
     ## bot 的管理者(除开控制者)的账号
     admins: []
   -
+    ## 类型为 onebot-v11 协议端
+    ## !!! 请注意, 目前只支持使用正向 ws 连接
+    type: onebot11
+    ## 机器人名字, 请尽量不要与 prefix 重合
+    name: 莱安
+    ## bot 登录账号
+    account: "UNDEFINED"
+    ## onebot-v11 协议端的链接
+    host: "localhost"
+    ## onebot-v11 协议端的端口
+    port: 8080
+    ## onebot-v11 协议端的验证码
+    access_token: "INITKEYWylsVdbr"
+    ## bot 的控制者的账号
+    master_id: "UNDEFINED"
+    ## bot 的管理者(除开控制者)的账号
+    admins: []
+  -
     ## 类型为 qq-api
     type: qqapi
     ## 机器人名字, 请尽量不要与 prefix 重合

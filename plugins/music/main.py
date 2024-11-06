@@ -5,7 +5,7 @@ from arclet.alconna.avilla import Match, alcommand
 from avilla.core import Context, MessageChain, MessageReceived
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.onebot.v11.account import OneBot11Account
-from avilla.standard.qq.elements import MusicShare, MusicShareKind
+from avilla.standard.qq.elements import MusicShare, MusicShareKind, App
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 
 from app.interrupt import FunctionWaiter
@@ -76,14 +76,28 @@ async def song(ctx: Context, name: Match[str], singer: Match[str], config: Music
     async with aio.session.get(f"{api}song/detail?ids={song_id}", timeout=20) as resp:
         picture = (await resp.json())["songs"][0]["al"]["picUrl"]
     song_summary = f"{song_['name']}--{', '.join(artist['name'] for artist in song_['artists'])}"
-    return await ctx.scene.send_message(
-        MusicShare(
-            kind=MusicShareKind.NeteaseCloudMusic,
-            title=song_["name"],
-            content=song_summary,
-            url=JUMP_URL.format(id=song_id),
-            brief=song_summary,
-            thumbnail=picture,
-            audio=MUSIC_URL.format(id=song_id),
+    if not config.music_share_sign:
+        return await ctx.scene.send_message(
+            MusicShare(
+                kind=MusicShareKind.NeteaseCloudMusic,
+                title=song_["name"],
+                content=song_summary,
+                url=JUMP_URL.format(id=song_id),
+                brief=song_summary,
+                thumbnail=picture,
+                audio=MUSIC_URL.format(id=song_id),
+            )
         )
-    )
+    data = {
+        "type": "163",
+        "url": JUMP_URL.format(id=song_id),
+        "audio": MUSIC_URL.format(id=song_id),
+        "title": song_["name"],
+        "image": picture,
+        "singer": song_summary,
+    }
+    async with aio.session.post(str(config.music_share_sign), json=data) as resp:
+        if resp.status != 200:
+            return await ctx.scene.send_message("分享失败")
+        content = await resp.text()
+        return await ctx.scene.send_message(App(content=content))
