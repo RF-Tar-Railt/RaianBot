@@ -2,7 +2,7 @@ import asyncio
 import random
 from secrets import token_hex
 from arclet.alconna import Alconna, Arg, CommandMeta, Field, Option
-from arclet.alconna.avilla import Match, alcommand, assign
+from arclet.alconna.avilla import Match, Query, alcommand, assign
 from avilla.core import (
     ActionFailed,
     Avilla,
@@ -50,8 +50,8 @@ weibo_fetch = Alconna(
     Arg("select#选择第几个用户", int, Field(default=-1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
     Option(
         "动态",
-        Arg("index#从最前动态排起的第几个动态", int, Field(default=-1, unmatch_tips=lambda x: f"请输入数字，而不是{x}"))
-        + Arg("page#第几页动态", int, Field(default=1, unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
+        Arg("index?#从最前动态排起的第几个动态", int, Field(unmatch_tips=lambda x: f"请输入数字，而不是{x}"))
+        + Arg("page?#第几页动态", int, Field(unmatch_tips=lambda x: f"请输入数字，而不是{x}")),
         help_text="从微博获取指定用户的动态",
     ),
     Option("关注|增加关注", dest="follow", help_text="增加一位微博动态关注对象"),
@@ -75,6 +75,7 @@ async def _save():
 async def _handle_dynamic(
     data: WeiboDynamic,
     pw: PlaywrightService,
+    url_imgs: bool = False,
 ):
     page = await pw.get_interface(PlaywrightBrowser).browser.new_page(viewport={"width": 800, "height": 2400})
     try:
@@ -94,7 +95,17 @@ async def _handle_dynamic(
     finally:
         await page.close()
 
-    imgs = data.img_urls.copy()
+    imgs: list[Picture] = []
+    for url in data.img_urls:
+        if url_imgs:
+            imgs.append(Picture(UrlResource(url)))
+            continue
+        async with api.session.get(url) as resp:
+            if not bot.config.platform.tencentcloud:
+                imgs.append(Picture(RawResource(await resp.read())))
+            else:
+                url = await bot.upload_to_cos(await resp.read(), f"weibo_dym_{token_hex(16)}.png")
+                imgs.append(Picture(UrlResource(url)))
     return first, imgs
     # nodes: List[MessageChain] = [first, MessageChain(*imgs)] if imgs else [first]
     # if data.video_url:
@@ -152,9 +163,11 @@ async def wget(ctx: Context, user: Match[str], select: Match[int]):
             return await ctx.scene.send_message("别捣乱！")
         prof = profiles[max(_index, 0)]
         try:
+            async with api.session.get(prof.avatar) as resp:
+                pic = Picture(RawResource(await resp.read()))
             return await ctx.scene.send_message(
                 [
-                    Picture(UrlResource(prof.avatar)),
+                    pic,
                     Text(
                         f"用户名: {prof.name}\n"
                         f"介绍: {prof.description.replace('.', '. ')}\n"
@@ -180,7 +193,7 @@ async def wget(ctx: Context, user: Match[str], select: Match[int]):
 @accessable
 @exclusive
 async def wfetch(
-    ctx: Context, user: Match[str], select: Match[int], index: Match[int], page: Match[int], pw: PlaywrightService
+    ctx: Context, user: Match[str], select: Match[int], pw: PlaywrightService, index: Query[int] = Query("动态.index", -1), page: Query[int] = Query("动态.page", -1)
 ):
     try:
         prof = await api.get_profile_by_name(user.result, index=select.result, save=False, cache=True)
@@ -201,7 +214,7 @@ async def wfetch(
                 return await ctx.scene.send_message(picture(url, ctx))
         await ctx.scene.send_message(str(e))
     if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)) and nodes[1]:
-        await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in nodes[1])])
+        await ctx.scene.send_message(nodes[1])
 
 
 @alcommand(weibo_fetch, comp_session={}, post=True)
@@ -282,13 +295,15 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
     for follower in followers:
         try:
             wp = await api.get_profile(follower.wid, save=False)
+            async with api.session.get(wp.avatar) as resp:
+                pic = Picture(RawResource(await resp.read()))
             nodes.append(
                 Node(
                     name=conf.name,
                     uid=ctx.account.route["account"],
                     content=MessageChain(
                         [
-                            Picture(UrlResource(wp.avatar)),
+                            pic,
                             Text(
                                 f"用户名: {wp.name}\n"
                                 f"介绍: {wp.description}\n"
@@ -318,7 +333,7 @@ async def update(avilla: Avilla):
     dynamics = {}
     pw = Launart.current().get_component(PlaywrightService)
     followers = set()
-    if not avilla.get_accounts(account_type=ElizabethAccount) and not avilla.get_accounts(account_type=OneBot11Account):
+    if not avilla.get_accounts(account_type=(ElizabethAccount, OneBot11Account)):
         return
     async with bot.db.get_session() as session:
         mapping = {}
@@ -330,7 +345,7 @@ async def update(avilla: Avilla):
             wp = wp.copy()
             try:
                 if res := await api.update(int(uid)):
-                    dynamics[int(uid)] = (await _handle_dynamic(res, pw), res.user.name if res.user else "")
+                    dynamics[int(uid)] = (await _handle_dynamic(res, pw, url_imgs=True), res.user.name if res.user else "")
                     await asyncio.sleep(5)
                 else:
                     continue

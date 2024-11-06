@@ -185,8 +185,8 @@
     "images": [
       "char_1012_skadi2",
       "char_1012_skadi2_2",
-      "char_1012_skadi2_iteration#2",
-      "char_1012_skadi2_boc#4"
+      "char_1012_skadi2_boc#4",
+      "char_1012_skadi2_iteration#2"
     ],
     "names": {
       "en": "Skadi the Corrupting Heart",
@@ -317,8 +317,8 @@
     "images": [
       "char_1020_reed2",
       "char_1020_reed2_2",
-      "char_1020_reed2_summer#17",
-      "char_1020_reed2_epoque#30"
+      "char_1020_reed2_epoque#30",
+      "char_1020_reed2_summer#17"
     ],
     "names": {
       "en": "Reed the Flame Shadow",
@@ -344,6 +344,7 @@
     "images": [
       "char_1021_kroos2",
       "char_1021_kroos2_2",
+      "char_1021_kroos2_game#3",
       "char_1021_kroos2_nian#8"
     ],
     "names": {
@@ -1197,8 +1198,8 @@
     "images": [
       "char_128_plosis",
       "char_128_plosis_2",
-      "char_128_plosis_yun#4",
-      "char_128_plosis_epoque#3"
+      "char_128_plosis_epoque#3",
+      "char_128_plosis_yun#4"
     ],
     "names": {
       "en": "Ptilopsis",
@@ -1382,8 +1383,8 @@
     "images": [
       "char_136_hsguma",
       "char_136_hsguma_2",
-      "char_136_hsguma_summer#16",
-      "char_136_hsguma_nian#3"
+      "char_136_hsguma_nian#3",
+      "char_136_hsguma_summer#16"
     ],
     "names": {
       "en": "Hoshiguma",
@@ -2816,8 +2817,8 @@
     "id": "char_212_ansel",
     "images": [
       "char_212_ansel",
-      "char_212_ansel_summer#1",
-      "char_212_ansel_epoque#29"
+      "char_212_ansel_epoque#29",
+      "char_212_ansel_summer#1"
     ],
     "names": {
       "en": "Ansel",
@@ -3185,7 +3186,8 @@
   {
     "id": "char_240_wyvern",
     "images": [
-      "char_240_wyvern"
+      "char_240_wyvern",
+      "char_240_wyvern_game#4"
     ],
     "names": {
       "en": "Vanilla",
@@ -3629,8 +3631,8 @@
     "images": [
       "char_271_spikes",
       "char_271_spikes_2",
-      "char_271_spikes_winter#2",
-      "char_271_spikes_unveiling#1"
+      "char_271_spikes_unveiling#1",
+      "char_271_spikes_winter#2"
     ],
     "names": {
       "en": "Arene",
@@ -4248,7 +4250,8 @@
     "id": "char_306_leizi",
     "images": [
       "char_306_leizi",
-      "char_306_leizi_2"
+      "char_306_leizi_2",
+      "char_306_leizi_game#3"
     ],
     "names": {
       "en": "Leizi",
@@ -5398,7 +5401,8 @@
     "images": [
       "char_4009_irene",
       "char_4009_irene_2",
-      "char_4009_irene_ambiencesynesthesia#3"
+      "char_4009_irene_ambiencesynesthesia#3",
+      "char_4009_irene_game#3"
     ],
     "names": {
       "en": "Irene",
@@ -6511,7 +6515,8 @@
     "id": "char_4083_chimes",
     "images": [
       "char_4083_chimes",
-      "char_4083_chimes_2"
+      "char_4083_chimes_2",
+      "char_4083_chimes_yun#5"
     ],
     "names": {
       "en": "Wind Chimes",
@@ -6713,7 +6718,8 @@
     "id": "char_4104_coldst",
     "images": [
       "char_4104_coldst",
-      "char_4104_coldst_2"
+      "char_4104_coldst_2",
+      "char_4104_coldst_striker#3"
     ],
     "names": {
       "en": "Coldshot",
@@ -7015,8 +7021,8 @@
     "id": "char_4122_grabds",
     "images": [
       "char_4122_grabds",
-      "char_4122_grabds_yun#3",
-      "char_4122_grabds_2"
+      "char_4122_grabds_2",
+      "char_4122_grabds_yun#3"
     ],
     "names": {
       "en": "Grain Buds",
@@ -7041,13 +7047,13 @@
     "id": "char_4123_ela",
     "images": [
       "char_4123_ela",
-      "char_4123_ela_rainbow6#2",
-      "char_4123_ela_2"
+      "char_4123_ela_2",
+      "char_4123_ela_rainbow6#2"
     ],
     "names": {
       "en": "Ela",
       "ja": "Ela",
-      "ko": "",
+      "ko": "Ela",
       "zh-cn": "艾拉",
       "zh-tw": ""
     },
@@ -7058,7 +7064,7 @@
     "short_names": {
       "en": "Ela",
       "ja": "Ela",
-      "ko": "",
+      "ko": "Ela",
       "zh-cn": "艾拉",
       "zh-tw": ""
     }
@@ -7067,13 +7073,13 @@
     "id": "char_4124_iana",
     "images": [
       "char_4124_iana",
-      "char_4124_iana_rainbow6#2",
-      "char_4124_iana_2"
+      "char_4124_iana_2",
+      "char_4124_iana_rainbow6#2"
     ],
     "names": {
       "en": "Iana",
       "ja": "Iana",
-      "ko": "",
+      "ko": "Iana",
       "zh-cn": "双月",
       "zh-tw": ""
     },
@@ -7084,7 +7090,7 @@
     "short_names": {
       "en": "Iana",
       "ja": "Iana",
-      "ko": "",
+      "ko": "Iana",
       "zh-cn": "双月",
       "zh-tw": ""
     }
@@ -7093,13 +7099,13 @@
     "id": "char_4125_rdoc",
     "images": [
       "char_4125_rdoc",
-      "char_4125_rdoc_rainbow6#2",
-      "char_4125_rdoc_2"
+      "char_4125_rdoc_2",
+      "char_4125_rdoc_rainbow6#2"
     ],
     "names": {
       "en": "Doc",
       "ja": "Doc",
-      "ko": "",
+      "ko": "Doc",
       "zh-cn": "医生",
       "zh-tw": ""
     },
@@ -7110,7 +7116,7 @@
     "short_names": {
       "en": "Doc",
       "ja": "Doc",
-      "ko": "",
+      "ko": "Doc",
       "zh-cn": "医生",
       "zh-tw": ""
     }
@@ -7124,7 +7130,7 @@
     "names": {
       "en": "Fuze",
       "ja": "Fuze",
-      "ko": "",
+      "ko": "Fuze",
       "zh-cn": "导火索",
       "zh-tw": ""
     },
@@ -7135,7 +7141,7 @@
     "short_names": {
       "en": "Fuze",
       "ja": "Fuze",
-      "ko": "",
+      "ko": "Fuze",
       "zh-cn": "导火索",
       "zh-tw": ""
     }
@@ -7390,6 +7396,107 @@
     }
   },
   {
+    "id": "char_4141_marcil",
+    "images": [
+      "char_4141_marcil",
+      "char_4141_marcil_2",
+      "char_4141_marcil_dungeon#1"
+    ],
+    "names": {
+      "en": "Marcille",
+      "ja": "Marcille",
+      "ko": "",
+      "zh-cn": "玛露西尔",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Marcille",
+      ":#type-char"
+    ],
+    "short_names": {
+      "en": "Marcille",
+      "ja": "Marcille",
+      "ko": "",
+      "zh-cn": "玛露西尔",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "char_4142_laios",
+    "images": [
+      "char_4142_laios",
+      "char_4142_laios_2"
+    ],
+    "names": {
+      "en": "Laios",
+      "ja": "Laios",
+      "ko": "",
+      "zh-cn": "莱欧斯",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Laios",
+      ":#type-char"
+    ],
+    "short_names": {
+      "en": "Laios",
+      "ja": "Laios",
+      "ko": "",
+      "zh-cn": "莱欧斯",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "char_4143_sensi",
+    "images": [
+      "char_4143_sensi",
+      "char_4143_sensi_2"
+    ],
+    "names": {
+      "en": "Senshi",
+      "ja": "Senshi",
+      "ko": "",
+      "zh-cn": "森西",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Senshi",
+      ":#type-char"
+    ],
+    "short_names": {
+      "en": "Senshi",
+      "ja": "Senshi",
+      "ko": "",
+      "zh-cn": "森西",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "char_4144_chilc",
+    "images": [
+      "char_4144_chilc",
+      "char_4144_chilc_2"
+    ],
+    "names": {
+      "en": "Chilchuck",
+      "ja": "Chilchuck",
+      "ko": "",
+      "zh-cn": "齐尔查克",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Chilchuck",
+      ":#type-char"
+    ],
+    "short_names": {
+      "en": "Chilchuck",
+      "ja": "Chilchuck",
+      "ko": "",
+      "zh-cn": "齐尔查克",
+      "zh-tw": ""
+    }
+  },
+  {
     "id": "char_4145_ulpia",
     "images": [
       "char_4145_ulpia",
@@ -7468,7 +7575,8 @@
     "id": "char_4151_tinman",
     "images": [
       "char_4151_tinman",
-      "char_4151_tinman_2"
+      "char_4151_tinman_2",
+      "char_4151_tinman_sale#11"
     ],
     "names": {
       "en": "Tin Man",
@@ -8091,8 +8199,8 @@
     "id": "char_464_cement",
     "images": [
       "char_464_cement",
-      "char_464_cement_epoque#31",
-      "char_464_cement_2"
+      "char_464_cement_2",
+      "char_464_cement_epoque#31"
     ],
     "names": {
       "en": "Cement",
@@ -8222,9 +8330,9 @@
     "id": "char_474_glady",
     "images": [
       "char_474_glady",
-      "char_474_glady_epoque#33",
       "char_474_glady_2",
-      "char_474_glady_boc#5"
+      "char_474_glady_boc#5",
+      "char_474_glady_epoque#33"
     ],
     "names": {
       "en": "Gladiia",
@@ -8435,8 +8543,8 @@
     "id": "char_488_buildr",
     "images": [
       "char_488_buildr",
-      "char_488_buildr_epoque#34",
-      "char_488_buildr_2"
+      "char_488_buildr_2",
+      "char_488_buildr_epoque#34"
     ],
     "names": {
       "en": "Poncirus",
@@ -8461,8 +8569,8 @@
     "id": "char_489_serum",
     "images": [
       "char_489_serum",
-      "char_489_serum_epoque#31",
-      "char_489_serum_2"
+      "char_489_serum_2",
+      "char_489_serum_epoque#31"
     ],
     "names": {
       "en": "Corroserum",
@@ -8641,8 +8749,8 @@
     "id": "char_498_inside",
     "images": [
       "char_498_inside",
-      "char_498_inside_kitchen#2",
-      "char_498_inside_2"
+      "char_498_inside_2",
+      "char_498_inside_kitchen#2"
     ],
     "names": {
       "en": "Insider",
@@ -10014,9 +10122,9 @@
       "token_10033_ela_grzmot_rainbow6#2"
     ],
     "names": {
-      "en": "GRZMOT Mine",
-      "ja": "GRZMOT Mine",
-      "ko": "",
+      "en": "Grzmot Mine",
+      "ja": "GRZMOTマイン",
+      "ko": "GRZMOT 지뢰",
       "zh-cn": "雷鸣地雷",
       "zh-tw": ""
     },
@@ -10025,9 +10133,9 @@
       ":#type-token"
     ],
     "short_names": {
-      "en": "GRZMOT Mine",
-      "ja": "GRZMOT Mine",
-      "ko": "",
+      "en": "Grzmot Mine",
+      "ja": "GRZMOTマイン",
+      "ko": "GRZMOT 지뢰",
       "zh-cn": "雷鸣地雷",
       "zh-tw": ""
     }
@@ -12553,6 +12661,126 @@
     }
   },
   {
+    "id": "trap_173_slfrut",
+    "images": [
+      "trap_173_slfrut"
+    ],
+    "names": {
+      "en": "Gleaming Berry",
+      "ja": "Gleaming Berry",
+      "ko": "",
+      "zh-cn": "闪亮果实",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Gleaming Berry",
+      ":#type-trap"
+    ],
+    "short_names": {
+      "en": "Gleaming Berry",
+      "ja": "Gleaming Berry",
+      "ko": "",
+      "zh-cn": "闪亮果实",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "trap_174_smfrut",
+    "images": [
+      "trap_174_smfrut"
+    ],
+    "names": {
+      "en": "Glooming Berry",
+      "ja": "Glooming Berry",
+      "ko": "",
+      "zh-cn": "奇异黑光果实",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Glooming Berry",
+      ":#type-trap"
+    ],
+    "short_names": {
+      "en": "Glooming Berry",
+      "ja": "Glooming Berry",
+      "ko": "",
+      "zh-cn": "奇异黑光果实",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "trap_175_frfrut",
+    "images": [
+      "trap_175_frfrut"
+    ],
+    "names": {
+      "en": "Roast Berry",
+      "ja": "Roast Berry",
+      "ko": "",
+      "zh-cn": "香甜烤果子",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Roast Berry",
+      ":#type-trap"
+    ],
+    "short_names": {
+      "en": "Roast Berry",
+      "ja": "Roast Berry",
+      "ko": "",
+      "zh-cn": "香甜烤果子",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "trap_176_frutwn",
+    "images": [
+      "trap_176_frutwn"
+    ],
+    "names": {
+      "en": "Gleaming Brew",
+      "ja": "Gleaming Brew",
+      "ko": "",
+      "zh-cn": "缤纷果酒",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Gleaming Brew",
+      ":#type-trap"
+    ],
+    "short_names": {
+      "en": "Gleaming Brew",
+      "ja": "Gleaming Brew",
+      "ko": "",
+      "zh-cn": "缤纷果酒",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "trap_177_tentcl",
+    "images": [
+      "trap_177_tentcl"
+    ],
+    "names": {
+      "en": "Chest Limb？",
+      "ja": "Chest Limb？",
+      "ko": "",
+      "zh-cn": "宝箱的肉？",
+      "zh-tw": ""
+    },
+    "searches": [
+      "Chest Limb？",
+      ":#type-trap"
+    ],
+    "short_names": {
+      "en": "Chest Limb？",
+      "ja": "Chest Limb？",
+      "ko": "",
+      "zh-cn": "宝箱的肉？",
+      "zh-tw": ""
+    }
+  },
+  {
     "id": "trap_181_sgray",
     "images": [
       "trap_181_sgray"
@@ -13609,23 +13837,6 @@
     "images": [
       "trap_475_xbcbag",
       "trap_475_xbcbag_lv1",
-      "trap_475_xbcbag_lv6",
-      "trap_475_xbcbag_lv7",
-      "trap_475_xbcbag_lv8",
-      "trap_475_xbcbag_lv21",
-      "trap_475_xbcbag_lv22",
-      "trap_475_xbcbag_lv23",
-      "trap_475_xbcbag_lv24",
-      "trap_475_xbcbag_lv25",
-      "trap_475_xbcbag_lv26",
-      "trap_475_xbcbag_lv27",
-      "trap_475_xbcbag_lv31",
-      "trap_475_xbcbag_lv32",
-      "trap_475_xbcbag_lv33",
-      "trap_475_xbcbag_lv34",
-      "trap_475_xbcbag_lv35",
-      "trap_475_xbcbag_lv36",
-      "trap_475_xbcbag_lv37",
       "trap_475_xbcbag_lv11",
       "trap_475_xbcbag_lv12",
       "trap_475_xbcbag_lv13",
@@ -13635,9 +13846,26 @@
       "trap_475_xbcbag_lv17",
       "trap_475_xbcbag_lv18",
       "trap_475_xbcbag_lv2",
+      "trap_475_xbcbag_lv21",
+      "trap_475_xbcbag_lv22",
+      "trap_475_xbcbag_lv23",
+      "trap_475_xbcbag_lv24",
+      "trap_475_xbcbag_lv25",
+      "trap_475_xbcbag_lv26",
+      "trap_475_xbcbag_lv27",
       "trap_475_xbcbag_lv3",
+      "trap_475_xbcbag_lv31",
+      "trap_475_xbcbag_lv32",
+      "trap_475_xbcbag_lv33",
+      "trap_475_xbcbag_lv34",
+      "trap_475_xbcbag_lv35",
+      "trap_475_xbcbag_lv36",
+      "trap_475_xbcbag_lv37",
       "trap_475_xbcbag_lv4",
-      "trap_475_xbcbag_lv5"
+      "trap_475_xbcbag_lv5",
+      "trap_475_xbcbag_lv6",
+      "trap_475_xbcbag_lv7",
+      "trap_475_xbcbag_lv8"
     ],
     "names": {
       "en": "Game Holding Cage",
@@ -15721,6 +15949,374 @@
       "ja": "Long-range Expansion Modification",
       "ko": "",
       "zh-cn": "长距增运改装",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10001_trslim",
+    "images": [
+      "enemy_10001_trslim"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "简饲源石虫",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "简饲源石虫",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10001_trslim_2",
+    "images": [
+      "enemy_10001_trslim_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "精饲源石虫",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "精饲源石虫",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10002_trtrsl",
+    "images": [
+      "enemy_10002_trtrsl"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "浆果虫",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "浆果虫",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10002_trtrsl_2",
+    "images": [
+      "enemy_10002_trtrsl_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "硕果虫",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "硕果虫",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10003_trwlpl",
+    "images": [
+      "enemy_10003_trwlpl"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "暴走食虫花",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "暴走食虫花",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10003_trwlpl_2",
+    "images": [
+      "enemy_10003_trwlpl_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "暴走食人花",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "暴走食人花",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10004_trdiam",
+    "images": [
+      "enemy_10004_trdiam"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "浆果磐蟹",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "浆果磐蟹",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10004_trdiam_2",
+    "images": [
+      "enemy_10004_trdiam_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "硕果磐蟹",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "硕果磐蟹",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10005_trsmsb",
+    "images": [
+      "enemy_10005_trsmsb"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "染污战士",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "染污战士",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10005_trsmsb_2",
+    "images": [
+      "enemy_10005_trsmsb_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "染污勇士",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "染污勇士",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10006_trsmgi",
+    "images": [
+      "enemy_10006_trsmgi"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "染秽魔像",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "染秽魔像",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10006_trsmgi_2",
+    "images": [
+      "enemy_10006_trsmgi_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "凶秽魔像",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "凶秽魔像",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10007_trspsb",
+    "images": [
+      "enemy_10007_trspsb"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“酩酊”",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“酩酊”",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10007_trspsb_2",
+    "images": [
+      "enemy_10007_trspsb_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "陶醉的“酩酊”",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "陶醉的“酩酊”",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10008_trbbox",
+    "images": [
+      "enemy_10008_trbbox"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "宝箱恐鱼",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "宝箱恐鱼",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_10008_trbbox_2",
+    "images": [
+      "enemy_10008_trbbox_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "宝箱海怪",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "宝箱海怪",
       "zh-tw": ""
     }
   },
@@ -33647,9 +34243,9 @@
       "enemy_1401_pogpro"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Coalition Army Hound",
+      "ja": "連合政府軍用犬",
+      "ko": "연립정부 군견",
       "zh-cn": "联合政府军犬",
       "zh-tw": ""
     },
@@ -33657,9 +34253,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Coalition Army Hound",
+      "ja": "連合政府軍用犬",
+      "ko": "연립정부 군견",
       "zh-cn": "联合政府军犬",
       "zh-tw": ""
     }
@@ -33670,9 +34266,9 @@
       "enemy_1401_pogpro_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Coalition Army Hound Pro",
+      "ja": "連合政府上級軍用犬",
+      "ko": "연립정부 군견 pro",
       "zh-cn": "联合政府军犬pro",
       "zh-tw": ""
     },
@@ -33680,9 +34276,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Coalition Army Hound Pro",
+      "ja": "連合政府上級軍用犬",
+      "ko": "연립정부 군견 pro",
       "zh-cn": "联合政府军犬pro",
       "zh-tw": ""
     }
@@ -33693,9 +34289,9 @@
       "enemy_1402_tgshd"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Armored Scout",
+      "ja": "装甲偵察兵",
+      "ko": "장갑 정찰병",
       "zh-cn": "装甲侦察兵",
       "zh-tw": ""
     },
@@ -33703,9 +34299,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Armored Scout",
+      "ja": "装甲偵察兵",
+      "ko": "장갑 정찰병",
       "zh-cn": "装甲侦察兵",
       "zh-tw": ""
     }
@@ -33716,9 +34312,9 @@
       "enemy_1402_tgshd_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Heavy Scout",
+      "ja": "重装偵察兵",
+      "ko": "중장갑 정찰병",
       "zh-cn": "重装侦察兵",
       "zh-tw": ""
     },
@@ -33726,9 +34322,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Heavy Scout",
+      "ja": "重装偵察兵",
+      "ko": "중장갑 정찰병",
       "zh-cn": "重装侦察兵",
       "zh-tw": ""
     }
@@ -33739,9 +34335,9 @@
       "enemy_1403_gunsho"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Light Rapid Crossbowman",
+      "ja": "軽型クロスボウ速射手",
+      "ko": "속사 경량 석궁병",
       "zh-cn": "速射轻弩手",
       "zh-tw": ""
     },
@@ -33749,9 +34345,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Light Rapid Crossbowman",
+      "ja": "軽型クロスボウ速射手",
+      "ko": "속사 경량 석궁병",
       "zh-cn": "速射轻弩手",
       "zh-tw": ""
     }
@@ -33762,9 +34358,9 @@
       "enemy_1403_gunsho_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Heavy Rapid Crossbowman",
+      "ja": "軽型クロスボウ猛射手",
+      "ko": "속사 파워 석궁병",
       "zh-cn": "速射劲弩手",
       "zh-tw": ""
     },
@@ -33772,9 +34368,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Heavy Rapid Crossbowman",
+      "ja": "軽型クロスボウ猛射手",
+      "ko": "속사 파워 석궁병",
       "zh-cn": "速射劲弩手",
       "zh-tw": ""
     }
@@ -33785,9 +34381,9 @@
       "enemy_1404_msnip"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Heavy Crossbowman Ambusher",
+      "ja": "重型クロスボウ強襲者",
+      "ko": "강화 석궁 기습자",
       "zh-cn": "重弩突袭者",
       "zh-tw": ""
     },
@@ -33795,9 +34391,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Heavy Crossbowman Ambusher",
+      "ja": "重型クロスボウ強襲者",
+      "ko": "강화 석궁 기습자",
       "zh-cn": "重弩突袭者",
       "zh-tw": ""
     }
@@ -33808,9 +34404,9 @@
       "enemy_1404_msnip_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Heavy Crossbowman Hunter",
+      "ja": "重型クロスボウ猛襲者",
+      "ko": "강화 석궁 강습자",
       "zh-cn": "重弩猎杀者",
       "zh-tw": ""
     },
@@ -33818,9 +34414,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Heavy Crossbowman Hunter",
+      "ja": "重型クロスボウ猛襲者",
+      "ko": "강화 석궁 강습자",
       "zh-cn": "重弩猎杀者",
       "zh-tw": ""
     }
@@ -33831,9 +34427,9 @@
       "enemy_1405_boomer"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Reckless Grenadier",
+      "ja": "無謀な擲弾兵",
+      "ko": "무모한 척탄병",
       "zh-cn": "鲁莽掷弹兵",
       "zh-tw": ""
     },
@@ -33841,9 +34437,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Reckless Grenadier",
+      "ja": "無謀な擲弾兵",
+      "ko": "무모한 척탄병",
       "zh-cn": "鲁莽掷弹兵",
       "zh-tw": ""
     }
@@ -33854,9 +34450,9 @@
       "enemy_1405_boomer_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Impetuous Grenadier",
+      "ja": "不敵な擲弾兵",
+      "ko": "용맹한 척탄병",
       "zh-cn": "无畏掷弹兵",
       "zh-tw": ""
     },
@@ -33864,9 +34460,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Impetuous Grenadier",
+      "ja": "不敵な擲弾兵",
+      "ko": "용맹한 척탄병",
       "zh-cn": "无畏掷弹兵",
       "zh-tw": ""
     }
@@ -33877,9 +34473,9 @@
       "enemy_1406_chghmr"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Battleline Advance Guard",
+      "ja": "戦線推進兵",
+      "ko": "전선 개척자",
       "zh-cn": "战线推进者",
       "zh-tw": ""
     },
@@ -33887,9 +34483,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Battleline Advance Guard",
+      "ja": "戦線推進兵",
+      "ko": "전선 개척자",
       "zh-cn": "战线推进者",
       "zh-tw": ""
     }
@@ -33900,9 +34496,9 @@
       "enemy_1406_chghmr_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Battleline Breacher",
+      "ja": "戦線突破兵",
+      "ko": "전선 파괴자",
       "zh-cn": "战线突破者",
       "zh-tw": ""
     },
@@ -33910,9 +34506,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Battleline Breacher",
+      "ja": "戦線突破兵",
+      "ko": "전선 파괴자",
       "zh-cn": "战线突破者",
       "zh-tw": ""
     }
@@ -33923,9 +34519,9 @@
       "enemy_1407_hummbd"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Farseer",
+      "ja": "スコープ",
+      "ko": "천리안",
       "zh-cn": "远眺",
       "zh-tw": ""
     },
@@ -33933,9 +34529,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Farseer",
+      "ja": "スコープ",
+      "ko": "천리안",
       "zh-cn": "远眺",
       "zh-tw": ""
     }
@@ -33946,9 +34542,9 @@
       "enemy_1407_hummbd_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Farseer B",
+      "ja": "スコープ・B",
+      "ko": "천리안 B",
       "zh-cn": "远眺·B",
       "zh-tw": ""
     },
@@ -33956,9 +34552,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Farseer B",
+      "ja": "スコープ・B",
+      "ko": "천리안 B",
       "zh-cn": "远眺·B",
       "zh-tw": ""
     }
@@ -33969,9 +34565,9 @@
       "enemy_1408_scotcn"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Battlefield Observing Mortarman",
+      "ja": "戦場観測榴弾射手",
+      "ko": "전장 관측 포격수",
       "zh-cn": "战场观测炮手",
       "zh-tw": ""
     },
@@ -33979,9 +34575,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Battlefield Observing Mortarman",
+      "ja": "戦場観測榴弾射手",
+      "ko": "전장 관측 포격수",
       "zh-cn": "战场观测炮手",
       "zh-tw": ""
     }
@@ -33992,9 +34588,9 @@
       "enemy_1408_scotcn_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Battlefield Surveying Mortarman",
+      "ja": "戦場分析榴弾射手",
+      "ko": "전장 통찰 포격수",
       "zh-cn": "战场深视炮手",
       "zh-tw": ""
     },
@@ -34002,9 +34598,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Battlefield Surveying Mortarman",
+      "ja": "戦場分析榴弾射手",
+      "ko": "전장 통찰 포격수",
       "zh-cn": "战场深视炮手",
       "zh-tw": ""
     }
@@ -34015,9 +34611,9 @@
       "enemy_1409_bdguad"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Mateo's Security Guard",
+      "ja": "マッテオの警護兵",
+      "ko": "마테오의 경비원",
       "zh-cn": "马特奥的警卫",
       "zh-tw": ""
     },
@@ -34025,9 +34621,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Mateo's Security Guard",
+      "ja": "マッテオの警護兵",
+      "ko": "마테오의 경비원",
       "zh-cn": "马特奥的警卫",
       "zh-tw": ""
     }
@@ -34038,9 +34634,9 @@
       "enemy_1409_bdguad_2"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Mateo's Guard",
+      "ja": "マッテオの近衛兵",
+      "ko": "마테오의 근위병",
       "zh-cn": "马特奥的近卫",
       "zh-tw": ""
     },
@@ -34048,9 +34644,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Mateo's Guard",
+      "ja": "マッテオの近衛兵",
+      "ko": "마테오의 근위병",
       "zh-cn": "马特奥的近卫",
       "zh-tw": ""
     }
@@ -34061,9 +34657,9 @@
       "enemy_1409_bdguad_3"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Mateo's Bodyguard",
+      "ja": "マッテオの親衛兵",
+      "ko": "마테오의 친위대",
       "zh-cn": "马特奥的亲卫",
       "zh-tw": ""
     },
@@ -34071,9 +34667,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Mateo's Bodyguard",
+      "ja": "マッテオの親衛兵",
+      "ko": "마테오의 친위대",
       "zh-cn": "马特奥的亲卫",
       "zh-tw": ""
     }
@@ -36453,9 +37049,9 @@
       "enemy_1551_bolicp"
     ],
     "names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Captain Mateo",
+      "ja": "マッテオ大尉",
+      "ko": "마테오 대위",
       "zh-cn": "马特奥上尉",
       "zh-tw": ""
     },
@@ -36463,9 +37059,9 @@
       ":#type-enemy"
     ],
     "short_names": {
-      "en": "",
-      "ja": "",
-      "ko": "",
+      "en": "Captain Mateo",
+      "ja": "マッテオ大尉",
+      "ko": "마테오 대위",
       "zh-cn": "马特奥上尉",
       "zh-tw": ""
     }
@@ -36559,6 +37155,29 @@
       "ja": "",
       "ko": "",
       "zh-cn": "玛利图斯，“海嗣”",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_1557_trcerb",
+    "images": [
+      "enemy_1557_trcerb"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“三头犬”",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“三头犬”",
       "zh-tw": ""
     }
   },
@@ -41228,6 +41847,121 @@
       "ja": "再鋳造されし忠僕",
       "ko": "재주조된 시종",
       "zh-cn": "再铸扈从",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_8007_eltrsm",
+    "images": [
+      "enemy_8007_eltrsm"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“迷迭香”，虚实之握",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“迷迭香”，虚实之握",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_8007_eltrsm_2",
+    "images": [
+      "enemy_8007_eltrsm_2"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“迷迭香”，虚实之握",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“迷迭香”，虚实之握",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_8007_eltrsm_3",
+    "images": [
+      "enemy_8007_eltrsm_3"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“迷迭香”，虚实之握",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“迷迭香”，虚实之握",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_8008_eltswd",
+    "images": [
+      "enemy_8008_eltswd"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "矢量战术装备",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "矢量战术装备",
+      "zh-tw": ""
+    }
+  },
+  {
+    "id": "enemy_8009_eltufo",
+    "images": [
+      "enemy_8009_eltufo"
+    ],
+    "names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“迷迭香”的无人机",
+      "zh-tw": ""
+    },
+    "searches": [
+      ":#type-enemy"
+    ],
+    "short_names": {
+      "en": "",
+      "ja": "",
+      "ko": "",
+      "zh-cn": "“迷迭香”的无人机",
       "zh-tw": ""
     }
   }

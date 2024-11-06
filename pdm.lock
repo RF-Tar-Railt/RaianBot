@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:d8ec6f1a2c1ab5a518716cc1b896a6329af56b3ececf3827b7217bfb945b97e2"
+content_hash = "sha256:8824120ac3e95cfc5c5be264c993332caf87aa10f2952764f13bd6dacf7b03fe"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -181,26 +181,26 @@ files = [
 
 [[package]]
 name = "arclet-alconna-tools"
-version = "0.7.4"
-requires_python = ">=3.8"
+version = "0.7.10"
+requires_python = ">=3.9"
 summary = "Builtin Tools for Alconna"
 dependencies = [
-    "arclet-alconna>=1.8.12",
+    "arclet-alconna>=1.8.31",
     "nepattern<1.0.0,>=0.7.3",
 ]
 files = [
-    {file = "arclet_alconna_tools-0.7.4-py3-none-any.whl", hash = "sha256:d3fcfe4a647a82c5172b853fa5ed171138b5f2338ed454e69317a66c9f4cc60e"},
-    {file = "arclet_alconna_tools-0.7.4.tar.gz", hash = "sha256:0dd2271dee787add64e9fb6ab2ed9ea2bc72775f982d13a295b73d95d66829f3"},
+    {file = "arclet_alconna_tools-0.7.10-py3-none-any.whl", hash = "sha256:50e8b2f433fbc612dc8b99f4f5410006dcb1ef406c971c795071117a4eab8e20"},
+    {file = "arclet_alconna_tools-0.7.10.tar.gz", hash = "sha256:446a63a9c56886c23fb44548bb9a18655e0ba5b5dd80cc87915b858dfb02554c"},
 ]
 
 [[package]]
 name = "arknights-toolkit"
-version = "0.7.4"
+version = "0.7.7"
 requires_python = ">=3.8"
 summary = "Arknights-related Toolkit"
 dependencies = [
     "Pillow>=10.2.0",
-    "cli-lite>=0.8.3",
+    "cli-lite>=0.10.0",
     "httpx>=0.27.0",
     "loguru>=0.7.2",
     "lxml>=5.1.0",
@@ -209,8 +209,8 @@ dependencies = [
     "ujson>=5.9.0",
 ]
 files = [
-    {file = "arknights_toolkit-0.7.4-py3-none-any.whl", hash = "sha256:aa251ede0e0f41929346ac075b45a9364a2a2190f277cc2cb8ffbfd49d29c4f9"},
-    {file = "arknights_toolkit-0.7.4.tar.gz", hash = "sha256:000e96f857d15abe64aa08aee49d37c6c205acb48ae365ea24010c6a8f1fce6f"},
+    {file = "arknights_toolkit-0.7.7-py3-none-any.whl", hash = "sha256:d15674231941fa40cbb11c4e34143ab4073cb9281edb9fbe18abb37750e0a4f3"},
+    {file = "arknights_toolkit-0.7.7.tar.gz", hash = "sha256:dddc6c33ce8180bcbbd22b98c7130ab1d9cb6f851bb1b98d4dac104f94e02e7d"},
 ]
 
 [[package]]
@@ -485,16 +485,17 @@ files = [
 
 [[package]]
 name = "cli-lite"
-version = "0.8.3"
+version = "0.10.2"
 requires_python = ">=3.8"
 summary = "A simple framework to build a cli tool, base on Alconna"
 dependencies = [
-    "arclet-alconna-tools>=0.6.10",
-    "arclet-alconna>=1.7.39",
+    "arclet-alconna-tools>=0.7.9",
+    "arclet-alconna>=1.8.30",
+    "importlib-metadata>=3.6.0",
 ]
 files = [
-    {file = "cli-lite-0.8.3.tar.gz", hash = "sha256:197240086e1627cb77d599cf646efb74484e247edb715c8bea10f4bf19ed731c"},
-    {file = "cli_lite-0.8.3-py3-none-any.whl", hash = "sha256:59da8dcd8658a86799dae99a33842a27a093329ddc4673e7ac48e0cf4c1b0b40"},
+    {file = "cli_lite-0.10.2-py3-none-any.whl", hash = "sha256:a4835512d13c82bd596c7dd343c0dcdfd7c18226d8092c05ae6726f3539b0887"},
+    {file = "cli_lite-0.10.2.tar.gz", hash = "sha256:2cb62cfa89c0eddf81328253fbe6994d7e57bb2aea91d10ceb378a61e03753d3"},
 ]
 
 [[package]]
