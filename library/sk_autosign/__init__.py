@@ -27,7 +27,7 @@ header = {
     "Content-Type": "application/json",
     "manufacturer": "Xiaomi",
     "os": "33",
-    "dId": dId  # "de9759a5afaa634f",
+    "dId": dId,  # "de9759a5afaa634f",
 }
 header_for_sign = {
     "platform": "1",

@@ -4,9 +4,9 @@ from io import StringIO
 
 from arclet.alconna.avilla import startswith
 from avilla.core import Avilla, Context, Picture, RawResource
+from avilla.core.exceptions import NetworkError
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.onebot.v11.account import OneBot11Account
-from avilla.core.exceptions import NetworkError
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.profile import NickCapability
 from graia.broadcast.builtin.event import EventExceptionThrown, ExceptionThrown

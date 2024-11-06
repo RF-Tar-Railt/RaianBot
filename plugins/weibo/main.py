@@ -1,6 +1,7 @@
 import asyncio
 import random
 from secrets import token_hex
+
 from arclet.alconna import Alconna, Arg, CommandMeta, Field, Option
 from arclet.alconna.avilla import Match, Query, alcommand, assign
 from avilla.core import (
@@ -193,7 +194,12 @@ async def wget(ctx: Context, user: Match[str], select: Match[int]):
 @accessable
 @exclusive
 async def wfetch(
-    ctx: Context, user: Match[str], select: Match[int], pw: PlaywrightService, index: Query[int] = Query("动态.index", -1), page: Query[int] = Query("动态.page", -1)
+    ctx: Context,
+    user: Match[str],
+    select: Match[int],
+    pw: PlaywrightService,
+    index: Query[int] = Query("动态.index", -1),
+    page: Query[int] = Query("动态.page", -1),
 ):
     try:
         prof = await api.get_profile_by_name(user.result, index=select.result, save=False, cache=True)
@@ -345,7 +351,10 @@ async def update(avilla: Avilla):
             wp = wp.copy()
             try:
                 if res := await api.update(int(uid)):
-                    dynamics[int(uid)] = (await _handle_dynamic(res, pw, url_imgs=True), res.user.name if res.user else "")
+                    dynamics[int(uid)] = (
+                        await _handle_dynamic(res, pw, url_imgs=True),
+                        res.user.name if res.user else "",
+                    )
                     await asyncio.sleep(5)
                 else:
                     continue

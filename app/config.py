@@ -5,16 +5,14 @@ from pathlib import Path
 from typing import ClassVar, Generic, Literal, Optional, TypeVar, Union, cast
 
 import yaml
-from yarl import URL as _URL
 from avilla.core import Selector
 from avilla.core.account import BaseAccount
 from avilla.core.elements import Notice
-from avilla.onebot.v11.account import OneBot11Account
-from avilla.onebot.v11.protocol import OneBot11ForwardConfig
-from avilla.onebot.v11.protocol import OneBot11Protocol
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.elizabeth.protocol import ElizabethConfig as _ElizabethConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
+from avilla.onebot.v11.account import OneBot11Account
+from avilla.onebot.v11.protocol import OneBot11ForwardConfig, OneBot11Protocol
 from avilla.qqapi.account import QQAPIAccount
 from avilla.qqapi.protocol import Intents as _Intents
 from avilla.qqapi.protocol import QQAPIConfig as _QQAPIConfig
@@ -22,6 +20,7 @@ from avilla.qqapi.protocol import QQAPIProtocol
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
 from sqlalchemy.engine.url import URL
+from yarl import URL as _URL
 
 
 class BaseConfig(BaseModel):

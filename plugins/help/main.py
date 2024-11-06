@@ -43,7 +43,8 @@ async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: 
         return
     if not AlconnaDispatcher.is_tome(..., message, ctx.account.route):
         return
-    plat: str = {ElizabethAccount: "mirai", OneBot11Account: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore
+    # FIXME: 把 "mirai" 改成 "qq"
+    plat: str = {ElizabethAccount: "mirai", OneBot11Account: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore # noqa: E501
     md = f"""\
 # {config.name} {config.account} 帮助菜单
 #{lang.require('manager', 'help_header')}

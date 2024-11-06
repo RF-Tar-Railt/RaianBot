@@ -99,7 +99,10 @@ def check_exclusive():
                 await session.scalars(
                     select(Group)
                     .where(Group.id == ctx.scene.channel)
-                    .where(Group.platform == ("qq" if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)) else "qqapi"))
+                    .where(
+                        Group.platform
+                        == ("qq" if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)) else "qqapi")
+                    )
                 )
             ).one_or_none()
         if not group:

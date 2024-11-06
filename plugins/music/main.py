@@ -5,7 +5,7 @@ from arclet.alconna.avilla import Match, alcommand
 from avilla.core import Context, MessageChain, MessageReceived
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.onebot.v11.account import OneBot11Account
-from avilla.standard.qq.elements import MusicShare, MusicShareKind, App
+from avilla.standard.qq.elements import App, MusicShare, MusicShareKind
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 
 from app.interrupt import FunctionWaiter
