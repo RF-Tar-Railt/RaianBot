@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -17,6 +19,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     metadata = MetaData(naming_convention=_NAMING_CONVENTION)
 
 
+@dataclass
 class User(Base):
     __tablename__ = "user"
 
@@ -30,6 +33,7 @@ class User(Base):
     """用户信任度"""
 
 
+@dataclass
 class Group(Base):
     __tablename__ = "group"
 

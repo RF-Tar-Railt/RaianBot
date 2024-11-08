@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import JSON, DateTime, ForeignKey, String
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base, User
 
 
+@dataclass
 class SKAutoSignRecord(Base):
     __tablename__ = "sk_autosign"
 
@@ -16,6 +18,7 @@ class SKAutoSignRecord(Base):
     """森空岛token"""
 
 
+@dataclass
 class SKAutoSignResultRecord(Base):
     __tablename__ = "sk_autosign_result"
 

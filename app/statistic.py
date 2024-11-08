@@ -16,6 +16,7 @@ class Statistic:
     time: datetime = field(default_factory=datetime.now)
 
 
+@dataclass
 class StatisticTable(Base):
     __tablename__ = "statistic"
 

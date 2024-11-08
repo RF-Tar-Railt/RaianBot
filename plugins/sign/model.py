@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Integer
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base, User
 
 
+@dataclass
 class SignRecord(Base):
     __tablename__ = "sign"
 

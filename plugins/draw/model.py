@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base, User
 
 
+@dataclass
 class DrawRecord(Base):
     __tablename__ = "draw"
 

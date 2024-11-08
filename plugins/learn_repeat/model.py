@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+
 from sqlalchemy import JSON, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base, Group
 
 
+@dataclass
 class Learn(Base):
     __tablename__ = "learn_repeat"
 

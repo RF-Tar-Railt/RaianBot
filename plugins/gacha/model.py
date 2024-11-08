@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+
 from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base, User
 
 
+@dataclass
 class ArkgachaRecord(Base):
     __tablename__ = "arkgacha"
 

@@ -1,5 +1,6 @@
 import asyncio
 import random
+from datetime import datetime
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Arg, CommandMeta, Field, Option
@@ -35,10 +36,11 @@ from app.interrupt import FunctionWaiter
 from app.shortcut import accessable, allow, exclusive, picture, record
 from library.weibo import WeiboAPI, WeiboDynamic
 
+from .config import WeiboConfig
 from .model import WeiboFollower
 
 bot = RaianBotService.current()
-
+weibo_config = bot.config.plugin.get(WeiboConfig)
 weibo_fetch = Alconna(
     "微博",
     Arg(
@@ -108,14 +110,16 @@ async def _handle_dynamic(
                 url = await bot.upload_to_cos(await resp.read(), f"weibo_dym_{token_hex(16)}.png")
                 imgs.append(Picture(UrlResource(url)))
     return first, imgs
-    # nodes: List[MessageChain] = [first, MessageChain(*imgs)] if imgs else [first]
-    # if data.video_url:
-    #     nodes.append(MessageChain(f"视频链接: {data.video_url}"))
-    # if data.retweet:
-    #     # nodes.extend(await _handle_dynamic(app, data.retweet, time, target, name, method))
-    #     nodes.append(MessageChain(Forward(*(await _handle_dynamic(app, data.retweet, time, target, name, method)))))
-    # # return nodes
-    # return [ForwardNode(target=target, name=name, time=time, message=i) for i in nodes]
+
+
+async def _handle_dynamic_forward(data: WeiboDynamic, pw: PlaywrightService, uid: str, name: str, url_imgs: bool = False):
+    first, imgs = await _handle_dynamic(data, pw, url_imgs)
+    nodes: list[MessageChain] = [MessageChain([first]), MessageChain(imgs)] if imgs else [MessageChain([first])]
+    if data.video_url:
+        nodes.append(MessageChain(f"视频链接: {data.video_url}"))
+    if data.retweet:
+        nodes.extend(node.content for node in await _handle_dynamic_forward(data.retweet, pw, uid, name, url_imgs))  # type: ignore
+    return [Node(uid=uid, name=name, time=datetime.now(), content=i) for i in nodes]
 
 
 @alcommand(weibo_fetch, comp_session={}, post=True)
@@ -351,11 +355,7 @@ async def update(avilla: Avilla):
             wp = wp.copy()
             try:
                 if res := await api.update(int(uid)):
-                    dynamics[int(uid)] = (
-                        await _handle_dynamic(res, pw, url_imgs=True),
-                        res.user.name if res.user else "",
-                    )
-                    await asyncio.sleep(5)
+                    dynamics[int(uid)] = res
                 else:
                     continue
             except Exception as e:
@@ -390,13 +390,28 @@ async def update(avilla: Avilla):
             if not accounts:
                 continue
             choose = random.choice(accounts)
+            self_info = next(
+                (info for info in bot.config.bots if info.ensure(choose)), None  # type: ignore
+            )
+            if not self_info:
+                continue
             ctx = choose.get_context(Selector().land("qq").group(group.id))
             for uid in mapping[group.id]:
-                dy, name = dynamics[uid]
+                if uid not in dynamics:
+                    continue
+                slot = dynamics[uid]
+                if isinstance(slot, WeiboDynamic):
+                    name = slot.user.name if slot.user else f"微博用户{uid}"
+                    if weibo_config.dynamic_forward:
+                        nodes = await _handle_dynamic_forward(slot, pw, self_info.account, self_info.name)
+                        dy = Forward(nodes=nodes)
+                    else:
+                        dy, _ = await _handle_dynamic(slot, pw, True)
+                    dynamics[uid] = (dy, name)
+                else:
+                    dy, name = slot  # type: ignore
                 await ctx.scene.send_message(f"{name} 有一条新动态！请查收!")
-                await ctx.scene.send_message(dy[0])
-                # if dy[1]:
-                #     await ctx.scene.send_message([*(Picture(UrlResource(url)) for url in dy[1])])
+                await ctx.scene.send_message(dy)
                 await asyncio.sleep(10)
 
     dynamics.clear()

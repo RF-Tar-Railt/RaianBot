@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
 
+@dataclass
 class BlacklistCache(Base):
     __tablename__ = "blacklist"
 
