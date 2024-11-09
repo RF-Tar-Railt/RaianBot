@@ -83,7 +83,7 @@ async def _handle_dynamic(
     async with pw.page(viewport={"width": 800, "height": 2400}) as page:
         try:
             await page.click("html")
-            await page.goto(data.url, timeout=10000, wait_until="networkidle")
+            await page.goto(data.url, timeout=20000, wait_until="networkidle")
             elem = page.locator(
                 "//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")
             ).first
@@ -100,15 +100,12 @@ async def _handle_dynamic(
 
     imgs: list[Picture] = []
     for url in data.img_urls:
-        if url_imgs:
-            imgs.append(Picture(UrlResource(url)))
-            continue
         async with api.session.get(url) as resp:
-            if not bot.config.platform.tencentcloud:
-                imgs.append(Picture(RawResource(await resp.read())))
-            else:
+            if url_imgs and bot.config.platform.tencentcloud:
                 url = await bot.upload_to_cos(await resp.read(), f"weibo_dym_{token_hex(16)}.png")
                 imgs.append(Picture(UrlResource(url)))
+            else:
+                imgs.append(Picture(RawResource(await resp.read())))
     return first, imgs
 
 
@@ -205,7 +202,7 @@ async def wfetch(
     select: Match[int],
     pw: PlaywrightService,
     index: Query[int] = Query("动态.index", -1),
-    page: Query[int] = Query("动态.page", -1),
+    page: Query[int] = Query("动态.page", 1),
 ):
     try:
         prof = await api.get_profile_by_name(user.result, index=select.result, save=False, cache=True)
