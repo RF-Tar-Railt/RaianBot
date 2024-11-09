@@ -8,7 +8,7 @@ from arknights_toolkit.update.main import fetch
 from avilla.core import Context
 from creart import it
 from graia.broadcast.entities.dispatcher import BaseDispatcher
-from graia.broadcast.exceptions import PropagationCancelled
+from graia.broadcast.exceptions import PropagationCancelled, RequirementCrashed
 from graia.broadcast.entities.signatures import Force
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.saya import Saya
@@ -140,7 +140,10 @@ class RaianBotDispatcher(BaseDispatcher):
         self.service = service
 
     async def beforeExecution(self, interface: DispatcherInterface):
-        context: Context = await interface.lookup_param("context", Context, Force(None))
+        try:
+            context = await interface.lookup_param("context", Context, Force(None))
+        except RequirementCrashed:
+            context = None
         if context:
             interface.local_storage["bot_config"] = next(
                 (bot for bot in self.service.config.bots if bot.ensure(context.account)), None  # type: ignore

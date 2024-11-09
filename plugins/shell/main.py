@@ -10,12 +10,12 @@ from app.shortcut import accessable, exclusive, permission
 
 @listen(MessageReceived)
 @permission("master")
-@startswith("shell", bind="echos")
+@startswith("shell")
 @exclusive
 @accessable
-async def shell(ctx: Context, echos: MessageChain):
+async def shell(ctx: Context, message: MessageChain):
     process = await asyncio.create_subprocess_shell(
-        str(echos),
+        str(message).removeprefix("shell").strip(),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
