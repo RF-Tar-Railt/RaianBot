@@ -63,7 +63,7 @@ def deserialize_message(content: list[dict], image_path: Path):
         if elem["type"] == "Text":
             res.append(Text(elem["text"]))
         elif elem["type"] == "Image":
-            res.append(Picture(LocalFileResource(image_path /elem["path"])))
+            res.append(Picture(LocalFileResource(image_path / elem["path"])))
         elif elem["type"] == "Face":
             res.append(Face(elem["id"], elem["name"]))
     return MessageChain(res)

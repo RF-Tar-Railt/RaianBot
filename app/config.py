@@ -382,10 +382,10 @@ class RaianConfig(BaseConfig):
     @property
     def plugin_data_dir(self) -> Path:
         return Path.cwd() / self.data_dir / self.plugin.root
-    
+
     @property
     def plugin_data_relative(self) -> Path:
-        return Path(".") /  self.data_dir / self.plugin.root
+        return Path(".") / self.data_dir / self.plugin.root
 
 
 def load_config(root_dir: Union[str, Path] = "config") -> RaianConfig:

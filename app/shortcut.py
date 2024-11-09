@@ -38,17 +38,22 @@ def record(name: str, require: bool = True, disable: bool = False):
 
     return wrapper
 
+
 @overload
 def accessable() -> Callable[[T_Callable], T_Callable]: ...
+
 
 @overload
 def accessable(path: str) -> Callable[[T_Callable], T_Callable]: ...
 
+
 @overload
 def accessable(path: None) -> Callable[[T_Callable], T_Callable]: ...
 
+
 @overload
 def accessable(path: T_Callable) -> T_Callable: ...
+
 
 def accessable(path: str | T_Callable | None = None) -> T_Callable | Callable[..., T_Callable]:
     def wrapper(func: T_Callable) -> T_Callable:
