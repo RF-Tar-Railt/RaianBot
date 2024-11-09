@@ -328,20 +328,20 @@ files = [
 
 [[package]]
 name = "avilla-onebot-v11"
-version = "1.0.0a30"
+version = "1.0.0a31"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "aiohttp>=3.8.1",
     "avilla-core>=1.0.0a26",
-    "avilla-standard-qq>=1.0.0a21",
+    "avilla-standard-qq>=1.0.0a22",
     "graia-amnesia[asgi]>=0.9.0",
     "starlette>=0.34.0",
     "wsproto>=1.2.0",
 ]
 files = [
-    {file = "avilla_onebot_v11-1.0.0a30-py3-none-any.whl", hash = "sha256:79e4eb075cfd6701602e1dc7bb9f90b481b72829f9df2195e5dc6e891d0bbe54"},
-    {file = "avilla_onebot_v11-1.0.0a30.tar.gz", hash = "sha256:8fa83f74e63683c8cee67895fbca4a66d8c2a9c7b4e275518ca422a853772f45"},
+    {file = "avilla_onebot_v11-1.0.0a31-py3-none-any.whl", hash = "sha256:6e8ee5f68abb441cce44b36d7948e52a0d25452bd6e08139c09a03d40f9aeb0d"},
+    {file = "avilla_onebot_v11-1.0.0a31.tar.gz", hash = "sha256:deaedc7fb27767d1acc3b9365b60f325bd77b8936e923db59241a055449ab33b"},
 ]
 
 [[package]]
@@ -359,12 +359,12 @@ files = [
 
 [[package]]
 name = "avilla-standard-qq"
-version = "1.0.0a21"
+version = "1.0.0a22"
 requires_python = ">=3.9"
 summary = ""
 files = [
-    {file = "avilla_standard_qq-1.0.0a21-py3-none-any.whl", hash = "sha256:15c54cf774f6ef774d53d14fbd3d35f6994cb5c95cbfc543dd8bc9f9609983cc"},
-    {file = "avilla_standard_qq-1.0.0a21.tar.gz", hash = "sha256:2051429f3dd71a44a464b5e6f06e2bf8087597af77b088bd570dea38dc12fc13"},
+    {file = "avilla_standard_qq-1.0.0a22-py3-none-any.whl", hash = "sha256:6294423a929dc7865368bf4e06c0a644975e912be46f52d9c6c6c3f2cd90bff8"},
+    {file = "avilla_standard_qq-1.0.0a22.tar.gz", hash = "sha256:8d14ad06b98046ff2e16ca939a662d48a19ccfc44ec4c2beed212aaf7712c7ab"},
 ]
 
 [[package]]

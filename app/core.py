@@ -149,9 +149,9 @@ class RaianBotDispatcher(BaseDispatcher):
                 return manager.get_component(interface.annotation)
             if issubclass(interface.annotation, BasePluginConfig):
                 return self.service.config.plugin.get(interface.annotation)
-            if hasattr(interface.event, "context"):
-                context: Context = interface.event.context
-                if issubclass(interface.annotation, BotConfig):
+            if issubclass(interface.annotation, BotConfig):
+                context: Context = await interface.lookup_param("context", Context, None)
+                if context:
                     return next(
                         (bot for bot in self.service.config.bots if bot.ensure(context.account)), None  # type: ignore
                     )
