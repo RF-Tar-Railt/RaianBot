@@ -138,6 +138,13 @@ class RaianBotDispatcher(BaseDispatcher):
     def __init__(self, service: RaianBotService):
         self.service = service
 
+    async def beforeExecution(self, interface: DispatcherInterface):
+        context: Context = await interface.lookup_param("context", Context, None)
+        if context:
+            interface.local_storage["bot_config"] = next(
+                (bot for bot in self.service.config.bots if bot.ensure(context.account)), None  # type: ignore
+            )
+
     async def catch(self, interface: DispatcherInterface):
         if interface.annotation is RaianBotService:
             return self.service
@@ -150,11 +157,7 @@ class RaianBotDispatcher(BaseDispatcher):
             if issubclass(interface.annotation, BasePluginConfig):
                 return self.service.config.plugin.get(interface.annotation)
             if issubclass(interface.annotation, BotConfig):
-                context: Context = await interface.lookup_param("context", Context, None)
-                if context:
-                    return next(
-                        (bot for bot in self.service.config.bots if bot.ensure(context.account)), None  # type: ignore
-                    )
+                return interface.local_storage.get("bot_config")
 
     async def afterExecution(
         self,
