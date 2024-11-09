@@ -11,6 +11,7 @@ from creart import it
 from graia.saya import Saya
 from sqlalchemy import select
 
+from app.core import BotServiceCtx
 from app.config import BotConfig, extract_plugin_config
 from app.core import RaianBotService
 from app.database import DatabaseService, Group
@@ -136,6 +137,7 @@ async def _m_reload(ctx: Context, path: Match[str], bot: RaianBotService):
                 parts.insert(0, root)
                 break
     _path, name = parts[0], parts[-1]
+    token = BotServiceCtx.set(bot)
     if not (_channel := saya.channels.get(f"{_path}. {name}.main")):
         with saya.module_context():
             if model := extract_plugin_config(bot.config, _path, name):
@@ -143,11 +145,13 @@ async def _m_reload(ctx: Context, path: Match[str], bot: RaianBotService):
             saya.require(f"{_path}.{name}.main")
         await ctx.scene.send_message(f"重载 {_path}. {name} 成功")
         return Statistic("模块", ctx.scene.channel, ctx.client.user)
+    BotServiceCtx.reset(token)
     try:
         saya.uninstall_channel(_channel)
     except Exception as e:
         await ctx.scene.send_message(f"重载 {_path}. {name} 过程中卸载失败！\n{e}\n请修改后重试")
         raise e
+    token = BotServiceCtx.set(bot)
     try:
         with saya.module_context():
             if model := extract_plugin_config(bot.config, _path, name):
@@ -159,6 +163,8 @@ async def _m_reload(ctx: Context, path: Match[str], bot: RaianBotService):
     else:
         await ctx.scene.send_message(f"重载 {_path}. {name} 成功")
         return Statistic("模块", ctx.scene.channel, ctx.client.user)
+    finally:
+        BotServiceCtx.reset(token)
 
 
 @alcommand(module_control, post=True, send_error=True)

@@ -32,6 +32,7 @@ dependencies = [
     "arclet-alconna-avilla>=0.19.1",
     "cryptography>=43.0.1",
     "avilla-onebot-v11>=1.0.0a28",
+    "mdit-py-plugins>=0.4.2",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
