@@ -36,7 +36,7 @@ repeat = Alconna(
     ),
 )
 
-image_path = bot.config.plugin_data_dir / "learn_repeat"
+image_path = bot.config.plugin_data_relative / "learn_repeat"
 # base_path.mkdir(parents=True, exist_ok=True)
 # image_path = base_path / "image"
 image_path.mkdir(exist_ok=True)

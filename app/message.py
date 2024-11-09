@@ -47,9 +47,9 @@ async def serialize_message(msg: MessageChain, ctx: Context, image_path: Path):
     for elem in msg:
         if isinstance(elem, Picture):
             name = f"{uuid4().hex}.jpg"
-            with (image_path / name).open("wb+") as img:
+            with (image_path / name).resolve().open("wb+") as img:
                 img.write(await ctx.fetch(elem.resource))
-            res.append({"type": "Image", "path": f"{(image_path / name).absolute()}"})
+            res.append({"type": "Image", "path": f"{(image_path / name).as_posix()}"})
         elif isinstance(elem, Text):
             res.append({"type": "Text", "text": elem.text})
         elif isinstance(elem, Face):
@@ -63,7 +63,7 @@ def deserialize_message(content: list[dict]):
         if elem["type"] == "Text":
             res.append(Text(elem["text"]))
         elif elem["type"] == "Image":
-            res.append(Picture(LocalFileResource(elem["path"])))
+            res.append(Picture(LocalFileResource(Path.cwd() /elem["path"])))
         elif elem["type"] == "Face":
             res.append(Face(elem["id"], elem["name"]))
     return MessageChain(res)
