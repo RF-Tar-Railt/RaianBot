@@ -73,11 +73,6 @@ typeCheckingMode = "basic"
 [tool.pdm.scripts]
 format = { composite = ["isort ./main.py ./app/ ./plugins/ ./library","black ./main.py ./app/ ./plugins/ ./library","ruff check ./main.py ./app/ ./plugins/ ./library"] }
 
-[tool.pdm.dev-dependencies]
-dev = [
-    "isort>=5.13.2",
-    "black>=24.8.0",
-    "ruff>=0.6.5",
-    "fix-future-annotations>=0.5.0",
-    "asyncpg>=0.29.0",
-]
+
+[dependency-groups]
+dev = ["isort>=5.13.2", "black>=24.8.0", "ruff>=0.6.5", "fix-future-annotations>=0.5.0", "asyncpg>=0.30.0"]

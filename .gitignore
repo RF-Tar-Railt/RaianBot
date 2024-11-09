@@ -220,6 +220,7 @@ logs/
 my_cache/
 plugins_old/
 my_config/
+my_data/
 .idea/
 gobang/
 chest/
