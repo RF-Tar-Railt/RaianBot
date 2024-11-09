@@ -37,7 +37,7 @@ def gen_counting_down(
         + 60
     )
     height = 104 + 46 * len(bottom_texts) + 40
-    img = Image.new("RGBA", (width, height), (0, 0, 0, 0)) if rgba else Image.new("RGB", (width, height), (0, 0, 0))
+    img = Image.new("RGBA", (width, height), (0, 0, 0, 0)) if rgba else Image.new("RGB", (width, height), (0, 0, 0))  # type: ignore
     draw = ImageDraw.Draw(img)
     rec_start = 20 if start_over_width > 0 else top_over_width
     rec_box = (rec_start + 30, 70, rec_start + 34, 150)

@@ -34,8 +34,8 @@ async def rua(
     bot: RaianBotService,
     aio: AiohttpClientService,
 ):
-    target = arp.query[Union[Notice, int]]("target")
-    target_id = target if isinstance(target, int) else int(target.target.pattern["member"])
+    target = arp.query[Union[Notice, int]]("target", 0)
+    target_id = target if isinstance(target, int) else int(target.target.pattern["member"])  
     async with aio.session.get(f"https://q1.qlogo.cn/g?b=qq&nk={target_id}&s=640") as resp:
         data = await resp.read()
     img = generate(data).getvalue()

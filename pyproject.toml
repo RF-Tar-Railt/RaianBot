@@ -11,13 +11,13 @@ dependencies = [
     "avilla-core>=1.0.0a27",
     "avilla-qqapi>=1.0.0a31",
     "avilla-elizabeth>=1.0.0a30",
-    "graia-saya>=0.0.19",
+    "graia-saya>=0.0.20",
     "graia-scheduler>=0.3.1",
     "pyquery>=2.0.1",
     "pydantic>=2.9.1",
     "PyYAML>=6.0.2",
-    "graiax-playwright>=0.3.3",
-    "graiax-text2img-playwright>=0.4.3",
+    "graiax-playwright>=0.4.4",
+    "graiax-text2img-playwright>=0.5.0",
     "diro-py>=0.1.1",
     "arknights-toolkit>=0.7.7",
     "ujson>=5.10.0",
@@ -33,7 +33,7 @@ dependencies = [
     "cryptography>=43.0.1",
     "avilla-onebot-v11>=1.0.0a28",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
 

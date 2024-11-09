@@ -8,7 +8,7 @@ from avilla.onebot.v11.account import OneBot11Account
 from avilla.standard.core.profile import Nick
 from avilla.standard.qq.elements import MarketFace
 from graia.saya.builtins.broadcast.shortcut import listen, priority
-from graiax.playwright import PlaywrightBrowser, PlaywrightService
+from graiax.playwright import PlaywrightService
 from sqlalchemy import select
 
 from app.config import BotConfig
@@ -107,7 +107,6 @@ async def _create(ctx: Context, count: Match[int]):
 @exclusive
 @accessable
 async def _start(ctx: Context, pw: PlaywrightService):
-    browser: PlaywrightBrowser = pw.get_interface(PlaywrightBrowser)
     group_id = ctx.scene.channel
     if group_id not in store.session:
         return await ctx.scene.send_message("[ClosureTalk] 会话未存在")
@@ -163,7 +162,7 @@ async def _start(ctx: Context, pw: PlaywrightService):
         f.write(store.export(group_id))
     try:
         await ctx.scene.send_message("[ClosureTalk] 记录结束，正在渲染中。。。")
-        async with browser.page(
+        async with pw.page(
             viewport={"width": 500, "height": 1},
             device_scale_factor=1.5,
         ) as page:

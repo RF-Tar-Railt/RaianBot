@@ -26,7 +26,7 @@ class HeWeatherData:
     now: NowApi
     daily: DailyApi
     air: AirApi
-    warning: WarningApi
+    warning: WarningApi | None
     hourly: HourlyApi
 
     def __post_init__(self):

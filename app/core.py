@@ -169,3 +169,59 @@ class RaianBotDispatcher(BaseDispatcher):
         if isinstance(result, Statistic):
             await commit(self.service.db, result)
             raise PropagationCancelled
+
+
+# patch
+from graiax.playwright import PlaywrightService
+from graiax.playwright.i18n import N_
+from graiax.playwright.installer import install_playwright
+from graiax.playwright.utils import log
+from playwright.async_api import Error as PWError
+from playwright.async_api import async_playwright
+
+
+async def launch(self: PlaywrightService, _):
+    if self.auto_download_browser:
+        await install_playwright(
+            self.playwright_download_host,
+            self.browser_type,
+            self.install_with_deps,
+        )
+
+    self.playwright_mgr = playwright_mgr = async_playwright()  # type: ignore
+
+    async with self.stage("preparing"):
+        self.playwright = await playwright_mgr.__aenter__()
+        browser_type = {
+            "chromium": self.playwright.chromium,
+            "firefox": self.playwright.firefox,
+            "webkit": self.playwright.webkit,
+        }[self.browser_type]
+        try:
+            if self.use_persistent_context:
+                log("info", N_("Playwright is currently starting in persistent context mode."))
+                self._context = await browser_type.launch_persistent_context(**self.launch_config)
+            else:
+                self._browser = await browser_type.launch(**self.launch_config)
+                self._context = await self._browser.new_context(**self.global_context_config)
+        except PWError:
+            log(
+                "error",
+                N_(
+                    "Unable to launch Playwright for {browser_type}, "
+                    "please check the log output for the reason of failure. "
+                    "It is possible that some system dependencies are missing. "
+                    "You can set [magenta]`install_with_deps`[/] to [magenta]`True`[/] "
+                    "to install dependencies when download browser."
+                ).format(browser_type=self.browser_type),
+            )
+            raise
+        else:
+            log("success", N_("Playwright for {browser_type} is started.").format(browser_type=self.browser_type))
+
+    async with self.stage("cleanup"):
+        # await self.context.close()  # 这里会卡住
+        await playwright_mgr.__aexit__()
+
+
+PlaywrightService.launch = launch

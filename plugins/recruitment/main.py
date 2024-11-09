@@ -7,7 +7,7 @@ from avilla.core import Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.onebot.v11.account import OneBot11Account
 from avilla.qqapi.exception import ActionFailed
-from graiax.playwright import PlaywrightBrowser, PlaywrightService
+from graiax.playwright import PlaywrightService
 
 from app.core import RaianBotService
 from app.shortcut import accessable, exclusive, picture
@@ -37,28 +37,25 @@ async def recruit(ctx: Context, res: Arparma, pw: PlaywrightService, bot: RaianB
     tags: tuple[str, ...] = res.all_matched_args["tags"]
     await ctx.scene.send_message("正在获取中，请稍等。。。")
     # Click html
-    browser: PlaywrightBrowser = pw.get_interface(PlaywrightBrowser)
     # Go to https://prts.wiki/w/%E5%B9%B2%E5%91%98%E4%B8%80%E8%A7%88
     url = recruitment([x.replace("干员", "").replace("高级资深", "高级资深干员") for x in tags])
-    page = await browser.new_page(viewport={"width": 1200, "height": 2400})
-    try:
-        await page.goto(url, timeout=60000, wait_until="networkidle")  # type: ignore
-        locator = page.locator('//div[@id="root"]')
-        elem = locator.first.get_by_role("table").nth(1)
-        # await elem.click()
-        await page.wait_for_timeout(1000)
-        data = await page.screenshot(type="png", clip=await elem.bounding_box())
+    async with pw.page(viewport={"width": 1200, "height": 2400}) as page:
         try:
-            return await ctx.scene.send_message(Picture(RawResource(data)))
-        except Exception:
-            url = await bot.upload_to_cos(data, f"recruit_{token_hex(16)}.png")
+            await page.goto(url, timeout=60000, wait_until="networkidle")  # type: ignore
+            locator = page.locator('//div[@id="root"]')
+            elem = locator.first.get_by_role("table").nth(1)
+            # await elem.click()
+            await page.wait_for_timeout(1000)
+            data = await page.screenshot(type="png", clip=await elem.bounding_box())
             try:
-                return await ctx.scene.send_message(picture(url, ctx))
-            except ActionFailed as e:
-                return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")
-    except Exception:
-        await ctx.scene.send_message("prts超时，获取失败")
-        if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
-            await ctx.scene.send_message(url)
-    finally:
-        await page.close()
+                return await ctx.scene.send_message(Picture(RawResource(data)))
+            except Exception:
+                url = await bot.upload_to_cos(data, f"recruit_{token_hex(16)}.png")
+                try:
+                    return await ctx.scene.send_message(picture(url, ctx))
+                except ActionFailed as e:
+                    return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")
+        except Exception:
+            await ctx.scene.send_message("prts超时，获取失败")
+            if isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
+                await ctx.scene.send_message(url)

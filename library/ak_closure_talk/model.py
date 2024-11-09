@@ -78,8 +78,4 @@ class ClosureChatArea:
         )
 
     def to_html(self, *_args, **_kwargs) -> str:
-        return tostring(
-            self.elem(),
-            encoding="unicode",
-            pretty_print=True,
-        )
+        return tostring(self.elem(), encoding="unicode", pretty_print=True)  # type: ignore

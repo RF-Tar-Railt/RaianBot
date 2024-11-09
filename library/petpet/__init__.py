@@ -40,7 +40,7 @@ def _generate_per_frame(avatar: PILImage, index: int, squish=0, flip=False):
         (int((spec[2] - spec[0]) * 1.2), int((spec[3] - spec[1]) * 1.2)), Resampling.LANCZOS
     ).quantize()
     # 并贴到空图像上
-    gif_frame = Image.new("RGB", (112, 112), (255, 255, 255))
+    gif_frame = Image.new("RGB", (112, 112), (255, 255, 255))  # type: ignore
     gif_frame.paste(avatar, (spec[0], spec[1]))
     # 将手覆盖（包括偏移量）
     gif_frame.paste(hand, (0, int(squish * squish_translation_factor[index])), hand)

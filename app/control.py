@@ -22,7 +22,7 @@ from .core import RaianBotService
 from .database import DatabaseService, Group
 
 
-def require_admin(only: bool = False, __record: Any = None):
+def require_admin(only: bool = False, record: Any = None):
     async def __wrapper__(event: MessageReceived, serv: RaianBotService, bot: BotConfig, ctx: Context):
         if not isinstance(ctx.account, (ElizabethAccount, OneBot11Account)):
             if ctx.scene.pattern.get("group"):

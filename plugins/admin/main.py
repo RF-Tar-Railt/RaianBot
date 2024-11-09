@@ -199,10 +199,10 @@ async def restart_pw():
     try:
         if pw.use_persistent_context:
             log("info", N_("Playwright is currently starting in persistent context mode."))
-            pw.context = await browser_type.launch_persistent_context(**pw.launch_config)
+            pw._context = await browser_type.launch_persistent_context(**pw.launch_config)
         else:
-            pw.browser = await browser_type.launch(**pw.launch_config)
-            pw.context = await pw.browser.new_context(**pw.global_context_config)
+            pw._browser = await browser_type.launch(**pw.launch_config)
+            pw._context = await pw._browser.new_context(**pw.global_context_config)
     except PWError:
         log(
             "error",

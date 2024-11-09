@@ -18,7 +18,6 @@ _octet_stream = "application/octet-stream"
 
 def sign_normal(secret_key: str, sign_str: str, sign_method: str):
     sign_bytes = bytes(sign_str, "utf-8")
-    secret_key = bytes(secret_key, "utf-8")
 
     if sign_method == "HmacSHA256":
         digestmod = hashlib.sha256
@@ -27,7 +26,7 @@ def sign_normal(secret_key: str, sign_str: str, sign_method: str):
     else:
         raise ValueError("signMethod only support (HmacSHA1, HmacSHA256)")
 
-    hashed = hmac.new(secret_key, sign_bytes, digestmod)
+    hashed = hmac.new(bytes(secret_key, "utf-8"), sign_bytes, digestmod)
     base64 = binascii.b2a_base64(hashed.digest())[:-1]
     return base64.decode()
 

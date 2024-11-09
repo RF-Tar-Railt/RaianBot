@@ -24,7 +24,7 @@ from avilla.standard.core.application import ApplicationClosing
 from avilla.standard.qq.elements import Forward, Node
 from graia.saya.builtins.broadcast.shortcut import listen
 from graia.scheduler.saya.shortcut import every
-from graiax.playwright import PlaywrightBrowser, PlaywrightService
+from graiax.playwright import PlaywrightService
 from launart import Launart
 from loguru import logger
 from sqlalchemy import Select
@@ -80,23 +80,23 @@ async def _handle_dynamic(
     pw: PlaywrightService,
     url_imgs: bool = False,
 ):
-    page = await pw.get_interface(PlaywrightBrowser).browser.new_page(viewport={"width": 800, "height": 2400})
-    try:
-        await page.click("html")
-        await page.goto(data.url, timeout=10000, wait_until="networkidle")
-        elem = page.locator("//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")).first
-        elem1 = page.locator("//article[@class='weibo-main']").first
-        bounding = await elem.bounding_box()
-        bounding1 = await elem1.bounding_box()
-        assert bounding
-        assert bounding1
-        bounding["height"] += bounding1["height"]
-        first = Picture(RawResource(await page.screenshot(full_page=True, clip=bounding)))
-    except Exception as e:
-        logger.error(f"微博动态截图失败: {e}")
-        first = data.text or "表情"
-    finally:
-        await page.close()
+    async with pw.page(viewport={"width": 800, "height": 2400}) as page:
+        try:
+            await page.click("html")
+            await page.goto(data.url, timeout=10000, wait_until="networkidle")
+            elem = page.locator(
+                "//div[@class='card-wrap']", has=page.locator("//header[@class='weibo-top m-box']")
+            ).first
+            elem1 = page.locator("//article[@class='weibo-main']").first
+            bounding = await elem.bounding_box()
+            bounding1 = await elem1.bounding_box()
+            assert bounding
+            assert bounding1
+            bounding["height"] += bounding1["height"]
+            first = Picture(RawResource(await page.screenshot(full_page=True, clip=bounding)))
+        except Exception as e:
+            logger.error(f"微博动态截图失败: {e}")
+            first = data.text or "表情"
 
     imgs: list[Picture] = []
     for url in data.img_urls:
@@ -112,7 +112,9 @@ async def _handle_dynamic(
     return first, imgs
 
 
-async def _handle_dynamic_forward(data: WeiboDynamic, pw: PlaywrightService, uid: str, name: str, url_imgs: bool = False):
+async def _handle_dynamic_forward(
+    data: WeiboDynamic, pw: PlaywrightService, uid: str, name: str, url_imgs: bool = False
+):
     first, imgs = await _handle_dynamic(data, pw, url_imgs)
     nodes: list[MessageChain] = [MessageChain([first]), MessageChain(imgs)] if imgs else [MessageChain([first])]
     if data.video_url:
@@ -390,9 +392,7 @@ async def update(avilla: Avilla):
             if not accounts:
                 continue
             choose = random.choice(accounts)
-            self_info = next(
-                (info for info in bot.config.bots if info.ensure(choose)), None  # type: ignore
-            )
+            self_info = next((info for info in bot.config.bots if info.ensure(choose)), None)  # type: ignore
             if not self_info:
                 continue
             ctx = choose.get_context(Selector().land("qq").group(group.id))

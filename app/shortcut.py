@@ -2,14 +2,11 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
-from typing import Callable, Literal, TypeVar
+from typing import Callable, Literal, TypeVar, overload
 
-from avilla.core import Context
+from avilla.core import Context, UrlResource
 from avilla.core.account import BaseAccount
 from avilla.core.elements import Picture
-from avilla.elizabeth.resource import ElizabethImageResource
-from avilla.onebot.v11.account import OneBot11Account
-from avilla.onebot.v11.resource import OneBot11ImageResource
 from avilla.qqapi.account import QQAPIAccount
 from avilla.qqapi.resource import QQAPIImageResource
 from graia.saya.factory import ensure_buffer
@@ -27,9 +24,7 @@ def is_qqapi_group(ctx: Context):
 def picture(url: str, ctx: Context):
     if isinstance(ctx.account, QQAPIAccount):
         return Picture(QQAPIImageResource(ctx.scene.image(url), "image", url))
-    if isinstance(ctx.account, OneBot11Account):
-        return Picture(OneBot11ImageResource(ctx.scene.image(url), file="", url=url))
-    return Picture(ElizabethImageResource(ctx.scene.image(url), id="", url=url))
+    return Picture(UrlResource(url=url))
 
 
 def record(name: str, require: bool = True, disable: bool = False):
@@ -43,8 +38,19 @@ def record(name: str, require: bool = True, disable: bool = False):
 
     return wrapper
 
+@overload
+def accessable() -> Callable[[T_Callable], T_Callable]: ...
 
-def accessable(path: str | T_Callable | None = None):
+@overload
+def accessable(path: str) -> Callable[[T_Callable], T_Callable]: ...
+
+@overload
+def accessable(path: None) -> Callable[[T_Callable], T_Callable]: ...
+
+@overload
+def accessable(path: T_Callable) -> T_Callable: ...
+
+def accessable(path: str | T_Callable | None = None) -> T_Callable | Callable[..., T_Callable]:
     def wrapper(func: T_Callable) -> T_Callable:
         nonlocal path
         buffer = ensure_buffer(func)
@@ -69,7 +75,7 @@ def accessable(path: str | T_Callable | None = None):
 def permission(level: Literal["admin", "master"] = "admin"):
     def wrapper(func: T_Callable) -> T_Callable:
         buffer = ensure_buffer(func)
-        buffer.setdefault("decorators", []).append(require_admin(level == "master", __record=func))
+        buffer.setdefault("decorators", []).append(require_admin(level == "master", record=func))
         return func
 
     return wrapper
