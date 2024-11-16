@@ -335,7 +335,7 @@ async def wlist(ctx: Context, db: DatabaseService, conf: BotConfig):
 FIRST_STARTUP = False
 
 
-@every(1, "minute")
+@every(3, "minute")
 @record("微博动态自动获取", False)
 async def update(avilla: Avilla):
     global FIRST_STARTUP

@@ -28,7 +28,7 @@ async def member_join_tell(
 ):
     """用户入群提醒"""
     welcome = f"欢迎新人加入{(await ctx.scene.summary()).name}！进群了就别想跑哦~"
-    await ctx.scene.send_message(MessageChain([Notice(ctx.client), welcome]))
+    await ctx.scene.send_message(MessageChain([Notice(ctx.endpoint), welcome]))
 
 
 @listen(MetadataModified)
