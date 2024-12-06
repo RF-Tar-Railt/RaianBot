@@ -22,7 +22,6 @@ dependencies = [
     "arknights-toolkit>=0.7.7",
     "ujson>=5.10.0",
     "sqlalchemy>=2.0.34",
-    "aiosqlite>=0.20.0",
     "Jinja2>=3.1.4",
     "psutil>=6.0.0",
     "humanize>=4.10.0",
@@ -76,4 +75,4 @@ format = { composite = ["isort ./main.py ./app/ ./plugins/ ./library","black ./m
 
 
 [dependency-groups]
-dev = ["isort>=5.13.2", "black>=24.8.0", "ruff>=0.6.5", "fix-future-annotations>=0.5.0", "asyncpg>=0.30.0"]
+dev = ["isort>=5.13.2", "black>=24.8.0", "ruff>=0.6.5", "fix-future-annotations>=0.5.0", "psycopg[binary]>=3.2.3"]

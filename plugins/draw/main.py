@@ -47,6 +47,7 @@ async def draw(ctx: Context, msg: Message, db: DatabaseService):
     async with db.get_session() as session:
         draw_record = (await session.scalars(select(DrawRecord).where(DrawRecord.id == ctx.client.user))).one_or_none()
         if draw_record:
+            draw_record.date = draw_record.date.astimezone(timezone.utc)
             if draw_record.date.day == today.day and draw_record.date.month == today.month:
                 if is_qqapi_group(ctx):
                     return await ctx.scene.send_message(f"您今天已经抽过签了哦，运势为{draw_record.answer}")

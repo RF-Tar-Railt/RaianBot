@@ -9,7 +9,7 @@ from avilla.core import ActionFailed, Avilla, Context, Picture, RawResource
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.onebot.v11.account import OneBot11Account
 from graia.scheduler.saya.shortcut import crontab
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.core import RaianBotService
 from app.database import DatabaseService
@@ -181,7 +181,7 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
                     select(SKAutoSignResultRecord)
                     .where(SKAutoSignResultRecord.id == _record.id)
                     .where(SKAutoSignResultRecord.uid == uid.result)
-                    .where(SKAutoSignResultRecord.date >= signed)
+                    .where(func.timezone('UTC', SKAutoSignResultRecord.date) >= signed)
                 )
             ).all():
                 ans.append(res.result["text"])
@@ -190,7 +190,7 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
                 await session.scalars(
                     select(SKAutoSignResultRecord)
                     .where(SKAutoSignResultRecord.id == _record.id)
-                    .where(SKAutoSignResultRecord.date >= signed)
+                    .where(func.timezone('UTC', SKAutoSignResultRecord.date) >= signed)
                 )
             ).all():
                 ans.append(res.result["text"])

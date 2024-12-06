@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import ujson
@@ -97,7 +97,7 @@ async def main():
                     user.trust = max(data["trust"], user.trust)
                     await session.merge(user)
                 logger.info(f"migrating user {user_id} ...")
-                now = datetime.now()
+                now = datetime.now(tz=timezone.utc)
                 now = now.replace(day=now.day - 1, month=10)
                 sign_record = SignRecord(id=user.id, date=now, count=int(user.trust // 1.2))
                 if "sign_info" in data["additional"]:
@@ -180,4 +180,4 @@ async def main():
 
 
 asyncio.run(main())
-logger.success(f"migrate completed")
+logger.success("migrate completed")

@@ -57,6 +57,7 @@ async def sign_up(ctx: Context, msg: Message, db: DatabaseService, config: SignC
             if is_qqapi_group(ctx):
                 return await ctx.scene.send_message(f"签到成功！\n当前信赖值：{user.trust:.3f}")
             return await ctx.scene.send_message(f"签到成功！\n当前信赖值：{user.trust:.3f}", reply=msg)
+        sign.date = sign.date.astimezone(timezone.utc)
         if sign.date.day == today.day and sign.date.month == today.month:
             if is_qqapi_group(ctx):
                 return await ctx.scene.send_message("您今天已与我签到!")
