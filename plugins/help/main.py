@@ -41,7 +41,7 @@ cmd_help.shortcut("菜单", {"prefix": True})
 async def send_(ctx: Context, bot: RaianBotService, config: BotConfig, message: MessageChain):
     if str(message.exclude(Notice)).lstrip() != "":
         return
-    if not AlconnaDispatcher.is_tome(..., message, ctx.account.route):
+    if not AlconnaDispatcher.is_tome(message, ctx.account.route):
         return
     # FIXME: 把 "mirai" 改成 "qq"
     plat: str = {ElizabethAccount: "mirai", OneBot11Account: "mirai", QQAPIAccount: "qqapi"}.get(ctx.account.__class__, "mirai")  # type: ignore # noqa: E501

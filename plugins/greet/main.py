@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 from avilla.core import Context, Message, MessageChain, MessageReceived, Notice
 from graia.saya.builtins.broadcast.shortcut import listen, priority
@@ -18,7 +18,7 @@ pat1 = re.compile(".*?(早上好|早安|中午好|下午好|晚上好)$")
 async def greet(ctx: Context, message: MessageChain, source: Message):
     """简单的问好"""
     msg = str(message.exclude(Notice)).lstrip()
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     if pat.fullmatch(msg) or pat1.fullmatch(msg):
         if 6 <= now.hour < 11:
             reply = "\tο(=•ω＜=)ρ⌒☆\n早上好~"

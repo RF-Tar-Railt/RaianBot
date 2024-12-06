@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Union
 
 from arclet.alconna import Alconna, AllParam, Args, Arparma, CommandMeta, Option
@@ -79,7 +79,7 @@ async def rlist(ctx: Context, target: Match[Notice], db: DatabaseService):
     for i in range(1 + (len(keys) - 1) // 50):
         selected = keys[i * 50 : (i + 1) * 50]
         forwards = []
-        now = datetime.now()
+        now = datetime.now(tz=timezone.utc)
         for key in selected:
             rec = _data[key]
             author = Selector.from_follows_pattern(f"land(qq).{rec.author}")
@@ -197,8 +197,8 @@ async def handle(ctx: Context, message: MessageChain, db: DatabaseService):
         records = (await session.scalars(select(Learn).where(Learn.gid == ctx.scene.channel))).all()
         if not records:
             return
-        if AlconnaDispatcher.is_tome(..., message, ctx.account.route):
-            message = AlconnaDispatcher.tome_remove(..., message, ctx.account.route)
+        if AlconnaDispatcher.is_tome(message, ctx.account.route):
+            message = AlconnaDispatcher.tome_remove(message, ctx.account.route)
         msg = str(message)
         for rec in records:
             try:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from avilla.core import Context, Selector
@@ -93,7 +93,7 @@ def check_exclusive():
             return True
         if len(serv.config.bots) < 2:
             return True
-        seed = datetime.now().timestamp()
+        seed = datetime.now(tz=timezone.utc).timestamp()
         async with serv.db.get_session() as session:
             group = (
                 await session.scalars(

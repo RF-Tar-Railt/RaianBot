@@ -1,6 +1,6 @@
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import ujson
@@ -242,7 +242,7 @@ async def aitalk(
     for elem in bot.config.command.headers:
         if isinstance(elem, str):
             content = content.replace(elem, "", 1)
-    if random.randint(0, 2000) == datetime.now().microsecond // 5000:
+    if random.randint(0, 2000) == datetime.now(tz=timezone.utc).microsecond // 5000:
         reply = await random_ai(ctx.client.user, content[:120], aio, conf, trust, direct=False)
         if reply:
             await ctx.scene.send_message(reply, reply=event.message)

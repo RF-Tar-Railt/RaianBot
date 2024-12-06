@@ -1,6 +1,6 @@
 import json
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 
 from arclet.alconna import Alconna, CommandMeta
 from arclet.alconna.avilla import alcommand
@@ -43,7 +43,7 @@ def get_draw():
 @accessable
 async def draw(ctx: Context, msg: Message, db: DatabaseService):
     """每日运势抽签"""
-    today = datetime.now()
+    today = datetime.now(tz=timezone.utc)
     async with db.get_session() as session:
         draw_record = (await session.scalars(select(DrawRecord).where(DrawRecord.id == ctx.client.user))).one_or_none()
         if draw_record:

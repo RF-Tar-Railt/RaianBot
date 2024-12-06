@@ -133,11 +133,11 @@ else:
                 bounding3 = await elem4.first.bounding_box()
                 bounding1["height"] += bounding3["height"]
             img = await page.screenshot(full_page=True, clip=bounding1)
-        try:
-            return await ctx.scene.send_message(Picture(RawResource(img)))
-        except Exception:
-            url = await bot.upload_to_cos(img, f"weather_{token_hex(16)}.jpg")
             try:
-                return await ctx.scene.send_message(picture(url, ctx))
-            except ActionFailed as e:
-                return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")
+                return await ctx.scene.send_message(Picture(RawResource(img)))
+            except Exception:
+                url = await bot.upload_to_cos(img, f"weather_{token_hex(16)}.jpg")
+                try:
+                    return await ctx.scene.send_message(picture(url, ctx))
+                except ActionFailed as e:
+                    return await ctx.scene.send_message(f"图片发送失败:\ncode: {e.code}\nmsg: {e.message}")

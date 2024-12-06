@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Option
@@ -93,7 +93,7 @@ stat = Alconna(
 
 
 def handle_time(time: str):
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     if time == "天":
         return now - timedelta(days=1), now
     elif time == "周":
@@ -103,7 +103,7 @@ def handle_time(time: str):
     elif time == "年":
         return now - timedelta(days=365), now
     elif time == "总":
-        return datetime.fromtimestamp(0), now
+        return datetime.fromtimestamp(0, tz=timezone.utc), now
     else:
         return now - timedelta(days=1), now
 

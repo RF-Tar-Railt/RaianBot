@@ -22,7 +22,7 @@ alc = Alconna(
         Args[Arg("token", str, Field(unmatch_tips=lambda x: f"请输入您的凭证，而不是{x}"), seps="\n")],
         compact=True,  # noqa: E501
     ),
-    Option("更新", Args["name?#卡池名", str]["limit", bool, True]),
+    Option("更新", Args["name?#卡池名", str]["limit?", bool]),
     meta=CommandMeta(
         "明日方舟抽卡数据查询，数据来源为方舟官网",
         usage="""
@@ -113,7 +113,7 @@ async def update(ctx: Context, arp: Arparma):
     else:
         with open(f"{bot.config.plugin_data_dir / 'recordpool.json'}", encoding="utf-8") as f:
             pool = json.load(f)
-        pool[arp.name] = {"is_exclusive": arp.limit}
+        pool[arp.name] = {"is_exclusive": arp.query[bool]("更新.limit", True)}
     update_operators()
     return await ctx.scene.send_message("更新完成")
 

@@ -9,7 +9,6 @@ from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.privilege import Privilege
 from graia.amnesia.message import MessageChain
 from graia.saya.builtins.broadcast.shortcut import listen, priority
-from graia.scheduler.saya.shortcut import crontab
 from graiax.playwright import PlaywrightService
 from graiax.playwright.i18n import N_
 from graiax.playwright.utils import log
@@ -186,6 +185,9 @@ async def _remove(ctx: Context, db: DatabaseService, event: SceneDestroyed, conf
             )
 
 
+@listen(MessageReceived)
+@permission("admin")
+@startswith("重启pw")
 async def restart_pw():
     manager = Launart.current()
     pw = manager.get_component(PlaywrightService)
@@ -219,6 +221,6 @@ async def restart_pw():
         log("success", N_("Playwright for {browser_type} is started.").format(browser_type=pw.browser_type))
 
 
-crontab("0 4 * * * 0")(restart_pw)
+# crontab("0 4 * * * 0")(restart_pw)
 
-listen(MessageReceived)(permission("admin")(startswith("重启pw")(restart_pw)))
+# listen(MessageReceived)(permission("admin")(startswith("重启pw")(restart_pw)))

@@ -118,7 +118,7 @@ async def _handle_dynamic_forward(
         nodes.append(MessageChain(f"视频链接: {data.video_url}"))
     if data.retweet:
         nodes.extend(node.content for node in await _handle_dynamic_forward(data.retweet, pw, uid, name, url_imgs))  # type: ignore
-    return [Node(uid=uid, name=name, time=datetime.now(), content=i) for i in nodes]
+    return [Node(uid=uid, name=name, time=datetime.now(), content=i) for i in nodes]  # noqa: DTZ005
 
 
 @alcommand(weibo_fetch, comp_session={}, post=True)

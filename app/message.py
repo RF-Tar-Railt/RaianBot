@@ -21,7 +21,7 @@ def display(msg: MessageChain):
         elif isinstance(elem, Face):
             res.append(f"[表情:{elem.name or elem.id}]")
         elif isinstance(elem, MarketFace):
-            res.append(f"[商店表情:{elem.name or elem.id}]")
+            res.append(f"[商店表情:{elem.summary or elem.id}]")
         elif isinstance(elem, FlashImage):
             res.append("[闪照]")
         elif isinstance(elem, File):

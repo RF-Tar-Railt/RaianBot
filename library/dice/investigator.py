@@ -57,13 +57,13 @@ class Investigator:
     def edu_up(self) -> str:
         edu_check = random.randint(1, 100)
         if edu_check <= self.edu:
-            return "教育成长检定D100=%d，小于%d，无增长。" % (edu_check, self.edu)
+            return f"教育成长检定D100={edu_check}，大于等于{self.edu}，无增长。"
         edu_en = random.randint(1, 10)
         self.edu += edu_en
         if self.edu <= 99:
-            return "教育成长检定D100=%d，成长1D10=%d，成长到了%d" % (edu_check, edu_en, self.edu)
+            return f"教育成长检定D100={edu_check}，成长1D10={edu_en}，成长到了{self.edu}"
         self.edu = 99
-        return "教育成长检定D100=%d，成长1D10=%d，成长到了最高值99！" % (edu_check, edu_en)
+        return f"教育成长检定D100={edu_check}，成长1D10={edu_en}，成长到了最高值99！"
 
     def edu_ups(self, times) -> str:
         return "".join(self.edu_up() for _ in range(times))
@@ -145,7 +145,7 @@ class Investigator:
             return f"{self.name}当前无任何技能数据。"
         r = f"{self.name}技能数据:"
         for k, v in self.skills.items():
-            r += "\n%s:%d" % (k, v)
+            r += f"\n{k}:{v}"
         return r
 
     def output(self) -> str:

@@ -49,7 +49,7 @@ from avilla.core import UrlResource
 token = secrets.token_urlsafe(16)
 url = \\'https://opengraph.githubassets.com/\\' + token + \\'/{0}/{1}\\'
 await ctx.scene.send_message(Picture(UrlResource(url)))
-    """,
+""",
 )
 
 

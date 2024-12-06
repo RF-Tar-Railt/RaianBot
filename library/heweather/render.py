@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import platform
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import jinja2
@@ -70,7 +70,7 @@ def add_date(daily: list[Daily]):
         _year = int(date[0])
         _month = int(date[1])
         _day = int(date[2])
-        week = int(datetime(_year, _month, _day, 0, 0).strftime("%w"))
+        week = int(datetime(_year, _month, _day, 0, 0, tzinfo=timezone.utc).strftime("%w"))
         day.week = week_map[week] if day != 0 else "今日"
         day.date = f"{_month}月{_day}日"
 

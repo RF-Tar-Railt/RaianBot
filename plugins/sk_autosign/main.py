@@ -1,6 +1,6 @@
 import asyncio
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from secrets import token_hex
 
 from arclet.alconna import Alconna, Args, CommandMeta, Field, Option
@@ -74,7 +74,7 @@ async def notice(ctx: Context, db: DatabaseService):
             return await ctx.scene.send_message("未绑定森空岛自动签到")
         ans = []
         async for resp in sign(_record):  # type: ignore
-            res = SKAutoSignResultRecord(id=sender, uid=resp["target"], date=datetime.now(), result=resp)
+            res = SKAutoSignResultRecord(id=sender, uid=resp["target"], date=datetime.now(tz=timezone.utc), result=resp)
             await session.merge(res)
             ans.append(resp["text"])
             await asyncio.sleep(1)
@@ -173,7 +173,7 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
         if not _record:
             return await ctx.scene.send_message("未绑定森空岛自动签到")
         ans = []
-        now = datetime.now()
+        now = datetime.now(tz=timezone.utc)
         signed = now.replace(hour=0, minute=30, second=0, microsecond=0)
         if uid.available:
             for res in (
@@ -203,18 +203,21 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
 @record("森空自动签到", False)
 async def shed(avilla: Avilla):
     results = {}
-    if not (accounts := avilla.get_accounts(account_type=(ElizabethAccount, OneBot11Account))):
-        return
+
     async with bot.db.get_session() as session:
         for rec in (await session.scalars(select(SKAutoSignRecord))).all():
             ans = results.setdefault(rec.id, [])
             async for resp in sign(rec):  # type: ignore
                 if resp["status"]:
-                    res = SKAutoSignResultRecord(id=rec.id, uid=resp["target"], date=datetime.now(), result=resp)
+                    res = SKAutoSignResultRecord(
+                        id=rec.id, uid=resp["target"], date=datetime.now(tz=timezone.utc), result=resp
+                    )
                     await session.merge(res)
                     ans.append(resp["text"])
                 await asyncio.sleep(1)
         await session.commit()
+    if not (accounts := avilla.get_accounts(account_type=(ElizabethAccount, OneBot11Account))):
+        return
     for account in accounts:
         async for friend in account.account.staff.query_entities("land.friend"):
             if friend["friend"] not in results:

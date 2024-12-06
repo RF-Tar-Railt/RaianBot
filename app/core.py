@@ -8,8 +8,8 @@ from arknights_toolkit.update.main import fetch
 from avilla.core import Context
 from creart import it
 from graia.broadcast.entities.dispatcher import BaseDispatcher
-from graia.broadcast.exceptions import PropagationCancelled, RequirementCrashed
 from graia.broadcast.entities.signatures import Force
+from graia.broadcast.exceptions import PropagationCancelled, RequirementCrashed
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.saya import Saya
 from launart import Launart, Service
