@@ -17,7 +17,7 @@ from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
 from sqlalchemy.sql import select
 
-from .config import BotConfig, QQAPIConfig
+from .config import BotConfig, QQAPIWHConfig, QQAPIWSConfig
 from .core import RaianBotService
 from .database import DatabaseService, Group
 
@@ -34,7 +34,10 @@ def require_admin(only: bool = False, record: Any = None):
             private = "friend" in ctx.scene.pattern
         id_ = f"{id(event)}"
         cache = serv.cache.setdefault("$admin", {})
-        if ctx.client.user in [bot.master_id, bot.account]:
+        if bot.ensure(ctx.account):
+            serv.cache.pop("$admin", None)
+            return True
+        if ctx.client.user == bot.master_id:
             serv.cache.pop("$admin", None)
             return True
         pri = await ctx.client.pull(Privilege)
@@ -125,9 +128,9 @@ def check_exclusive():
                 if info.route.display not in account_routes:
                     continue
                 for bot in serv.config.bots:
-                    if not isinstance(bot, QQAPIConfig):
+                    if not isinstance(bot, (QQAPIWHConfig, QQAPIWSConfig)):
                         continue
-                    if bot.ensure(info.account) and (bot.intent.c2c_group_at_messages or bot.intent.at_messages):
+                    if bot.ensure(info.account):
                         account_routes.remove(info.route.display)
                         break
         excl = serv.cache.setdefault("$exclusive", {})

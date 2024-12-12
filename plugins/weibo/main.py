@@ -2,6 +2,7 @@ import asyncio
 import random
 from datetime import datetime
 from secrets import token_hex
+from typing import Union
 
 from arclet.alconna import Alconna, Arg, CommandMeta, Field, Option
 from arclet.alconna.avilla import Match, Query, alcommand, assign
@@ -379,13 +380,13 @@ async def update(avilla: Avilla):
         ).all():
             if "微博动态自动获取" in group.disabled:
                 continue
-            accounts = []
+            accounts: list[Union[ElizabethAccount, OneBot11Account]] = []
             for account in group.accounts:
                 _route = Selector.from_follows_pattern(account)
                 if _route in avilla.accounts and isinstance(
                     (acc := avilla.get_account(_route)).account, (ElizabethAccount, OneBot11Account)
                 ):
-                    accounts.append(acc.account)
+                    accounts.append(acc.account)  # type: ignore
             if not accounts:
                 continue
             choose = random.choice(accounts)
@@ -400,7 +401,7 @@ async def update(avilla: Avilla):
                 if isinstance(slot, WeiboDynamic):
                     name = slot.user.name if slot.user else f"微博用户{uid}"
                     if weibo_config.dynamic_forward:
-                        nodes = await _handle_dynamic_forward(slot, pw, self_info.account, self_info.name)
+                        nodes = await _handle_dynamic_forward(slot, pw, self_info.account, self_info.name)  # type: ignore
                         dy = Forward(nodes=nodes)
                     else:
                         dy, _ = await _handle_dynamic(slot, pw, True)

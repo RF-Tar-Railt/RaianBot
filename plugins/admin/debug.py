@@ -67,7 +67,7 @@ async def debug(ctx: Context, db: DatabaseService, conf: BotConfig, bot: RaianBo
         user_count: int = (await session.execute(select(func.count("*")).select_from(User))).one()[0]
 
     text = (
-        f"{conf.name} ({conf.account}) 调试信息\n"
+        f"{conf.name} ({ctx.account.route['account']}) 调试信息\n"
         f"当前共加载模块：     {len(it(Saya).channels)} 个\n"
         f"当前共加入群与频道：  {all_group_count} 个\n"
         f"官方接口下的频道与群：{qqapi_group_count} 个\n"

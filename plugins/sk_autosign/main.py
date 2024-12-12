@@ -181,7 +181,7 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
                     select(SKAutoSignResultRecord)
                     .where(SKAutoSignResultRecord.id == _record.id)
                     .where(SKAutoSignResultRecord.uid == uid.result)
-                    .where(func.timezone('UTC', SKAutoSignResultRecord.date) >= signed)
+                    .where(func.timezone("UTC", SKAutoSignResultRecord.date) >= signed)
                 )
             ).all():
                 ans.append(res.result["text"])
@@ -190,7 +190,7 @@ async def check(ctx: Context, uid: Match[str], db: DatabaseService):
                 await session.scalars(
                     select(SKAutoSignResultRecord)
                     .where(SKAutoSignResultRecord.id == _record.id)
-                    .where(func.timezone('UTC', SKAutoSignResultRecord.date) >= signed)
+                    .where(func.timezone("UTC", SKAutoSignResultRecord.date) >= signed)
                 )
             ).all():
                 ans.append(res.result["text"])

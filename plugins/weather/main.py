@@ -123,15 +123,15 @@ else:
             elem2 = page.locator("//div[@class='h40']")
             if await elem2.count():
                 bounding2 = await elem2.first.bounding_box()
-                bounding1["height"] += bounding2["height"]
+                bounding1["height"] += bounding2["height"]  # type: ignore
             elem3 = page.locator("//div[@class='weatherCardTop']")
             if await elem3.count():
                 bounding3 = await elem3.first.bounding_box()
-                bounding1["height"] += bounding3["height"]
+                bounding1["height"] += bounding3["height"]  # type: ignore
             elem4 = page.locator("//div[@class='h15']")
             if await elem4.count():
                 bounding3 = await elem4.first.bounding_box()
-                bounding1["height"] += bounding3["height"]
+                bounding1["height"] += bounding3["height"]  # type: ignore
             img = await page.screenshot(full_page=True, clip=bounding1)
             try:
                 return await ctx.scene.send_message(Picture(RawResource(img)))

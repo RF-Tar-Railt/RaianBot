@@ -95,7 +95,7 @@ async def _m_list(ctx: Context, bot: RaianBotService, conf: BotConfig):
     md = f"""\
 <div align="center">
 
-# {conf.name} ({conf.account}) 模块信息
+# {conf.name} ({ctx.account.route["account"]}) 模块信息
 
 | 模块名 | 模块路径 | 状态 |
 | ----- | ------- | --- |
@@ -260,7 +260,7 @@ async def _f_list(ctx: Context, bot: RaianBotService, db: DatabaseService, conf:
     md = f"""\
 <div align="center">
 
-# {conf.name} ({conf.account}) 功能概览
+# {conf.name} ({ctx.account.route["account"]}) 功能概览
 
 ## {ctx.scene.channel} 统计情况
 

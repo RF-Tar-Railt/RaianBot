@@ -33,7 +33,11 @@ async def auto_accept(ctx: Context, opt: Match[bool], bot: RaianBotService):
 
 
 @listen(RequestReceived)
-@dispatch(Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type in ("elizabeth::new_friend", "onebot11::friend")))
+@dispatch(
+    Filter()
+    .dispatch(RequestReceived)
+    .assert_true(lambda e: e.request.request_type in ("elizabeth::new_friend", "onebot11::friend"))
+)
 async def get_friend_accept(ctx: Context, event: RequestReceived, bot: RaianBotService, conf: BotConfig):
     """
     收到好友申请
@@ -67,7 +71,9 @@ async def get_friend_accept(ctx: Context, event: RequestReceived, bot: RaianBotS
 
 @listen(RequestReceived)
 @dispatch(
-    Filter().dispatch(RequestReceived).assert_true(lambda e: e.request.request_type in ("elizabeth::invited_join_group", "onebot11::group.invite"))
+    Filter()
+    .dispatch(RequestReceived)
+    .assert_true(lambda e: e.request.request_type in ("elizabeth::invited_join_group", "onebot11::group.invite"))
 )
 async def bot_invite(ctx: Context, event: RequestReceived, bot: RaianBotService, conf: BotConfig):
     """

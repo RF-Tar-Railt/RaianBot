@@ -3,7 +3,7 @@ from base64 import b64encode
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 from graiax.text2img.playwright import HTMLRenderer, MarkdownConverter, PageOption, ScreenshotOption, convert_text
 from graiax.text2img.playwright.renderer import BuiltinCSS
@@ -13,11 +13,8 @@ from qrcode.image.styledpil import StyledPilImage
 from qrcode.main import QRCode
 from yarl import URL
 
+from .config import QQAPIWHConfig, QQAPIWSConfig, RaianConfig
 from .datetime import CHINA_TZ
-
-if TYPE_CHECKING:
-    from .config import RaianConfig
-
 
 font_path = Path(__file__).parent.parent / "assets" / "fonts"
 image_path = Path(__file__).parent.parent / "assets" / "image"
@@ -35,28 +32,36 @@ guild_b64: Union[str, None] = None
 group_b64: Union[str, None] = None
 
 
-def setup_qrcode(config: "RaianConfig"):
+def setup_qrcode(config: RaianConfig):
     global guild_b64, group_b64
     for bot in config.bots:
-        if bot.type == "qqapi":
-            qrcode = QRCode(image_factory=StyledPilImage)
-            qrcode.add_data(f"https://qun.qq.com/qunpro/robot/share?robot_appid={bot.account}")
-            invite_guild: Image.Image = (
-                qrcode.make_image(fill_color="black", back_color="#fafafac0").get_image().resize((200, 200))
-            )
-            bio = BytesIO()
-            invite_guild.save(bio, format="PNG")
-            guild_b64 = b64encode(bio.getvalue()).decode()
-
-            qrcode.clear()
-            qrcode.add_data(f"https://qun.qq.com/qunpro/robot/qunshare?robot_appid={bot.account}&robot_uin={bot.uin}")
-            invite_group: Image.Image = (
-                qrcode.make_image(fill_color="black", back_color="#fafafac0").get_image().resize((200, 200))
-            )
-            bio = BytesIO()
-            invite_group.save(bio, format="PNG")
-            group_b64 = b64encode(bio.getvalue()).decode()
+        if isinstance(bot, QQAPIWSConfig):
+            app_id = bot.account
+            uin = bot.uin
             break
+        if isinstance(bot, QQAPIWHConfig):
+            app_id = list(bot.uins)[0]
+            uin = list(bot.uins.values())[0]
+            break
+    else:
+        return
+    qrcode = QRCode(image_factory=StyledPilImage)
+    qrcode.add_data(f"https://qun.qq.com/qunpro/robot/share?robot_appid={app_id}")
+    invite_guild: Image.Image = (
+        qrcode.make_image(fill_color="black", back_color="#fafafac0").get_image().resize((200, 200))
+    )
+    bio = BytesIO()
+    invite_guild.save(bio, format="PNG")
+    guild_b64 = b64encode(bio.getvalue()).decode()
+
+    qrcode.clear()
+    qrcode.add_data(f"https://qun.qq.com/qunpro/robot/qunshare?robot_appid={app_id}&robot_uin={uin}")
+    invite_group: Image.Image = (
+        qrcode.make_image(fill_color="black", back_color="#fafafac0").get_image().resize((200, 200))
+    )
+    bio = BytesIO()
+    invite_group.save(bio, format="PNG")
+    group_b64 = b64encode(bio.getvalue()).decode()
 
 
 footer_css = Path("assets/css/footer.css").read_text()

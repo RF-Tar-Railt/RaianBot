@@ -15,8 +15,7 @@ from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.protocol import OneBot11ForwardConfig, OneBot11Protocol
 from avilla.qqapi.account import QQAPIAccount
 from avilla.qqapi.protocol import Intents as _Intents
-from avilla.qqapi.protocol import QQAPIConfig as _QQAPIConfig
-from avilla.qqapi.protocol import QQAPIProtocol
+from avilla.qqapi.protocol import QQAPIProtocol, QQAPIWebhookConfig, QQAPIWebsocketConfig
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
 from sqlalchemy.engine.url import URL
@@ -196,9 +195,6 @@ class BotConfig(BaseConfig, Generic[TA]):
     name: str
     """机器人名字, 请尽量不要与 prefix 重合"""
 
-    account: str
-    """bot 账号"""
-
     master_id: str
     """bot 的控制者的账号"""
 
@@ -219,6 +215,9 @@ class BotConfig(BaseConfig, Generic[TA]):
 
 class OneBot11Config(BotConfig[OneBot11Account]):
     type: Literal["onebot11"] = "onebot11"
+
+    account: str
+    """bot 账号"""
 
     host: str
     """onebot-v11 协议端的正向地址"""
@@ -250,6 +249,9 @@ class OneBot11Config(BotConfig[OneBot11Account]):
 
 class ElizabethConfig(BotConfig[ElizabethAccount]):
     type: Literal["mirai"] = "mirai"
+
+    account: str
+    """bot 账号"""
 
     host: str
     """mirai-api-http 的地址"""
@@ -300,8 +302,11 @@ class Intents(BaseConfig):
         return _Intents(**self.dict())
 
 
-class QQAPIConfig(BotConfig[QQAPIAccount]):
+class QQAPIWSConfig(BotConfig[QQAPIAccount]):
     type: Literal["qqapi"] = "qqapi"
+
+    account: str
+    """bot 的 app_id"""
 
     uin: int
     """bot 的 qq 账号"""
@@ -322,7 +327,7 @@ class QQAPIConfig(BotConfig[QQAPIAccount]):
     """是否为沙箱环境"""
 
     def export(self):
-        return QQAPIProtocol, _QQAPIConfig(
+        return QQAPIProtocol, QQAPIWebsocketConfig(
             id=self.account,
             token=self.token,
             secret=self.secret,
@@ -342,7 +347,54 @@ class QQAPIConfig(BotConfig[QQAPIAccount]):
         return [Selector.from_follows_pattern(f"land(qq).channel({channel}).member({admin})") for admin in self.admins]
 
     def ensure(self, account: QQAPIAccount):
-        return isinstance(account, QQAPIAccount) and account.connection.config.id == self.account  # type: ignore
+        return isinstance(account, QQAPIAccount) and account.route["account"] == self.account  # type: ignore
+
+
+class QQAPIWHConfig(BotConfig[QQAPIAccount]):
+    type: Literal["qqapi"] = "qqapi"
+
+    secrets: dict[str, str]
+    """app_id 对应的 secret"""
+    uins: dict[str, int]
+    """app_id 对应的 qq 账号"""
+    host: str = "0.0.0.0"
+    port: int = 8080
+    path: str = ""
+    certfile: Optional[str] = None
+    keyfile: Optional[str] = None
+    verify_payload: bool = True
+    """是否验证 payload"""
+
+    is_sandbox: bool = False
+    """是否为沙箱环境"""
+
+    def export(self):
+        return QQAPIProtocol, QQAPIWebhookConfig(
+            secrets=self.secrets,
+            host=self.host,
+            port=self.port,
+            path=self.path,
+            certfile=self.certfile,
+            keyfile=self.keyfile,
+            verify_payload=self.verify_payload,
+            is_sandbox=self.is_sandbox,
+        )
+
+    def master(self, channel: Optional[str] = None) -> Selector:
+        if not channel:
+            return Selector.from_follows_pattern(f"land(qq).user({self.master_id})")
+        return Selector.from_follows_pattern(f"land(qq).channel({channel}).member({self.master_id})")
+
+    def administrators(self, channel: Optional[str] = None) -> list[Selector]:
+        if not channel:
+            return [Selector.from_follows_pattern(f"land(qq).user({admin})") for admin in self.admins]
+        return [Selector.from_follows_pattern(f"land(qq).channel({channel}).member({admin})") for admin in self.admins]
+
+    def ensure(self, account: QQAPIAccount):
+        return isinstance(account, QQAPIAccount) and account.route["account"] in self.secrets
+
+
+QQAPIConfig = (QQAPIWSConfig, QQAPIWHConfig)
 
 
 class RaianConfig(BaseConfig):
@@ -373,7 +425,7 @@ class RaianConfig(BaseConfig):
     platform: PlatformConfig
     """外部平台接口相关配置"""
 
-    bots: list[Union[ElizabethConfig, OneBot11Config, QQAPIConfig]] = Field(default_factory=list)
+    bots: list[Union[ElizabethConfig, OneBot11Config, QQAPIWSConfig, QQAPIWHConfig]] = Field(default_factory=list)
     """bot 配置"""
 
     root: str = Field(default="config")
@@ -395,9 +447,6 @@ def load_config(root_dir: Union[str, Path] = "config") -> RaianConfig:
             with open(config_path, encoding="utf-8") as f:
                 main_config = TypeAdapter(RaianConfig).validate_python(yaml.safe_load(f))
             main_config.root = str(root_dir)
-            for bot in main_config.bots.copy():
-                if bot.account == "UNDEFINED":
-                    main_config.bots.remove(bot)
             return main_config
 
     logger.critical("没有有效的配置文件！")
