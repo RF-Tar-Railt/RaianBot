@@ -15,10 +15,10 @@ pat1 = re.compile(".*?(早上好|早安|中午好|下午好|晚上好)$")
 @priority(7)
 @exclusive
 @accessable
-async def greet(ctx: Context, message: MessageChain, source: Message):
+async def greet(ctx: Context, message: MessageChain, event: MessageReceived):
     """简单的问好"""
     msg = str(message.exclude(Notice)).lstrip()
-    now = datetime.now(tz=timezone.utc)
+    now = event.time
     if pat.fullmatch(msg) or pat1.fullmatch(msg):
         if 6 <= now.hour < 11:
             reply = "\tο(=•ω＜=)ρ⌒☆\n早上好~"
@@ -32,7 +32,7 @@ async def greet(ctx: Context, message: MessageChain, source: Message):
             reply = "\t≧ ﹏ ≦\n时候不早了，睡觉吧"
         if is_qqapi_group(ctx):
             return await ctx.scene.send_message(reply)
-        return await ctx.scene.send_message(reply, reply=source)
+        return await ctx.scene.send_message(reply, reply=event.message)
 
     if msg.startswith("晚安") or msg.endswith("晚安"):
         if 0 <= now.hour < 6:
@@ -43,4 +43,4 @@ async def greet(ctx: Context, message: MessageChain, source: Message):
             reply = "\t喂，现在可不是休息的时候╰（‵□′）╯"
         if is_qqapi_group(ctx):
             return await ctx.scene.send_message(reply)
-        return await ctx.scene.send_message(reply, reply=source)
+        return await ctx.scene.send_message(reply, reply=event.message)
