@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from urllib.parse import quote
 
-from httpx._types import ProxiesTypes
+from httpx._types import ProxyTypes
 
 
 def format_region(region: str, module: str, enable_old_domain: bool, enable_internal_domain: bool):
@@ -103,7 +103,7 @@ class CosConfig:
     ip: str | None = None
     port: int | None = None
     ua: str | None = None
-    proxies: ProxiesTypes | None = None
+    proxies: ProxyTypes | None = None
     domain: str | None = None
     service_domain: str | None = None
     keep_alive: bool | None = None

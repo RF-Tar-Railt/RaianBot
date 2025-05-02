@@ -115,10 +115,7 @@ class ArknightsClosureStore:
                 try:
                     resp = httpx.get(
                         GITHUB_RAW_LINK.format(path=f"resources/ak/characters/{quote(image)}.webp"),
-                        proxies={
-                            "http://": proxy,
-                            "https://": proxy,
-                        },
+                        proxy=proxy,
                         verify=False,
                     )
                     with (char_path / image_path).open("wb+") as f:
@@ -131,10 +128,7 @@ class ArknightsClosureStore:
         try:
             resp = httpx.get(
                 GITHUB_RAW_LINK.format(path="resources/ak/char.json"),
-                proxies={
-                    "http://": proxy,
-                    "https://": proxy,
-                },
+                proxy=proxy,
                 verify=False,
             )
             with (self.base_path / "char.json").open("wb+") as f:

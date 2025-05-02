@@ -113,7 +113,7 @@ async def send_request(
         kwargs["verify"] = False
     if config.follow_redirects is not None:
         kwargs["follow_redirects"] = config.follow_redirects
-    async with httpx.AsyncClient(proxies=config.proxies, timeout=timeout, **kwargs) as client:
+    async with httpx.AsyncClient(proxy=config.proxies, timeout=timeout, **kwargs) as client:
         res = await client.request(
             method,
             url,

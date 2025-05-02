@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass
 
 from httpx import AsyncClient, Request
-from httpx._types import ProxiesTypes
+from httpx._types import ProxyTypes
 from loguru import logger
 
 from .model import HttpProfile
@@ -16,11 +16,11 @@ class TencentCloudApi:
     secret_id: str
     secret_key: str
     region: str = "ap-guangzhou"
-    proxy: ProxiesTypes | None = None
+    proxy: ProxyTypes | None = None
 
     async def chat(self, text: str, session: str, bot_id: str, bot_env: str, name: str | None = None):
         http = HttpProfile(endpoint="tbp.tencentcloudapi.com")
-        async with AsyncClient(proxies=self.proxy) as client:
+        async with AsyncClient(proxy=self.proxy) as client:
             params = {
                 "BotId": bot_id,
                 "BotEnv": bot_env,
@@ -61,7 +61,7 @@ class TencentCloudApi:
         name: str | None = None,
     ):
         http = HttpProfile(endpoint="ses.tencentcloudapi.com")
-        async with AsyncClient(proxies=self.proxy) as client:
+        async with AsyncClient(proxy=self.proxy) as client:
             params = {
                 "FromEmailAddress": f"{name} <{addr}>" if name else addr,
                 "Destination": target,
@@ -117,7 +117,7 @@ class TencentCloudApi:
             zh（简体中文）：en（英语）、ja（日语）、ko（韩语）、fr（法语）、es（西班牙语）、it（意大利语）、de（德语）、tr（土耳其语）、ru（俄语）、pt（葡萄牙语）、vi（越南语）、id（印尼语）、th（泰语）、ms（马来语）
         """
         http = HttpProfile(endpoint="tmt.tencentcloudapi.com")
-        async with AsyncClient(proxies=self.proxy) as client:
+        async with AsyncClient(proxy=self.proxy) as client:
             params = {
                 "SourceText": text,
                 "Source": lang_source,

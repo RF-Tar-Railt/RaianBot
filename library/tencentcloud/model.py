@@ -16,7 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
-from httpx._types import ProxiesTypes
+from httpx._types import ProxyTypes
 
 
 @dataclass
@@ -26,7 +26,7 @@ class HttpProfile:
     method: str = "POST"
     timeout: int = 60
     keep_alive: bool = False
-    proxy: ProxiesTypes | None = None
+    proxy: ProxyTypes | None = None
     root_domain: str = "tencentcloudapi.com"
 
     def __post_init__(self):

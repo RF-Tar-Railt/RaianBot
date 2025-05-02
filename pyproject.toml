@@ -74,5 +74,13 @@ typeCheckingMode = "basic"
 format = { composite = ["isort ./main.py ./app/ ./plugins/ ./library","black ./main.py ./app/ ./plugins/ ./library","ruff check ./main.py ./app/ ./plugins/ ./library"] }
 
 
+[tool.pdm.dev-dependencies]
+dev = [
+    "isort==5.13.2",
+    "black>=24.8.0",
+    "ruff>=0.6.5",
+    "fix-future-annotations>=0.5.0",
+    "psycopg[binary]>=3.2.3",
+]
 [dependency-groups]
-dev = ["isort>=5.13.2", "black>=24.8.0", "ruff>=0.6.5", "fix-future-annotations>=0.5.0", "psycopg[binary]>=3.2.3"]
+dev = ["isort==5.13.2", "black>=24.8.0", "ruff>=0.6.5", "fix-future-annotations>=0.5.0", "psycopg[binary]>=3.2.3"]
