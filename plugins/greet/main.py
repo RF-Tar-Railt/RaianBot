@@ -1,7 +1,6 @@
 import re
-from datetime import datetime, timezone
 
-from avilla.core import Context, Message, MessageChain, MessageReceived, Notice
+from avilla.core import Context, MessageChain, MessageReceived, Notice
 from graia.saya.builtins.broadcast.shortcut import listen, priority
 
 from app.shortcut import accessable, exclusive, is_qqapi_group, record

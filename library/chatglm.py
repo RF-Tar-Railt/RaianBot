@@ -1,7 +1,6 @@
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from typing import Callable
 
 import httpx
 import jwt
@@ -63,7 +62,7 @@ class GlmBot:
                         f"你不能说你是程序或者AI,你是有血有肉、有真实情感的。"
                         f"\n你与当前对话者的亲密度为：{trust * 100}%"
                         "\n将你的回答分为多条消息（请用markdown列表的格式来返回）"
-                    )
+                    ),
                 },
                 {
                     "role": "system",
@@ -73,7 +72,7 @@ class GlmBot:
                         else "当前对话是与别人说的，若你不希望回复这条对话，请返回 'exit' "
                     ),
                 },
-                #{"role": "system", "content": "将你的回答分为多条消息（请用markdown列表的格式来返回）"},
+                # {"role": "system", "content": "将你的回答分为多条消息（请用markdown列表的格式来返回）"},
                 {"role": "system", "content": "注意，请不要声明类似 '在屏幕上输入' 等操作，直接回复即可。"},
                 {"role": "user", "content": msg},
             ]

@@ -284,6 +284,8 @@ async def li_handle(ctx: Context):
 @exclusive
 @accessable
 async def coc_handle(ctx: Context, val: Match[int], mode: Match[str]):
+    if val.result < 1:
+        return await ctx.scene.send_message("次数不能小于1")
     if mode.result == "6d":
         return await ctx.scene.send_message(coc6d())
     if mode.result == "7d":
@@ -298,7 +300,7 @@ async def coc_handle(ctx: Context, val: Match[int], mode: Match[str]):
 @exclusive
 @accessable
 async def dnd_handle(ctx: Context, val: Match[int]):
-    return await ctx.scene.send_message(dnd(min(val.result, 20)))
+    return await ctx.scene.send_message(dnd(min(max(val.result, 1), 20)))
 
 
 @alcommand(sc_c, post=True, send_error=True)

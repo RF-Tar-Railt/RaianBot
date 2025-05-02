@@ -3,10 +3,20 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 
-from httpx import AsyncClient, Response, URL
+from httpx import URL, AsyncClient, Response
 from loguru import logger
 
-from .model import QWeatherConfig, AirApi, DailyApi, HourlyApi, NowApi, WarningApi, CityNotFoundError, ConfigError, APIError
+from .model import (
+    AirApi,
+    APIError,
+    CityNotFoundError,
+    ConfigError,
+    DailyApi,
+    HourlyApi,
+    NowApi,
+    QWeatherConfig,
+    WarningApi,
+)
 from .utils import get_jwt_token
 
 
