@@ -36,9 +36,9 @@ cmd.shortcut(
     },
 )
 
-if config.heweather and bot.config.platform.heweather:
-    heweather_config = bot.config.platform.heweather
-    heweather = HeWeather(heweather_config.key, heweather_config.type, bot.config.proxy)
+if config.heweather:
+    heweather = HeWeather(config.heweather)
+    hourlytype = config.heweather.hourlytype
     cache_dir = Path(bot.config.data_dir) / "plugins" / "weather"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -70,7 +70,7 @@ if config.heweather and bot.config.platform.heweather:
             return await ctx.scene.send_message("地点是...空气吗?? >_<")
         file = cache_dir / f"{data.city_id}.html"
         with file.open("w+", encoding="utf-8") as f:
-            f.write(await render(data, heweather_config.hourly_type))
+            f.write(await render(data, hourlytype))
 
         async with pw.page(viewport={"width": 1000, "height": 300}, device_scale_factor=2) as page:
             await page.goto(file.absolute().as_uri())

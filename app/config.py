@@ -154,35 +154,9 @@ class TencentCloudConfig(BaseConfig):
     """腾讯云API 下 COS 的自定义域名"""
 
 
-class HeweatherConfig(BaseConfig):
-    key: str
-    """和风天气API 的 key
-
-    获取地址: https://id.qweather.com/#/login
-    """
-
-    type: Literal[0, 1, 2]
-    """和风天气API 的类型
-
-    0 = 普通版，免费订阅 (3 天天气预报)
-    1 = 个人开发版，标准订阅 (7 天天气预报)
-    2 = 商业版 (7 天天气预报)
-    """
-
-    hourly_type: Literal[1, 2]
-    """和风天气API 的逐小时类型
-
-    1 = 未来12小时 (默认值)
-    2 = 未来24小时
-    """
-
-
 class PlatformConfig(BaseConfig):
     tencentcloud: Optional[TencentCloudConfig] = Field(default=None)
     """腾讯云API 的配置"""
-
-    heweather: Optional[HeweatherConfig] = Field(default=None)
-    """和风天气API 的配置"""
 
     open_bigmodel_api_key: Optional[str] = Field(default=None)
     """智谱AI开放平台 的 api_key"""

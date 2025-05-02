@@ -12,7 +12,7 @@ from .model import Air, Daily, Hourly, HourlyType
 template_path = (Path(__file__).parent / "assets").absolute()
 
 
-async def render(weather: HeWeatherData, hourly_type: int) -> str:
+async def render(weather: HeWeatherData, hourly_type: HourlyType) -> str:
     air = None
     if weather.air:
         if weather.air.now:
@@ -46,7 +46,10 @@ def add_hour_data(hourly: list[Hourly], hourly_type: int):
             hour.hour = date_time.strftime("%#I%p")
         else:
             hour.hour = date_time.strftime("%-I%p")
-        hour.temp_percent = f"{int((int(hour.temp) - low) / (high - low) * 100)}px"
+        if high == low:
+            hour.temp_percent = "100px"
+        else:
+            hour.temp_percent = f"{int((int(hour.temp) - low) / (high - low) * 100)}px"
     if hourly_type == HourlyType.current_12h:
         hourly = hourly[:12]
     if hourly_type == HourlyType.current_24h:

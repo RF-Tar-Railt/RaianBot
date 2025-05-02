@@ -1,7 +1,7 @@
 from enum import IntEnum
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Now(BaseModel):
@@ -104,3 +104,36 @@ class HourlyApi(BaseModel):
 class HourlyType(IntEnum):
     current_12h = 1
     current_24h = 2
+
+
+class APIError(Exception): ...
+
+
+class ConfigError(Exception): ...
+
+
+class CityNotFoundError(Exception): ...
+
+
+class QWeatherConfig(BaseModel):
+    apihost: str = Field(default="https://api.qweather.com")
+    apikey: Optional[str] = Field(
+        default=None, deprecated="建议使用更安全的JWT key"
+    )
+    apitype: Optional[int] = Field(default=None)
+    hourlytype: HourlyType = Field(default=HourlyType.current_12h)
+    forecase_days: Optional[int] = Field(default=3)
+    use_jwt: Optional[bool] = Field(
+        default=True, description="是否使用 JWT，默认 True"
+    )
+    jwt_sub: Optional[str] = Field(
+        default=None, description="JWT sub，即控制台中的项目ID"
+    )
+    jwt_private_key: Optional[str] = Field(
+        default=None, deprecated="JWT 私钥文本，需要自行生成"
+    )
+
+    jwt_kid: Optional[str] = Field(
+        default=None, description="JWT Key ID，即控制台中上传公钥后即可获取"
+    )
+    # debug: Optional[bool] = Field(default=False)

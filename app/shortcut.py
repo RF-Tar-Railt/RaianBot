@@ -40,10 +40,6 @@ def record(name: str, require: bool = True, disable: bool = False):
 
 
 @overload
-def accessable() -> Callable[[T_Callable], T_Callable]: ...
-
-
-@overload
 def accessable(path: str) -> Callable[[T_Callable], T_Callable]: ...
 
 
