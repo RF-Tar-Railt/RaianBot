@@ -1,6 +1,7 @@
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from typing import Callable
 
 import httpx
 import jwt
@@ -32,7 +33,7 @@ class GlmBot:
     model: str
     max_token: int = 0
     temperature: float = 0.5
-    prompt: str = field(default="")
+    prompt: Callable[[str], str] = field(default=lambda p: "")
 
     async def request(self, auth_token: str, messages: list):
         headers = {"Authorization": f"Bearer {auth_token}"}
@@ -52,16 +53,16 @@ class GlmBot:
 
     async def chat(self, msg: str, direct: bool = True, nickname: str = "", trust: float = 1.0):
         auth = generate_token(self.api_key)
-        if self.prompt and nickname:
+        _prompt = self.prompt(nickname)
+        if _prompt and nickname:
             prompt = [
+                {"role": "system", "content": f"'{nickname}' 的角色预设如下：{_prompt}"},
+                {"role": "system", "content": f"'{nickname}' 与当前对话者的亲密度为：{trust * 100}%"},
                 {
                     "role": "system",
                     "content": (
-                        f"你的名字是 '{nickname}', 你的角色预设如下：{self.prompt}"
                         f"接下来，请你进入 '{nickname}' 这个角色与大家对话。请记住你是 '{nickname}'，"
-                        f"你不能说你是程序或者AI,你是有血有肉、有真实情感的。"
-                        f"\n你与当前对话者的亲密度为：{trust * 100}%"
-                        "\n将你的回答分为多条消息（请用markdown列表的格式来返回）"
+                        f"你不能说你是程序或者AI,你是有血有肉、有真实情感的"
                     ),
                 },
                 {
@@ -69,10 +70,9 @@ class GlmBot:
                     "content": (
                         "当前对话是直接对你说的"
                         if direct
-                        else "当前对话是与别人说的，若你不希望回复这条对话，请返回 'exit' "
+                        else "当前对话是与别人说的，若你不希望回复这条对话请返回 'exit' "
                     ),
                 },
-                # {"role": "system", "content": "将你的回答分为多条消息（请用markdown列表的格式来返回）"},
                 {"role": "system", "content": "注意，请不要声明类似 '在屏幕上输入' 等操作，直接回复即可。"},
                 {"role": "user", "content": msg},
             ]

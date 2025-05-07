@@ -1,4 +1,8 @@
 ## 是否使用腾讯云的翻译服务
 tencent: false
+## 是否使用智谱AI开放平台的 chatglm 服务
+open_bigmodel: false
+## glm模型
+glm_model: ""
 ## gpt-api对话的链接
 gpt_api: null

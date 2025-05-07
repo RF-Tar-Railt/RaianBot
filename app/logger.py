@@ -96,12 +96,12 @@ def loguru_exc_callback_async(loop, context: dict):
 
 def setup_logger(level="INFO"):
     logging.basicConfig(handlers=[loguru_handler], level=level.upper(), force=True)
-    for name in logging.root.manager.loggerDict:
-        _logger = logging.getLogger(name)
-        for handler in _logger.handlers:
-            if isinstance(handler, logging.StreamHandler):
-                _logger.removeHandler(handler)
-    sys.excepthook = loguru_exc_callback
+    # for name in logging.root.manager.loggerDict:
+    #     _logger = logging.getLogger(name)
+    #     for handler in _logger.handlers:
+    #         if isinstance(handler, logging.StreamHandler):
+    #             _logger.removeHandler(handler)
+    # sys.excepthook = loguru_exc_callback
     traceback.print_exception = loguru_exc_callback
     log_format = debug_format if level.upper() == "DEBUG" else info_format
     logger.remove()
