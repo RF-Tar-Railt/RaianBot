@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+import time
 import aiohttp
+import secrets
 import ujson
 from pyquery import PyQuery as Query
 
@@ -12,13 +14,14 @@ from .storage import BaseWeiboData, DefaultWeiboData
 
 
 class WeiboAPI:
-    user_agent = (
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) "
-        "AppleWebKit/601.1.46 (KHTML, like Gecko) "
-        "Version/9.0 Mobile/13B143 Safari/601.1 wechatdevtools/0.7.0 "
-        "MicroMessenger/6.3.9 "
-        "Language/zh_CN webview/0"
-    )
+    # user_agent = (
+    #     "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) "
+    #     "AppleWebKit/601.1.46 (KHTML, like Gecko) "
+    #     "Version/9.0 Mobile/13B143 Safari/601.1 wechatdevtools/0.7.0 "
+    #     "MicroMessenger/6.3.9 "
+    #     "Language/zh_CN webview/0"
+    # )
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0"
 
     def __init__(
         self,
@@ -43,10 +46,17 @@ class WeiboAPI:
         base_url = "https://m.weibo.cn/api/container/getIndex?"
         headers = {
             "Host": "m.weibo.cn",
-            "Referer": "https://m.weibo.cn/u/XXX",
+            "Referer": f"https://m.weibo.cn/u/{secrets.token_urlsafe(8)}",
             "User-Agent": self.user_agent,
             "Content-Type": "application/json",
+            "Accept": "application/json, text/plain, */*",
+            "X-Requested-With": "XMLHttpRequest",
+            "mweibo-pwa": "1",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Dest": "empty",
         }
+        params["_"] = int(time.time() * 1000)
         async with self.session.get(base_url, params=params, headers=headers, timeout=timeout) as resp:
             if resp.status != 200:
                 raise RespStatusError(f"Error: {resp.status}\n{params}")
