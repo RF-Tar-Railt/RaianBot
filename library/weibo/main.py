@@ -46,7 +46,7 @@ class WeiboAPI:
         base_url = "https://m.weibo.cn/api/container/getIndex?"
         headers = {
             "Host": "m.weibo.cn",
-            "Referer": f"https://m.weibo.cn/u/{secrets.token_urlsafe(8)}",
+            "Referer": f"https://m.weibo.cn/u/XXX",
             "User-Agent": self.user_agent,
             "Content-Type": "application/json",
             "Accept": "application/json, text/plain, */*",
@@ -55,6 +55,15 @@ class WeiboAPI:
             "Sec-Fetch-Site": "same-origin",
             "Sec-Fetch-Mode": "cors",
             "Sec-Fetch-Dest": "empty",
+            "Cookie": (
+                "SUB=_2AkMfiHIPf8NxqwFRmvsQxGvraIxwzQnEieKp1IPUJRM3HRl-yT9yqhI4tRB6NAhc4cqGRb_30argKZLM5wnOMSfuID42; "
+                "SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WFKwxK-n4uw.8aFdrJQrc4h; "
+                "WEIBOCN_FROM=1110006030; "
+                "MLOGIN=0; "
+                "_T_WM=26687261557; "
+                "XSRF-TOKEN=9e8f44; "
+                "M_WEIBOCN_PARAMS=fid%3D100103type%253D3%2526q%253Dmlmmz_aoi404noTf0und%2526t%253D0%26uicode%3D10000011"
+            )
         }
         params["_"] = int(time.time() * 1000)
         async with self.session.get(base_url, params=params, headers=headers, timeout=timeout) as resp:
