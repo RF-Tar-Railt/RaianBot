@@ -193,6 +193,7 @@ def get_d_id():
             "organization": SM_CONFIG["organization"],
             "os": "web",  # 固定值
         },
+        timeout=10.0,
     )
 
     resp = response.json()

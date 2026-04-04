@@ -117,6 +117,7 @@ class ArknightsClosureStore:
                         GITHUB_RAW_LINK.format(path=f"resources/ak/characters/{quote(image)}.webp"),
                         proxy=proxy,
                         verify=False,
+                        timeout=10.0,
                     )
                     with (char_path / image_path).open("wb+") as f:
                         f.write(resp.read())
@@ -130,6 +131,7 @@ class ArknightsClosureStore:
                 GITHUB_RAW_LINK.format(path="resources/ak/char.json"),
                 proxy=proxy,
                 verify=False,
+                timeout=10.0,
             )
             with (self.base_path / "char.json").open("wb+") as f:
                 f.write(resp.read())
